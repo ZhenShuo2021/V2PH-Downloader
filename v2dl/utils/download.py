@@ -47,6 +47,7 @@ class ImageDownloadAPI(BaseDownloadAPI):
 
     def download(self, album_name: str, url: str, alt: str, base_folder: Path) -> bool:
         try:
+            album_name = album_name.rsplit("_", 1)[0]
             extension = PathUtil.get_image_extension(url)
             file_path = PathUtil.get_file_path(base_folder, album_name, alt, extension)
 

@@ -49,7 +49,6 @@ def create_runtime_config(
 ) -> common.RuntimeConfig:
     """Create runtime configuration with integrated download service and function."""
 
-    service_type = utils.ServiceType.THREADING
     download_service = utils.TaskServiceFactory.create(
         service_type=service_type,
         logger=logger,
