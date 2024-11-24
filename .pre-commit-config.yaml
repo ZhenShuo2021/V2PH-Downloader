@@ -47,11 +47,8 @@ repos:
 
   - repo: local
     hooks:
-      - id: poetry-export
-        name: poetry-export
-        entry: bash -c 'poetry export -f requirements.txt --output requirements.txt --without-hashes'
-        language: system
-        pass_filenames: false
-        files: ^(pyproject.toml|poetry.lock)$
-        stages: [commit]
-        always_run: false
+    - id: run-pip-compile
+      name: Run pip compile
+      entry: bash -c 'uv pip compile pyproject.toml -o requirements.txt'
+      language: system
+      files: ^pyproject.toml$
