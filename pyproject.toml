@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "v2dl"
-version = "0.1.5"
+dynamic = ["version"]
 description = "V2PH downloader"
 authors = [{ name = "ZhenShuo2021", email = "leo01412123@gmail.com" }]
 urls.repository = "https://github.com/ZhenShuo2021/V2PH-Downloader"
@@ -25,6 +25,21 @@ dependencies = [
     "httpx>=0.27.2",
     "pathvalidate>=3.2.1",
 ]
+
+[tool.hatch.version]
+path = "v2dl/version.py"
+pattern = "__version__ = \"(?P<version>[^\"]+)\""
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "/.github",
+    "/.vscode",
+    ".gitignore",
+    ".pre-commit-config.yaml",
+    "tests",
+    "uv.lock",
+]
+
 
 [tool.uv]
 dev-dependencies = [
