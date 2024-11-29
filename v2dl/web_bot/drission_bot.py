@@ -156,7 +156,7 @@ class DrissionBot(BaseBot):
                     DriBehavior.random_sleep(0.01, 0.5)
 
                     login_button = self.page(
-                        'x://button[@type="submit" and @class="btn btn-primary btn-block"]',
+                        'x://button[@type="submit" and @class="btn btn-primary"]',
                     )
                     login_button.click()
 

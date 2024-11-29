@@ -185,7 +185,7 @@ class SeleniumBot(BaseBot):
 
                     self.driver.find_element(
                         By.XPATH,
-                        '//button[@type="submit" and @class="btn btn-primary btn-block"]',
+                        '//button[@type="submit" and @class="btn btn-primary"]',
                     ).click()
 
                     SelBehavior.random_sleep(3, 5)
