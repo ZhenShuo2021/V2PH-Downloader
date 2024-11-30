@@ -105,7 +105,7 @@ class SeleniumBot(BaseBot):
 
                 # main business
                 self.handle_login()
-                self.driver.execute_script("document.body.style.zoom='75%'")
+                self.driver.execute_script("document.body.style.zoom='50%'")
                 self.scroller.scroll_to_bottom()
                 SelBehavior.random_sleep(5, 15)
 

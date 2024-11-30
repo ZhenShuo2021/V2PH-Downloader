@@ -82,7 +82,7 @@ class DrissionBot(BaseBot):
                 # main business
                 self.handle_login()
                 self.handle_read_limit()
-                self.page.run_js("document.body.style.zoom='75%'")
+                self.page.run_js("document.body.style.zoom='50%'")
                 scroll_down()
 
                 # Sleep to avoid Cloudflare blocking
