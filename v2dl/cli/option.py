@@ -27,7 +27,7 @@ def parse_arguments() -> argparse.Namespace:
         help="Type of bot to use (default: drission)",
     )
 
-    parser.add_argument("--concurrency", default=3, type=int, help="maximum download concurrency")
+    parser.add_argument("--concurrency", default=5, type=int, help="maximum download concurrency")
     parser.add_argument("--min-scroll", type=int, help="minimum scroll length of web bot")
     parser.add_argument("--max-scroll", type=int, help="maximum scroll length of web bot")
 

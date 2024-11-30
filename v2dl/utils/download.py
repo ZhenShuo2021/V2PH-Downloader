@@ -5,6 +5,8 @@ import time
 import asyncio
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Callable
+from mimetypes import guess_extension
 from pathlib import Path
 
 import httpx
@@ -12,6 +14,7 @@ from pathvalidate import sanitize_filename
 from requests import Response
 
 from .parser import LinkParser
+from ..common._types import PathType
 
 logger = logging.getLogger()
 
@@ -32,12 +35,18 @@ class BaseDownloadAPI(ABC):
         self.logger = logger
 
     @abstractmethod
-    def download(self, album_name: str, url: str, alt: str, base_folder: Path) -> bool:
+    def download(self, album_name: str, url: str, filename: str, base_folder: Path) -> bool:
         """Synchronous download method."""
         raise NotImplementedError
 
     @abstractmethod
-    async def download_async(self, task_id: str, url: str, alt: str, destination: Path) -> bool:
+    async def download_async(
+        self,
+        task_id: str,
+        url: str,
+        filename: str,
+        destination: Path,
+    ) -> bool:
         """Asynchronous download method."""
         raise NotImplementedError
 
@@ -45,13 +54,13 @@ class BaseDownloadAPI(ABC):
 class ImageDownloadAPI(BaseDownloadAPI):
     """Image download implementation."""
 
-    def download(self, album_name: str, url: str, alt: str, base_folder: Path) -> bool:
+    def download(self, album_name: str, url: str, filename: str, base_folder: Path) -> bool:
         try:
             album_name = album_name.rsplit("_", 1)[0]
-            extension = PathUtil.get_image_extension(url)
-            file_path = PathUtil.get_file_path(base_folder, album_name, alt, extension)
+            file_path = DownloadPathTool.get_file_dest(base_folder, album_name, filename)
+            DownloadPathTool.mkdir(file_path.parent)
 
-            if PathUtil.file_exists(file_path, self.no_skip, self.logger):
+            if DownloadPathTool.is_file_exists(file_path, self.no_skip, self.logger):
                 return True
 
             Downloader.download(url, file_path, self.headers, self.rate_limit)
@@ -61,13 +70,19 @@ class ImageDownloadAPI(BaseDownloadAPI):
             self.logger.error("Error in threaded task '%s': %s", url, e)
             return False
 
-    async def download_async(self, album_name: str, url: str, alt: str, base_folder: Path) -> bool:
+    async def download_async(
+        self,
+        album_name: str,
+        url: str,
+        filename: str,
+        base_folder: Path,
+    ) -> bool:
         try:
             album_name = album_name.rsplit("_", 1)[0]
-            extension = PathUtil.get_image_extension(url)
-            file_path = PathUtil.get_file_path(base_folder, album_name, alt, extension)
+            file_path = DownloadPathTool.get_file_dest(base_folder, album_name, filename)
+            DownloadPathTool.mkdir(file_path.parent)
 
-            if PathUtil.file_exists(file_path, self.no_skip, self.logger):
+            if DownloadPathTool.is_file_exists(file_path, self.no_skip, self.logger):
                 return True
 
             await Downloader.download_async(url, file_path, self.headers, self.rate_limit)
@@ -124,6 +139,9 @@ class Downloader:
         with httpx.Client(timeout=timeout) as client:
             with client.stream("GET", url, headers=headers) as response:
                 response.raise_for_status()
+                ext = "." + DownloadPathTool.get_ext(response)
+                save_path = save_path.with_suffix(ext)
+
                 with open(save_path, "wb") as file:
                     start_time = time.time()
                     downloaded = 0
@@ -152,6 +170,9 @@ class Downloader:
         async with httpx.AsyncClient(timeout=timeout) as client:
             async with client.stream("GET", url, headers=headers) as response:
                 response.raise_for_status()
+                ext = "." + DownloadPathTool.get_ext(response)
+                save_path = save_path.with_suffix(ext)
+
                 with open(save_path, "wb") as file:
                     start_time = asyncio.get_event_loop().time()
                     downloaded = 0
@@ -164,16 +185,16 @@ class Downloader:
                             await asyncio.sleep(expected_time - elapsed_time)
 
 
-class PathUtil:
+class DownloadPathTool:
     """Handles file and directory operations."""
 
     @staticmethod
-    def ensure_folder_exists(folder_path: Path | str) -> None:
+    def mkdir(folder_path: PathType) -> None:
         """Ensure the folder exists, create it if not."""
         Path(folder_path).mkdir(parents=True, exist_ok=True)
 
     @staticmethod
-    def file_exists(file_path: Path | str, no_skip: bool, logger: logging.Logger) -> bool:
+    def is_file_exists(file_path: PathType, no_skip: bool, logger: logging.Logger) -> bool:
         """Check if the file exists and log the status."""
         if Path(file_path).exists() and not no_skip:
             logger.info("File already exists: '%s'", file_path)
@@ -181,29 +202,55 @@ class PathUtil:
         return False
 
     @staticmethod
-    def get_file_path(
-        destination: Path | str,
+    def get_file_dest(
+        download_root: PathType,
         album_name: str,
         filename: str,
-        extension: str,
+        extension: str | None = None,
     ) -> Path:
-        """Construct the file path for saving the downloaded file."""
-        folder = Path(destination) / album_name
-        PathUtil.ensure_folder_exists(folder)
-        sanitized_filename = sanitize_filename(filename)
-        return folder / f"{sanitized_filename}.{extension}"
+        """Construct the file path for saving the downloaded file.
+
+        Args:
+            download_root (PathType): The base download folder for v2dl
+            album_name (str): The name of the download album, used for the sub-directory
+            filename (str): The name of the target download file
+            extension (str | None): The file extension of the target download file
+        Returns:
+            PathType: The full path of the file
+        """
+        ext = f".{extension}" if extension else ""
+        folder = Path(download_root) / sanitize_filename(album_name)
+        sf = sanitize_filename(filename)
+        return folder / f"{sf}{ext}"
 
     @staticmethod
-    def get_image_extension(url: str, default_ext: str = "jpg") -> str:
+    def get_image_ext(url: str, default_ext: str = "jpg") -> str:
         """Get the extension of a URL."""
-        image_extensions = r"(?:[^.]|^)\.(jpg|jpeg|png|gif|bmp|webp|tiff|svg)$"
+        image_extensions = r"\.(jpg|jpeg|png|gif|bmp|webp|tiff|svg)(?:\?.*|#.*|$)"
         match = re.search(image_extensions, url, re.IGNORECASE)
         if match:
-            return match.group(1)
+            # Normalize 'jpeg' to 'jpg'
+            return "jpg" if match.group(1).lower() == "jpeg" else match.group(1).lower()
         return default_ext
 
     @staticmethod
-    def check_input_file(input_path: Path | str) -> None:
+    def get_ext(
+        response: httpx.Response,
+        default_method: Callable[[str, str], str] | None = None,
+    ) -> str:
+        """Guess file extension based on response Content-Type."""
+        if default_method is None:
+            default_method = DownloadPathTool.get_image_ext
+
+        content_type = response.headers.get("Content-Type", "").split(";")[0].strip()
+        extension = guess_extension(content_type)
+        if extension:
+            return extension.lstrip(".")
+
+        return default_method(str(response.url), "jpg")
+
+    @staticmethod
+    def check_input_file(input_path: PathType) -> None:
         if input_path and not os.path.isfile(input_path):
             logging.error("Input file %s does not exist.", input_path)
             sys.exit(1)

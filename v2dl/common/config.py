@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from ._types import BaseConfig, ChromeConfig, DownloadConfig, EncryptionConfig, PathConfig
 
 
-class PathTool:
+class ConfigPathTool:
     @staticmethod
     def resolve_abs_path(path: str | Path, base_dir: str | Path) -> str | Path:
         """Resolve '~', add path with base_dir if input is not absolute path."""
@@ -31,9 +31,11 @@ class PathTool:
 
     @staticmethod
     def get_download_dir(download_dir: str) -> str:
-        sys_dl_dir = PathTool.get_default_download_dir()
+        sys_dl_dir = ConfigPathTool.get_default_download_dir()
         result_dir = (
-            PathTool.resolve_abs_path(download_dir, sys_dl_dir) if download_dir else sys_dl_dir
+            ConfigPathTool.resolve_abs_path(download_dir, sys_dl_dir)
+            if download_dir
+            else sys_dl_dir
         )
         result_dir = Path(result_dir)
         result_dir.mkdir(parents=True, exist_ok=True)
@@ -50,7 +52,7 @@ class PathTool:
         return exec_path
 
 
-class BaseConfigManager(PathTool):
+class BaseConfigManager(ConfigPathTool):
     """Load and process configs based on user platform.
 
     The DEFAULT_CONFIG is a nested dict, after processing, the ConfigManager.load() returns a

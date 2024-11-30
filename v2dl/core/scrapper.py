@@ -136,6 +136,53 @@ class ScrapeHandler:
         else:
             self.album_tracker.log_downloaded(album_url)
 
+    def _real_scrape(
+        self,
+        url: str,
+        start_page: int,
+        scrape_type: ScrapeType,
+        **kwargs: dict[Any, Any],
+    ) -> list[Any]:
+        """Scrapes pages for links using the specified scraping strategy.
+
+        Args:
+            url (str): The URL to scrape.
+            start_page (int): The starting page number for the scraping process.
+            scrape_type (ScrapeType): The type of content to scrape, either "album" or "album_list".
+            **kwargs (dict[Any, Any]): Additional keyword arguments for custom behavior.
+
+        Returns:
+            list[Any]: A list of results extracted from all scraped pages.
+
+        Raises:
+            KeyError: If the provided scrape_type is not found in the strategies.
+        """
+        strategy = self.strategies[scrape_type]
+        self.logger.info(
+            "Starting to scrape %s links from %s",
+            "album" if scrape_type else "image",
+            url,
+        )
+
+        all_results: list[Any] = []
+        page = start_page
+
+        while True:
+            page_results, should_continue = self._scrape_single_page(
+                url,
+                page,
+                strategy,
+                scrape_type,
+            )
+            all_results.extend(page_results)
+
+            if not should_continue:
+                break
+
+            page = self._handle_pagination(page)
+
+        return all_results
+
     def _scrape_single_page(
         self,
         url: str,
@@ -183,53 +230,6 @@ class ScrapeHandler:
             self.logger.info("Reach last page, stopping")
 
         return page_result, should_continue
-
-    def _real_scrape(
-        self,
-        url: str,
-        start_page: int,
-        scrape_type: ScrapeType,
-        **kwargs: dict[Any, Any],
-    ) -> list[Any]:
-        """Scrapes pages for links using the specified scraping strategy.
-
-        Args:
-            url (str): The URL to scrape.
-            start_page (int): The starting page number for the scraping process.
-            scrape_type (ScrapeType): The type of content to scrape, either "album" or "album_list".
-            **kwargs (dict[Any, Any]): Additional keyword arguments for custom behavior.
-
-        Returns:
-            list[Any]: A list of results extracted from all scraped pages.
-
-        Raises:
-            KeyError: If the provided scrape_type is not found in the strategies.
-        """
-        strategy = self.strategies[scrape_type]
-        self.logger.info(
-            "Starting to scrape %s links from %s",
-            "album" if scrape_type else "image",
-            url,
-        )
-
-        all_results: list[Any] = []
-        page = start_page
-
-        while True:
-            page_results, should_continue = self._scrape_single_page(
-                url,
-                page,
-                strategy,
-                scrape_type,
-            )
-            all_results.extend(page_results)
-
-            if not should_continue:
-                break
-
-            page = self._handle_pagination(page)
-
-        return all_results
 
     def _handle_pagination(
         self,
@@ -335,19 +335,21 @@ class ImageScraper(BaseScraper[ImageLinkAndALT]):
         alts: list[str] = tree.xpath(self.XPATH_ALTS)
 
         # Handle missing alt texts
-        if len(alts) < len(page_links):
-            missing_alts = [str(i + self.alt_counter) for i in range(len(page_links) - len(alts))]
-            alts.extend(missing_alts)
-            self.alt_counter += len(missing_alts)
+        # if len(alts) < len(page_links):
+        #     missing_alts = [str(i + self.alt_counter) for i in range(len(page_links) - len(alts))]
+        #     alts.extend(missing_alts)
+        #     self.alt_counter += len(missing_alts)
 
         page_result.extend(zip(page_links, alts, strict=False))
+        _, page_num = LinkParser.parse_input_url(self.runtime_config.url)
+        idx = (page_num - 1) * 10 + 1
 
         # Handle downloads if not in dry run mode
         if not self.dry_run:
             album_name = extract_album_name(alts)
 
             # assign download job for each image
-            for i, (url, alt) in enumerate(zip(page_links, alts, strict=False)):
+            for i, (url, _) in enumerate(zip(page_links, alts, strict=False)):
                 task_id = f"{album_name}_{i}"
                 task = Task(
                     task_id=task_id,
@@ -355,7 +357,7 @@ class ImageScraper(BaseScraper[ImageLinkAndALT]):
                     kwargs={
                         "album_name": task_id,
                         "url": url,
-                        "alt": alt,
+                        "filename": f"{(idx + i):03d}",
                         "base_folder": self.base_config.download.download_dir,
                     },
                 )

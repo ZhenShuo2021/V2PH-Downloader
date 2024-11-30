@@ -20,7 +20,7 @@ def process_input(args: NamespaceT) -> common._types.BaseConfig:
         sys.exit(0)
 
     if args.input_file:
-        utils.PathUtil.check_input_file(args.input_file)
+        utils.DownloadPathTool.check_input_file(args.input_file)
 
     base_config = common.BaseConfigManager(common.DEFAULT_CONFIG).load()
 
@@ -45,7 +45,7 @@ def create_runtime_config(
     base_config: common.BaseConfig,
     logger: logging.Logger,
     log_level: int,
-    service_type: utils.ServiceType = utils.ServiceType.THREADING,
+    service_type: utils.ServiceType = utils.ServiceType.ASYNC,
 ) -> common.RuntimeConfig:
     """Create runtime configuration with integrated download service and function."""
 
