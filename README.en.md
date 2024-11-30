@@ -1,3 +1,13 @@
+<div align="center">
+
+![Python >= 3.10](https://img.shields.io/badge/python->=3.10-red.svg)
+[![PyPI version](https://badge.fury.io/py/v2dl.svg)](https://badge.fury.io/py/v2dl)
+![PyPI Downloads](https://static.pepy.tech/badge/v2dl)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/ZhenShuo2021/V2PH-Downloader)
+![GitHub last commit](https://img.shields.io/github/last-commit/ZhenShuo2021/V2PH-Downloader)
+
+</div>
+
 # V2PH Downloader
 V2PH Downloader
 
@@ -9,6 +19,7 @@ V2PH Downloader
 ⚡️ Fast: High-efficiency download with asynchronous event loop   
 🧩 Customizable: Offers many configuration options   
 🔑 Secure: Uses PyNaCL backend, same as [Psono](https://psono.com/zh-Hant/security)    
+
 
 ## Installation
 Requirements:

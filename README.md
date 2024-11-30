@@ -1,7 +1,18 @@
+<div align="center">
+
+![Python >= 3.10](https://img.shields.io/badge/python->=3.10-red.svg)
+[![PyPI version](https://badge.fury.io/py/v2dl.svg)](https://badge.fury.io/py/v2dl)
+![PyPI Downloads](https://static.pepy.tech/badge/v2dl)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/ZhenShuo2021/V2PH-Downloader)
+![GitHub last commit](https://img.shields.io/github/last-commit/ZhenShuo2021/V2PH-Downloader)
+
+</div>
+
+[English](https://github.com/ZhenShuo2021/V2PH-Downloader/blob/main/README.en.md)
+
 # V2PH Downloader
 微圖坊下載器
 
-[English](https://github.com/ZhenShuo2021/V2PH-Downloader/blob/main/README.en.md)
 
 ## 特色
 📦 開箱即用：不用下載額外依賴   
