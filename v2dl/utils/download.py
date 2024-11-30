@@ -26,12 +26,12 @@ class BaseDownloadAPI(ABC):
         self,
         headers: dict[str, str],
         rate_limit: int,
-        no_skip: bool,
+        force_download: bool,
         logger: logging.Logger,
     ):
         self.headers = headers
         self.rate_limit = rate_limit
-        self.no_skip = no_skip
+        self.force_download = force_download
         self.logger = logger
 
     @abstractmethod
@@ -60,7 +60,7 @@ class ImageDownloadAPI(BaseDownloadAPI):
             file_path = DownloadPathTool.get_file_dest(base_folder, album_name, filename)
             DownloadPathTool.mkdir(file_path.parent)
 
-            if DownloadPathTool.is_file_exists(file_path, self.no_skip, self.logger):
+            if DownloadPathTool.is_file_exists(file_path, self.force_download, self.logger):
                 return True
 
             Downloader.download(url, file_path, self.headers, self.rate_limit)
@@ -82,7 +82,7 @@ class ImageDownloadAPI(BaseDownloadAPI):
             file_path = DownloadPathTool.get_file_dest(base_folder, album_name, filename)
             DownloadPathTool.mkdir(file_path.parent)
 
-            if DownloadPathTool.is_file_exists(file_path, self.no_skip, self.logger):
+            if DownloadPathTool.is_file_exists(file_path, self.force_download, self.logger):
                 return True
 
             await Downloader.download_async(url, file_path, self.headers, self.rate_limit)
@@ -194,9 +194,9 @@ class DownloadPathTool:
         Path(folder_path).mkdir(parents=True, exist_ok=True)
 
     @staticmethod
-    def is_file_exists(file_path: PathType, no_skip: bool, logger: logging.Logger) -> bool:
+    def is_file_exists(file_path: PathType, force_download: bool, logger: logging.Logger) -> bool:
         """Check if the file exists and log the status."""
-        if Path(file_path).exists() and not no_skip:
+        if Path(file_path).exists() and not force_download:
             logger.info("File already exists: '%s'", file_path)
             return True
         return False
@@ -284,14 +284,14 @@ def download_album(
     destination: str,
     headers: dict[str, str],
     rate_limit: int,
-    no_skip: bool,
+    force_download: bool,
     logger: logging.Logger,
 ) -> None:
     """Basic usage example: download files from a list of links."""
     task_manager = ImageDownloadAPI(
         headers=headers,
         rate_limit=rate_limit,
-        no_skip=no_skip,
+        force_download=force_download,
         logger=logger,
     )
     for url, alt in file_links:

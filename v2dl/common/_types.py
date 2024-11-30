@@ -23,7 +23,7 @@ class RuntimeConfig:
     dry_run: bool
     logger: Logger
     log_level: int
-    no_skip: bool = False
+    force_download: bool = False
     use_chrome_default_profile: bool = False
 
 

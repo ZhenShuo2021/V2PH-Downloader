@@ -59,7 +59,7 @@ def create_runtime_config(
         service_type=service_type,
         headers=common.const.HEADERS,
         rate_limit=base_config.download.rate_limit,
-        no_skip=args.no_skip,
+        force_download=args.force,
         logger=logger,
     )
 
@@ -83,7 +83,7 @@ def create_runtime_config(
         dry_run=args.dry_run,
         logger=logger,
         log_level=log_level,
-        no_skip=args.no_skip,
+        force_download=args.force,
     )
 
 

@@ -119,7 +119,7 @@ class ScrapeHandler:
 
     def scrape_album(self, album_url: str, start_page: int, dry_run: bool) -> None:
         """Handle scraping of a single album page."""
-        if self.album_tracker.is_downloaded(album_url) and not self.runtime_config.no_skip:
+        if self.album_tracker.is_downloaded(album_url) and not self.runtime_config.force_download:
             self.logger.info("Album %s already downloaded, skipping.", album_url)
             return
 

@@ -38,7 +38,6 @@ class ConfigPathTool:
             else sys_dl_dir
         )
         result_dir = Path(result_dir)
-        result_dir.mkdir(parents=True, exist_ok=True)
         return str(result_dir)
 
     @staticmethod
@@ -68,7 +67,6 @@ class BaseConfigManager(ConfigPathTool):
         system_config_dir = BaseConfigManager.get_system_config_dir()
         if self.config_dir is not None:  # overwrite the config_dir
             system_config_dir = Path(self.config_dir)
-        system_config_dir.mkdir(parents=True, exist_ok=True)
 
         custom_config_path = system_config_dir / "config.yaml"
         custom_env_path = system_config_dir / ".env"

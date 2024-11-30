@@ -74,7 +74,7 @@ class DownloadAPIFactory:
         service_type: ServiceType,
         headers: dict[str, str],
         rate_limit: int,
-        no_skip: bool,
+        force_download: bool,
         logger: Logger,
         media_type: MediaType = MediaType.IMAGE,
     ) -> BaseDownloadAPI:
@@ -84,6 +84,6 @@ class DownloadAPIFactory:
             raise ValueError(f"Unknown service type: {service_type}")
 
         if media_type == MediaType.VIDEO:
-            return VideoDownloadAPI(headers, rate_limit, no_skip, logger)
+            return VideoDownloadAPI(headers, rate_limit, force_download, logger)
 
-        return api_class(headers, rate_limit, no_skip, logger)
+        return api_class(headers, rate_limit, force_download, logger)

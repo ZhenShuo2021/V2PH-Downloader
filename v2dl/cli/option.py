@@ -1,6 +1,8 @@
 import logging
 import argparse
 
+from ..common.const import DEFAULT_CONFIG
+
 
 def parse_arguments() -> argparse.Namespace:
     formatter = lambda prog: argparse.HelpFormatter(prog, max_help_position=36)
@@ -14,11 +16,23 @@ def parse_arguments() -> argparse.Namespace:
         metavar="PATH",
         help="Path to txt file containing URL list to be downloaded",
     )
-    input_group.add_argument("-a", "--account", action="store_true", help="Manage account")
-    input_group.add_argument("--version", action="store_true", help="Show package version")
+    input_group.add_argument(
+        "-a",
+        "--account",
+        action="store_true",
+        help="Manage account",
+    )
+
+    parser.add_argument(
+        "--force",
+        "-f",
+        action="store_true",
+        help="Force downloading, not skipping downloaded albums",
+    )
 
     parser.add_argument(
         "--bot",
+        "-b",
         dest="bot_type",
         default="drission",
         type=str,
@@ -28,14 +42,25 @@ def parse_arguments() -> argparse.Namespace:
     )
 
     parser.add_argument("--concurrency", default=5, type=int, help="maximum download concurrency")
-    parser.add_argument("--min-scroll", type=int, help="minimum scroll length of web bot")
-    parser.add_argument("--max-scroll", type=int, help="maximum scroll length of web bot")
+    parser.add_argument(
+        "--min-scroll",
+        type=int,
+        default=DEFAULT_CONFIG["download"]["min_scroll_length"],
+        help=f"minimum scroll length of web bot (default: {DEFAULT_CONFIG['download']['min_scroll_length']})",
+    )
+    parser.add_argument(
+        "--max-scroll",
+        type=int,
+        default=DEFAULT_CONFIG["download"]["max_scroll_length"],
+        help=f"maximum scroll length of web bot (default: {DEFAULT_CONFIG['download']['max_scroll_length']})",
+    )
 
     parser.add_argument(
         "--chrome-args",
         type=str,
         help="Override Chrome arguments (example: --chrome-args='--arg1//--arg2//--arg3')",
     )
+
     parser.add_argument(
         "--user-agent",
         type=str,
@@ -43,12 +68,18 @@ def parse_arguments() -> argparse.Namespace:
     )
 
     parser.add_argument("--dry-run", action="store_true", help="Dry run without downloading")
-    parser.add_argument("--no-skip", action="store_true", help="Do not skip downloaded files")
     parser.add_argument("--terminate", action="store_true", help="Terminate chrome after scraping")
     parser.add_argument(
         "--use-default-chrome-profile",
         action="store_true",
         help="Use default chrome profile. Using default profile with an operating chrome is not valid",
+    )
+
+    input_group.add_argument(
+        "--version",
+        "-V",
+        action="store_true",
+        help="Show package version",
     )
 
     log_group = parser.add_mutually_exclusive_group()
@@ -64,6 +95,11 @@ def parse_arguments() -> argparse.Namespace:
 
     args = parser.parse_args()
 
+    return setup_args(args)
+
+
+def setup_args(args: argparse.Namespace) -> argparse.Namespace:
+    # setup loglevel
     if args.quiet:
         log_level = logging.ERROR
     elif args.verbose:
@@ -79,7 +115,15 @@ def parse_arguments() -> argparse.Namespace:
         log_level = log_level_mapping.get(args.log_level, logging.INFO)
     else:
         log_level = logging.INFO
-
-    args.chrome_args = args.chrome_args.split("//") if args.chrome_args else None
     args.log_level = log_level
+
+    # setup scroll distance
+    if args.max_scroll <= 0:
+        args.max_scroll = 500
+    if args.min_scroll > args.max_scroll:
+        args.max_scroll = args.min_scroll + 1
+
+    # setup chrome options
+    args.chrome_args = args.chrome_args.split("//") if args.chrome_args else None
+
     return args

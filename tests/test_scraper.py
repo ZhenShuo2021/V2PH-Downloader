@@ -40,7 +40,7 @@ def setup_test_env(tmp_path, base_config):
             terminate=True,
             dry_run=False,
             concurrency=3,
-            no_skip=True,
+            force=True,
             use_default_chrome_profile=False,
         )
 
