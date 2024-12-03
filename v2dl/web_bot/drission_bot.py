@@ -1,6 +1,7 @@
 import sys
 import time
 import random
+from datetime import datetime
 from logging import Logger
 from typing import TYPE_CHECKING, Any
 
@@ -225,7 +226,9 @@ class DrissionBot(BaseBot):
         if self.check_read_limit():
             # click logout
             self.page('x://ul[@class="nav justify-content-end"]//a[@href="/user/logout"]').click()
+            now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
             self.account_manager.update_account(self.email, "exceed_quota", True)
+            self.account_manager.update_account(self.email, "exceed_time", now)
             self.email, self.password = self.account_manager.random_pick(self.private_key)
 
     def check_read_limit(self) -> bool:

@@ -313,12 +313,19 @@ class AccountManager:
             else:
                 self.logger.error("Account not found.")
 
-    def update_account(self, username: str, field: str, new_value: Any) -> None:
+    def update_account(self, username: str, field: str, value: Any) -> None:
+        """Update account status of accounts.yaml
+
+        Args:
+            username (str): The user to update
+            field (str): The field to update
+            value (Any): The new value of the field
+        """
         with self.lock:
             account = self.accounts.get(username)
             if account:
                 if field in account:
-                    account[field] = new_value
+                    account[field] = value
                     self.logger.info("Updated %s for account %s.", field, username)
                     self._save_yaml()
                 else:
@@ -357,15 +364,14 @@ class AccountManager:
             return False
 
     def check(self) -> None:
-        """檢查所有帳號的 exceed_time 是否超過 24 小時，若超過則清除 exceed_time 並將重置 exceed_quota."""
+        """檢查所有帳號的 exceed_time 是否超過 12 小時，若超過則清除 exceed_time 並將重置 exceed_quota."""
         now = datetime.now()
         update = False
 
         for _, account in self.accounts.items():
-            exceed_time = account.get("exceed_time", "")
-            if exceed_time:
-                exceed_time_time = datetime.strptime(exceed_time, "%Y-%m-%dT%H:%M:%S")
-                if now - exceed_time_time > timedelta(hours=24):
+            if exceed_time := account["exceed_time"]:  # 如果不是空字串就進入檢查
+                exceed_time_ = datetime.strptime(exceed_time, "%Y-%m-%dT%H:%M:%S")
+                if now - exceed_time_ > timedelta(hours=12):
                     account["exceed_time"] = ""
                     account["exceed_quota"] = False
                     update = True

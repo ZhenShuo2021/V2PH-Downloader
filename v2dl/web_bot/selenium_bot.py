@@ -1,6 +1,7 @@
 import sys
 import time
 import random
+from datetime import datetime
 from logging import Logger
 from subprocess import Popen
 from typing import TYPE_CHECKING, Any
@@ -238,7 +239,9 @@ class SeleniumBot(BaseBot):
             self.logger.info("Account %s login successful with cookies", self.email)
             return True
 
+        now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
         self.account_manager.update_runtime_state(self.email, "cookies_valid", False)
+        self.account_manager.update_account(self.email, "exceed_time", now)
         return False
 
     def check_login_errors(self) -> None:
