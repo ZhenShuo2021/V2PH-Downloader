@@ -24,17 +24,12 @@ cssselect==1.2.0
     # via drissionpage
 datarecorder==3.6.2
     # via downloadkit
-downloadkit==2.0.5
+downloadkit==2.0.7
     # via drissionpage
 drissionpage==4.1.0.12
     # via v2dl (pyproject.toml)
 et-xmlfile==2.0.0
     # via openpyxl
-exceptiongroup==1.2.2
-    # via
-    #   anyio
-    #   trio
-    #   trio-websocket
 filelock==3.16.1
     # via tldextract
 h11==0.14.0
@@ -43,7 +38,7 @@ h11==0.14.0
     #   wsproto
 httpcore==1.0.7
     # via httpx
-httpx==0.27.2
+httpx==0.28.0
     # via v2dl (pyproject.toml)
 idna==3.10
     # via
@@ -86,12 +81,11 @@ requests==2.32.3
     #   tldextract
 requests-file==2.1.0
     # via tldextract
-selenium==4.26.1
+selenium==4.27.1
     # via v2dl (pyproject.toml)
 sniffio==1.3.1
     # via
     #   anyio
-    #   httpx
     #   trio
 sortedcontainers==2.4.0
     # via trio
@@ -104,9 +98,7 @@ trio==0.27.0
 trio-websocket==0.11.1
     # via selenium
 typing-extensions==4.12.2
-    # via
-    #   anyio
-    #   selenium
+    # via selenium
 urllib3==2.2.3
     # via
     #   requests

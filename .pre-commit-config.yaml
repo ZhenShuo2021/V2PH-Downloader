@@ -49,6 +49,6 @@ repos:
     hooks:
     - id: run-pip-compile
       name: Run pip compile
-      entry: bash -c 'uv pip compile pyproject.toml -o requirements.txt'
+      entry: bash -c 'uv pip compile -q pyproject.toml -o requirements.txt'
       language: system
-      files: ^pyproject.toml$
+      files: ^uv.lock$
