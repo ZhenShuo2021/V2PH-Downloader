@@ -32,6 +32,8 @@ def process_input(args: NamespaceT) -> common._types.BaseConfig:
         base_config.download.min_scroll_length = args.min_scroll
     if args.max_scroll is not None:
         base_config.download.max_scroll_length = args.max_scroll
+    if args.destination is not None:
+        base_config.download.download_dir = args.destination
 
     # suppress httpx INFO level log
     level = logging.DEBUG if args.log_level == logging.DEBUG else logging.WARNING

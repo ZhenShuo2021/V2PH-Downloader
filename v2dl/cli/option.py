@@ -4,9 +4,40 @@ import argparse
 from ..common.const import DEFAULT_CONFIG
 
 
+class CustomHelpFormatter(argparse.RawTextHelpFormatter):
+    def __init__(self, prog) -> None:  # type: ignore
+        super().__init__(prog, max_help_position=36)
+
+    def _format_action_invocation(self, action):  # type: ignore
+        if not action.option_strings:
+            (metavar,) = self._metavar_formatter(action, action.dest)(1)
+            return metavar
+        else:
+            parts = []
+            # if the Optional doesn't take a value, format is:
+            #    -s, --long
+            if action.nargs == 0:
+                parts.extend(action.option_strings)
+
+            # if the Optional takes a value, format is:
+            #    -s ARGS, --long ARGS
+            # change to
+            #    -s, --long ARGS
+            else:
+                default = action.dest.upper()
+                args_string = self._format_args(action, default)
+                for option_string in action.option_strings:
+                    # parts.append('%s %s' % (option_string, args_string))
+                    parts.append(f"{option_string}")
+                parts[-1] += f" {args_string}"
+            return ", ".join(parts)
+
+
 def parse_arguments() -> argparse.Namespace:
-    formatter = lambda prog: argparse.HelpFormatter(prog, max_help_position=36)
-    parser = argparse.ArgumentParser(description="V2PH scraper.", formatter_class=formatter)
+    parser = argparse.ArgumentParser(
+        description="V2PH scraper.",
+        formatter_class=CustomHelpFormatter,
+    )
 
     input_group = parser.add_mutually_exclusive_group(required=True)
     input_group.add_argument("url", nargs="?", help="URL to scrape")
@@ -21,6 +52,16 @@ def parse_arguments() -> argparse.Namespace:
         "--account",
         action="store_true",
         help="Manage account",
+    )
+
+    parser.add_argument(
+        "-d",
+        "--destination",
+        dest="destination",
+        type=str,
+        metavar="PATH",
+        default=None,
+        help="Base directory location for file downloads",
     )
 
     parser.add_argument(
