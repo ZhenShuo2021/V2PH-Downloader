@@ -265,11 +265,12 @@ class BaseScraper(Generic[LinkType], ABC):
         self.base_config = base_config
         self.web_bot = web_bot
         self.download_service = runtime_config.download_service
+        self.download_function = download_function
         self.logger = runtime_config.logger
 
     @abstractmethod
     def get_xpath(self) -> str:
-        """Return xpath for the specific strategy."""
+        """Return xpath of the target ."""
 
     @abstractmethod
     def process_page_links(
@@ -277,10 +278,19 @@ class BaseScraper(Generic[LinkType], ABC):
         page_links: list[str],
         page_result: list[LinkType],
         tree: html.HtmlElement,
-        page: int,
+        page_num: int,
         **kwargs: dict[Any, Any],
     ) -> None:
-        """Process links found on the page."""
+        """Process links found on the page.
+
+        Note that different strategy has different types of page_result.
+
+        Args:
+            page_links (list[str]): The pre-processed result list, determined by get_xpath, used for page_result
+            page_result (list[LinkType]): The real result of scraping.
+            tree (html.HtmlElement): The xpath tree of the current page.
+            page_num (int): The page number of the current URL.
+        """
 
 
 class AlbumScraper(BaseScraper[AlbumLink]):
@@ -296,11 +306,11 @@ class AlbumScraper(BaseScraper[AlbumLink]):
         page_links: list[str],
         page_result: list[AlbumLink],
         tree: html.HtmlElement,
-        page: int,
+        page_num: int,
         **kwargs: dict[Any, Any],
     ) -> None:
         page_result.extend([BASE_URL + album_link for album_link in page_links])
-        self.logger.info("Found %d albums on page %d", len(page_links), page)
+        self.logger.info("Found %d albums on page %d", len(page_links), page_num)
 
 
 class ImageScraper(BaseScraper[ImageLinkAndALT]):
@@ -318,7 +328,6 @@ class ImageScraper(BaseScraper[ImageLinkAndALT]):
     ) -> None:
         super().__init__(runtime_config, base_config, web_bot, download_function)
         self.dry_run = runtime_config.dry_run
-        self.download_function = download_function
         self.alt_counter = 0
 
     def get_xpath(self) -> str:
@@ -329,7 +338,7 @@ class ImageScraper(BaseScraper[ImageLinkAndALT]):
         page_links: list[str],
         page_result: list[ImageLinkAndALT],
         tree: html.HtmlElement,
-        page: int,
+        page_num: int,
         **kwargs: dict[Any, Any],
     ) -> None:
         alts: list[str] = tree.xpath(self.XPATH_ALTS)
@@ -341,7 +350,6 @@ class ImageScraper(BaseScraper[ImageLinkAndALT]):
         #     self.alt_counter += len(missing_alts)
 
         page_result.extend(zip(page_links, alts, strict=False))
-        _, page_num = LinkParser.parse_input_url(self.runtime_config.url)
         idx = (page_num - 1) * 10 + 1
 
         # Handle downloads if not in dry run mode
@@ -363,7 +371,7 @@ class ImageScraper(BaseScraper[ImageLinkAndALT]):
                 )
                 self.download_service.add_task(task)
 
-        self.logger.info("Found %d images on page %d", len(page_links), page)
+        self.logger.info("Found %d images on page %d", len(page_links), page_num)
 
 
 def extract_album_name(alts: list[str]) -> str:
