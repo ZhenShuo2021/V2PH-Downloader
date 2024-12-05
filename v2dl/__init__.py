@@ -72,6 +72,13 @@ def create_runtime_config(
     )
     logger.debug("using download function name: %s", download_function.__name__)
 
+    dest = base_config.download.download_dir
+    if args.directory is not None:
+        dest = args.directory
+        exact_dir = True
+    else:
+        exact_dir = False
+
     return common.RuntimeConfig(
         url=args.url,
         input_file=args.input_file,
@@ -86,6 +93,8 @@ def create_runtime_config(
         logger=logger,
         log_level=log_level,
         force_download=args.force,
+        exact_dir=exact_dir,
+        download_dir=dest,
     )
 
 

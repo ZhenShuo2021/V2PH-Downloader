@@ -11,7 +11,6 @@ from pathlib import Path
 
 import httpx
 from pathvalidate import sanitize_filename
-from requests import Response
 
 from .parser import LinkParser
 from ..common._types import PathType
@@ -35,18 +34,12 @@ class BaseDownloadAPI(ABC):
         self.logger = logger
 
     @abstractmethod
-    def download(self, album_name: str, url: str, filename: str, base_folder: Path) -> bool:
+    def download(self, url: str, dest: Path) -> bool:
         """Synchronous download method."""
         raise NotImplementedError
 
     @abstractmethod
-    async def download_async(
-        self,
-        task_id: str,
-        url: str,
-        filename: str,
-        destination: Path,
-    ) -> bool:
+    async def download_async(self, url: str, dest: Path) -> bool:
         """Asynchronous download method."""
         raise NotImplementedError
 
@@ -54,68 +47,48 @@ class BaseDownloadAPI(ABC):
 class ImageDownloadAPI(BaseDownloadAPI):
     """Image download implementation."""
 
-    def download(self, album_name: str, url: str, filename: str, base_folder: Path) -> bool:
+    def download(self, url: str, dest: Path) -> bool:
+        if DownloadPathTool.is_file_exists(dest, self.force_download, self.logger):
+            return True
         try:
-            album_name = album_name.rsplit("_", 1)[0]
-            file_path = DownloadPathTool.get_file_dest(base_folder, album_name, filename)
-            DownloadPathTool.mkdir(file_path.parent)
-
-            if DownloadPathTool.is_file_exists(file_path, self.force_download, self.logger):
-                return True
-
-            Downloader.download(url, file_path, self.headers, self.rate_limit)
-            self.logger.info("Downloaded: '%s'", file_path)
+            DownloadPathTool.mkdir(dest.parent)
+            Downloader.download(url, dest, self.headers, self.rate_limit)
+            self.logger.info("Downloaded: '%s'", dest)
             return True
         except Exception as e:
             self.logger.error("Error in threaded task '%s': %s", url, e)
             return False
 
-    async def download_async(
-        self,
-        album_name: str,
-        url: str,
-        filename: str,
-        base_folder: Path,
-    ) -> bool:
+    async def download_async(self, url: str, dest: Path) -> bool:
+        if DownloadPathTool.is_file_exists(dest, self.force_download, self.logger):
+            return True
         try:
-            album_name = album_name.rsplit("_", 1)[0]
-            file_path = DownloadPathTool.get_file_dest(base_folder, album_name, filename)
-            DownloadPathTool.mkdir(file_path.parent)
-
-            if DownloadPathTool.is_file_exists(file_path, self.force_download, self.logger):
-                return True
-
-            await Downloader.download_async(url, file_path, self.headers, self.rate_limit)
-            self.logger.info("Downloaded: '%s'", file_path)
+            DownloadPathTool.mkdir(dest.parent)
+            await Downloader.download_async(url, dest, self.headers, self.rate_limit)
+            self.logger.info("Downloaded: '%s'", dest)
             return True
         except Exception as e:
-            self.logger.error("Error in async task '%s': %s", album_name, e)
+            self.logger.error("Error in async task '%s': %s", url, e)
             return False
 
 
 class VideoDownloadAPI(BaseDownloadAPI):
     """Video download implementation."""
 
-    def download(self, task_id: str, url: str, resp: Response, destination: Path) -> bool:
+    def download(self, url: str, dest: Path) -> bool:
         raise NotImplementedError
 
-    async def download_async(
-        self,
-        task_id: str,
-        url: str,
-        resp: Response,
-        destination: Path,
-    ) -> bool:
+    async def download_async(self, url: str, dest: Path) -> bool:
         raise NotImplementedError
 
 
 class ActorDownloadAPI(BaseDownloadAPI):
     """Actor-based download implementation."""
 
-    def download(self, album_name: str, url: str, alt: str, base_folder: Path) -> bool:
+    def download(self, url: str, dest: Path) -> bool:
         raise NotImplementedError
 
-    async def download_async(self, task_id: str, url: str, alt: str, destination: Path) -> bool:
+    async def download_async(self, url: str, dest: Path) -> bool:
         raise NotImplementedError
 
 
@@ -276,24 +249,3 @@ class AlbumTracker:
         if not self.is_downloaded(album_url):
             with open(self.album_log_path, "a") as f:
                 f.write(album_url + "\n")
-
-
-def download_album(
-    album_name: str,
-    file_links: list[tuple[str, str]],
-    destination: str,
-    headers: dict[str, str],
-    rate_limit: int,
-    force_download: bool,
-    logger: logging.Logger,
-) -> None:
-    """Basic usage example: download files from a list of links."""
-    task_manager = ImageDownloadAPI(
-        headers=headers,
-        rate_limit=rate_limit,
-        force_download=force_download,
-        logger=logger,
-    )
-    for url, alt in file_links:
-        task_id = f"{album_name}_{alt}"
-        task_manager.download(task_id, url, alt, Path(destination))

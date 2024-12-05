@@ -42,6 +42,7 @@ def setup_test_env(tmp_path, base_config):
             concurrency=3,
             force=True,
             use_default_chrome_profile=False,
+            directory=None,
         )
 
         runtime_config = create_runtime_config(

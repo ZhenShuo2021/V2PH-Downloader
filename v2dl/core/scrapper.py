@@ -7,7 +7,7 @@ from lxml import html
 
 from ..common import BaseConfig, RuntimeConfig, ScrapeError
 from ..common.const import BASE_URL
-from ..utils import AlbumTracker, LinkParser, Task
+from ..utils import AlbumTracker, DownloadPathTool, LinkParser, Task
 
 # Manage return types of each scraper here
 AlbumLink: TypeAlias = str
@@ -355,18 +355,21 @@ class ImageScraper(BaseScraper[ImageLinkAndALT]):
         # Handle downloads if not in dry run mode
         if not self.dry_run:
             album_name = extract_album_name(alts)
+            dir_ = self.runtime_config.download_dir
 
             # assign download job for each image
             for i, (url, _) in enumerate(zip(page_links, alts, strict=False)):
-                task_id = f"{album_name}_{i}"
+                filename = f"{(idx + i):03d}"
+                if self.runtime_config.exact_dir:
+                    dest = DownloadPathTool.get_file_dest(dir_, "", filename)
+                else:
+                    dest = DownloadPathTool.get_file_dest(dir_, album_name, filename)
                 task = Task(
-                    task_id=task_id,
+                    task_id=f"{album_name}_{i}",
                     func=self.download_function,
                     kwargs={
-                        "album_name": task_id,
                         "url": url,
-                        "filename": f"{(idx + i):03d}",
-                        "base_folder": self.base_config.download.download_dir,
+                        "dest": dest,
                     },
                 )
                 self.download_service.add_task(task)

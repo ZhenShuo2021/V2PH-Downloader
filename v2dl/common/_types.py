@@ -23,6 +23,8 @@ class RuntimeConfig:
     dry_run: bool
     logger: Logger
     log_level: int
+    exact_dir: bool = False  # flag indicates if args.directory is used
+    download_dir: str = ""
     force_download: bool = False
     use_chrome_default_profile: bool = False
 

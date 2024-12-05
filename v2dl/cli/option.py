@@ -65,6 +65,16 @@ def parse_arguments() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "-D",
+        "--directory",
+        dest="directory",
+        type=str,
+        metavar="PATH",
+        default=None,
+        help="Exact location for file downloads",
+    )
+
+    parser.add_argument(
         "--force",
         "-f",
         action="store_true",
