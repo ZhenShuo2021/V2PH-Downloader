@@ -1,7 +1,7 @@
 <div align="center">
 
 ![Python >= 3.10](https://img.shields.io/badge/python->=3.10-red.svg)
-[![PyPI version](https://badge.fury.io/py/v2dl.svg)](https://badge.fury.io/py/v2dl)
+![PyPI - Version](https://img.shields.io/pypi/v/v2dl)
 ![PyPI Downloads](https://static.pepy.tech/badge/v2dl)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/ZhenShuo2021/V2PH-Downloader)
 ![GitHub last commit](https://img.shields.io/github/last-commit/ZhenShuo2021/V2PH-Downloader)
@@ -85,7 +85,9 @@ Use an extension (e.g., [Cookie-Editor](https://chromewebstore.google.com/detail
 ### Parameters
 - url: URL of the target to download.
 - -i: URL list in a text file, one URL per line.
-- -a: Enter account management tool.
+- -a: Enter the account management tool.
+- -d: Configure the base download directory.
+- -D: Configure the exact download directory.
 - --no-skip: Force download without skipping.
 - --bot: Select automation tool; Drission is less likely to be blocked by bots.
 - --dry-run: Simulate the download without actual file download.

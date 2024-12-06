@@ -1,7 +1,7 @@
 <div align="center">
 
 ![Python >= 3.10](https://img.shields.io/badge/python->=3.10-red.svg)
-[![PyPI version](https://badge.fury.io/py/v2dl.svg)](https://badge.fury.io/py/v2dl)
+![PyPI - Version](https://img.shields.io/pypi/v/v2dl)
 ![PyPI Downloads](https://static.pepy.tech/badge/v2dl)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/ZhenShuo2021/V2PH-Downloader)
 ![GitHub last commit](https://img.shields.io/github/last-commit/ZhenShuo2021/V2PH-Downloader)
@@ -92,6 +92,8 @@ Cookies 登入比帳號密碼更容易成功。
 - url: 下載目標的網址。
 - -i: 下載目標的 URL 列表文字文件，每行一個 URL。
 - -a: 進入帳號管理工具。
+- -d: 設定下載根目錄，在分類檔案時特別有用。
+- -D: 設定檔案實際下載位置。
 - --no-skip: 強制下載不跳過。
 - --bot: 選擇自動化工具，drission 比較不會被機器人檢測封鎖。
 - --dry-run: 僅進行模擬下載，不會實際下載檔案。
