@@ -174,12 +174,9 @@ class AsyncService(BaseTaskService):
                 break
 
             while not self.task_queue.empty() and len(self.current_tasks) < self.max_workers:
-                try:
-                    task = self.task_queue.get_nowait()
-                    task_obj = asyncio.create_task(self._run_task(task))
-                    self.current_tasks.append(task_obj)
-                except queue.Empty:
-                    break
+                task = self.task_queue.get_nowait()
+                task_obj = asyncio.create_task(self._run_task(task))
+                self.current_tasks.append(task_obj)
 
             if self.current_tasks:
                 await asyncio.wait(self.current_tasks, return_when=asyncio.FIRST_COMPLETED)
