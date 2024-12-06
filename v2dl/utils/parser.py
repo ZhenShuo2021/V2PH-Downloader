@@ -124,6 +124,11 @@ class LinkParser:
         return urlunparse(parsed_url._replace(query=new_query))
 
     @staticmethod
+    def remove_query_params(url: str) -> str:
+        parsed_url = urlparse(url)
+        return urlunparse(parsed_url._replace(query=""))
+
+    @staticmethod
     def update_language(url: str, lang: str) -> str:
         parsed_url = urlparse(url)
         query = parse_qs(parsed_url.query)

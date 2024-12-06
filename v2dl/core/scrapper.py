@@ -7,7 +7,7 @@ from lxml import html
 
 from ..common import BaseConfig, RuntimeConfig, ScrapeError
 from ..common.const import BASE_URL
-from ..utils import AlbumTracker, DownloadPathTool, LinkParser, Task
+from ..utils import AlbumTracker, DownloadPathTool, DownloadStatus, LinkParser, Task
 
 # Manage return types of each scraper here
 AlbumLink: TypeAlias = str
@@ -33,6 +33,7 @@ class ScrapeManager:
         self.logger = runtime_config.logger
 
         self.download_service = runtime_config.download_service
+        self.scrape_handler = ScrapeHandler(self.runtime_config, self.base_config, self.web_bot)
 
     def start_scraping(self) -> None:
         """Start scraping based on URL type."""
@@ -41,13 +42,17 @@ class ScrapeManager:
             for url in urls:
                 url = LinkParser.update_language(url, self.runtime_config.language)
                 self.runtime_config.url = url
-                link_scraper = ScrapeHandler(self.runtime_config, self.base_config, self.web_bot)
-                link_scraper.scrape(url, self.dry_run)
+                self.scrape_handler.update_runtime_config(self.runtime_config)
+                self.scrape_handler.scrape(url, self.dry_run)
         except ScrapeError as e:
             self.logger.exception("Scraping error: '%s'", e)
         finally:
             self.download_service.stop()  # DO NOT REMOVE
             self.web_bot.close_driver()
+
+    @property
+    def get_download_status(self) -> list[tuple[str, DownloadStatus]]:
+        return self.scrape_handler.album_tracker.get_download_status
 
     def _load_urls(self) -> list[str]:
         """Load URLs from runtime_config (URL or txt file)."""
@@ -137,6 +142,11 @@ class ScrapeHandler:
         else:
             self.album_tracker.log_downloaded(album_url)
 
+    def update_runtime_config(self, runtime_config: RuntimeConfig) -> None:
+        if not isinstance(runtime_config, RuntimeConfig):
+            raise TypeError(f"Expected a RuntimeConfig object, got {type(runtime_config).__name__}")
+        self.runtime_config = runtime_config
+
     def _real_scrape(
         self,
         url: str,
@@ -211,6 +221,11 @@ class ScrapeHandler:
         if tree is None:
             return [], False
 
+        if strategy.is_vip_page(tree):
+            _url = LinkParser.remove_query_params(full_url)
+            self.album_tracker.log_download_status(_url, DownloadStatus.VIP)
+            return [], False
+
         self.logger.info("Fetching content from %s", full_url)
         page_links = tree.xpath(strategy.get_xpath())
 
@@ -229,6 +244,8 @@ class ScrapeHandler:
         should_continue = page < LinkParser.get_max_page(tree)
         if not should_continue:
             self.logger.info("Reach last page, stopping")
+            _url = LinkParser.remove_query_params(full_url)
+            self.album_tracker.log_download_status(_url, DownloadStatus.OK)
 
         return page_result, should_continue
 
@@ -292,6 +309,13 @@ class BaseScraper(Generic[LinkType], ABC):
             tree (html.HtmlElement): The xpath tree of the current page.
             page_num (int): The page number of the current URL.
         """
+
+    def is_vip_page(self, tree: html.HtmlElement) -> bool:
+        return bool(
+            tree.xpath(
+                '//div[contains(@class, "alert") and contains(@class, "alert-warning")]//a[contains(@href, "/user/upgrade")]',
+            ),
+        )
 
 
 class AlbumScraper(BaseScraper[AlbumLink]):

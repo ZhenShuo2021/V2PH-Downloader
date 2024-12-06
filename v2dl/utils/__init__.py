@@ -1,5 +1,11 @@
 # v2dl/utils/__init__.py
-from .download import AlbumTracker, BaseDownloadAPI, DownloadPathTool, ImageDownloadAPI
+from .download import (
+    AlbumTracker,
+    BaseDownloadAPI,
+    DownloadPathTool,
+    DownloadStatus,
+    ImageDownloadAPI,
+)
 from .factory import DownloadAPIFactory, ServiceType, TaskServiceFactory
 from .multitask import (
     AsyncService,
@@ -19,6 +25,7 @@ __all__ = [
     "BaseTaskService",
     "DownloadAPIFactory",
     "DownloadPathTool",
+    "DownloadStatus",
     "Encryptor",
     "ImageDownloadAPI",
     "KeyManager",

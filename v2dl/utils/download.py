@@ -7,6 +7,7 @@ import logging
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from collections.abc import Callable
+from enum import Enum
 from mimetypes import guess_extension
 from pathlib import Path
 
@@ -285,11 +286,18 @@ class DirectoryCache:
                 self._cache.popitem(last=False)
 
 
+class DownloadStatus(Enum):
+    OK = "ok"
+    VIP = "vip"
+    FAIL = "fail"
+
+
 class AlbumTracker:
     """Download log in units of albums."""
 
     def __init__(self, download_log: str):
         self.album_log_path = download_log
+        self.download_status: list[tuple[str, DownloadStatus]] = []
 
     def is_downloaded(self, album_url: str) -> bool:
         if os.path.exists(self.album_log_path):
@@ -303,3 +311,10 @@ class AlbumTracker:
         if not self.is_downloaded(album_url):
             with open(self.album_log_path, "a") as f:
                 f.write(album_url + "\n")
+
+    def log_download_status(self, album_url: str, status: DownloadStatus) -> None:
+        self.download_status.append((album_url, status))
+
+    @property
+    def get_download_status(self) -> list[tuple[str, DownloadStatus]]:
+        return self.download_status
