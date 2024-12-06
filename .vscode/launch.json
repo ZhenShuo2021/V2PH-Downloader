@@ -14,13 +14,16 @@
             // },
             // "envFile": "${workspaceFolder}/.env",
             "args": [
-                "https://www.v2ph.com/album/Weekly-Big-Comic-Spirits-2016-No22-23",
+                "https://www.v2ph.com/album/a567omnz.html",
                 // "https://www.v2ph.com/actor/Kasumi-Arimura",
                 // "-v",
-                "--bot",
-                "selenium",
-                "--no-skip",
-                // "--use-default-chrome-profile",
+                "--force",
+                "-d",
+                "~/tests",
+                "--min-scroll",
+                "5000",
+                "--max-scroll",
+                "5001",
             ]
         }
     ]
