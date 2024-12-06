@@ -76,8 +76,8 @@ def parse_arguments() -> argparse.Namespace:
     )
 
     parser.add_argument(
-        "--language",
         "-l",
+        "--language",
         default="ja",
         dest="language",
         metavar="LANG",
@@ -85,15 +85,15 @@ def parse_arguments() -> argparse.Namespace:
     )
 
     parser.add_argument(
-        "--force",
         "-f",
+        "--force",
         action="store_true",
         help="Force downloading, not skipping downloaded albums",
     )
 
     parser.add_argument(
-        "--bot",
         "-b",
+        "--bot",
         dest="bot_type",
         default="drission",
         type=str,
@@ -102,30 +102,40 @@ def parse_arguments() -> argparse.Namespace:
         help="Type of bot to use (default: drission)",
     )
 
-    parser.add_argument("--concurrency", default=5, type=int, help="maximum download concurrency")
+    parser.add_argument(
+        "--concurrency",
+        default=5,
+        type=int,
+        metavar="N",
+        help="maximum download concurrency",
+    )
     parser.add_argument(
         "--min-scroll",
         type=int,
         default=DEFAULT_CONFIG["download"]["min_scroll_length"],
+        metavar="N",
         help=f"minimum scroll length of web bot (default: {DEFAULT_CONFIG['download']['min_scroll_length']})",
     )
     parser.add_argument(
         "--max-scroll",
         type=int,
         default=DEFAULT_CONFIG["download"]["max_scroll_length"],
+        metavar="N",
         help=f"maximum scroll length of web bot (default: {DEFAULT_CONFIG['download']['max_scroll_length']})",
     )
 
     parser.add_argument(
         "--chrome-args",
         type=str,
-        help="Override Chrome arguments (example: --chrome-args='--arg1//--arg2//--arg3')",
+        metavar="'--arg1//--arg2'",
+        help="Override Chrome arguments",
     )
 
     parser.add_argument(
         "--user-agent",
         type=str,
-        help="Override user-agent (example: --user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64)...')",
+        metavar="'Mozilla/5.0 (Windows NT 10.0; Win64; x64)...'",
+        help="Override user-agent",
     )
 
     parser.add_argument("--dry-run", action="store_true", help="Dry run without downloading")
@@ -137,8 +147,8 @@ def parse_arguments() -> argparse.Namespace:
     )
 
     input_group.add_argument(
-        "--version",
         "-V",
+        "--version",
         action="store_true",
         help="Show package version",
     )
