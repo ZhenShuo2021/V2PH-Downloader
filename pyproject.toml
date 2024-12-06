@@ -59,15 +59,20 @@ exclude = [
     "uv.lock",
 ]
 
-
 [tool.uv]
-dev-dependencies = [
+default-groups = ["dev", "test"]
+
+[dependency-groups]
+dev = [
     "ruff>=0.7.1",
     "mypy>=1.13.0",
     "pre-commit>=4.0.0",
-    "pytest>=8.3.3",
-    "tox>=4.23.0",
     "isort>=5.13.2",
+]
+test = [
+    "pytest>=8.3.3",
+    "pytest-cov>=6.0.0",
+    "pytest-asyncio>=0.24.0",
 ]
 
 [project.scripts]
