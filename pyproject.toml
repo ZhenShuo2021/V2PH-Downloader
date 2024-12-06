@@ -121,6 +121,8 @@ quote-style = "double"
 explicit-preview-rules = true
 allowed-confusables = ["，", "。", "（", "）"]
 ignore = [
+    "COM812",  # flake8-commas "Trailing comma missing"
+    "ISC001",  # flake8-single-line-implicit-string-concatenation
     "E402",    # module-import-not-at-top-of-file
     "E501",    # line-too-long
     "E731",    # lambda-assignment
