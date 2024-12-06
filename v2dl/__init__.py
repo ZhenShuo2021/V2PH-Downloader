@@ -113,15 +113,6 @@ def main() -> int:
     web_bot_ = web_bot.get_bot(runtime_config, base_config)
     scraper = core.ScrapeManager(runtime_config, base_config, web_bot_)
     scraper.start_scraping()
-
-    logger.info("Download finished, showing download status")
-    download_status = scraper.get_download_status
-    for url, status in download_status.items():
-        if status == utils.DownloadStatus.FAIL:
-            logger.error(f"{url}: Unexpected error")
-        elif status == utils.DownloadStatus.VIP:
-            logger.warning(f"{url}: VIP images found")
-        else:
-            logger.info(f"{url}: Download successful")
+    scraper.log_final_download_status()
 
     return 0

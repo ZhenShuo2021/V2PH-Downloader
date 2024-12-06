@@ -54,6 +54,17 @@ class ScrapeManager:
     def get_download_status(self) -> dict[str, DownloadStatus]:
         return self.scrape_handler.album_tracker.get_download_status
 
+    def log_final_download_status(self) -> None:
+        self.logger.info("Download finished, showing download status")
+        download_status = self.get_download_status
+        for url, status in download_status.items():
+            if status == DownloadStatus.FAIL:
+                self.logger.error(f"{url}: Unexpected error")
+            elif status == DownloadStatus.VIP:
+                self.logger.warning(f"{url}: VIP images found")
+            else:
+                self.logger.info(f"{url}: Download successful")
+
     def _load_urls(self) -> list[str]:
         """Load URLs from runtime_config (URL or txt file)."""
         if self.runtime_config.input_file:
@@ -87,7 +98,6 @@ class ScrapeHandler:
         self.runtime_config = runtime_config
 
         self.album_tracker = AlbumTracker(base_config.paths.download_log)
-        self.path_parts, self.start_page = LinkParser.parse_input_url(runtime_config.url)
         self.strategies: dict[ScrapeType, BaseScraper[Any]] = {
             "album_list": AlbumScraper(
                 runtime_config,
@@ -108,10 +118,12 @@ class ScrapeHandler:
     def scrape(self, url: str, dry_run: bool = False) -> None:
         """Main entry point for scraping operations."""
         scrape_type = self._get_scrape_type()
+        _, start_page = LinkParser.parse_input_url(self.runtime_config.url)
+
         if scrape_type == "album_list":
-            self.scrape_album_list(url, self.start_page, dry_run)
+            self.scrape_album_list(url, start_page, dry_run)
         else:
-            self.scrape_album(url, self.start_page, dry_run)
+            self.scrape_album(url, start_page, dry_run)
 
     def scrape_album_list(self, url: str, start_page: int, dry_run: bool) -> None:
         """Handle scraping of album lists."""
@@ -266,7 +278,8 @@ class ScrapeHandler:
 
     def _get_scrape_type(self) -> ScrapeType:
         """Get the appropriate handler method based on URL path."""
-        for part in self.path_parts:
+        path_parts, _ = LinkParser.parse_input_url(self.runtime_config.url)
+        for part in path_parts:
             if part in self.URL_HANDLERS:
                 return self.URL_HANDLERS[part]
         raise ValueError(f"Unsupported URL type: {self.runtime_config.url}")
