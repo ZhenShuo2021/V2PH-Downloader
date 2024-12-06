@@ -5,6 +5,7 @@ import time
 import asyncio
 import logging
 from abc import ABC, abstractmethod
+from collections import OrderedDict
 from collections.abc import Callable
 from mimetypes import guess_extension
 from pathlib import Path
@@ -26,12 +27,13 @@ class BaseDownloadAPI(ABC):
         headers: dict[str, str],
         rate_limit: int,
         force_download: bool,
-        logger: logging.Logger,
+        cache: "DirectoryCache",
     ):
         self.headers = headers
         self.rate_limit = rate_limit
         self.force_download = force_download
         self.logger = logger
+        self.cache = cache
 
     @abstractmethod
     def download(self, url: str, dest: Path) -> bool:
@@ -48,7 +50,7 @@ class ImageDownloadAPI(BaseDownloadAPI):
     """Image download implementation."""
 
     def download(self, url: str, dest: Path) -> bool:
-        if DownloadPathTool.is_file_exists(dest, self.force_download, self.logger):
+        if DownloadPathTool.is_file_exists(dest, self.force_download, self.cache, self.logger):
             return True
         try:
             DownloadPathTool.mkdir(dest.parent)
@@ -60,7 +62,7 @@ class ImageDownloadAPI(BaseDownloadAPI):
             return False
 
     async def download_async(self, url: str, dest: Path) -> bool:
-        if DownloadPathTool.is_file_exists(dest, self.force_download, self.logger):
+        if DownloadPathTool.is_file_exists(dest, self.force_download, self.cache, self.logger):
             return True
         try:
             DownloadPathTool.mkdir(dest.parent)
@@ -167,11 +169,24 @@ class DownloadPathTool:
         Path(folder_path).mkdir(parents=True, exist_ok=True)
 
     @staticmethod
-    def is_file_exists(file_path: PathType, force_download: bool, logger: logging.Logger) -> bool:
+    def is_file_exists(
+        file_path: PathType,
+        force_download: bool,
+        cache: "DirectoryCache",
+        logger: logging.Logger,
+    ) -> bool:
         """Check if the file exists and log the status."""
-        if Path(file_path).exists() and not force_download:
-            logger.info("File already exists: '%s'", file_path)
-            return True
+        file_path = Path(file_path)
+        target_stem = file_path.stem
+
+        # Cache of file stems
+        existing_stems = cache.get_stems(file_path.parent)
+
+        if target_stem in existing_stems:
+            if not force_download:
+                logger.info("File already exists (ignoring extension): '%s'", target_stem)
+                return True
+
         return False
 
     @staticmethod
@@ -225,10 +240,49 @@ class DownloadPathTool:
     @staticmethod
     def check_input_file(input_path: PathType) -> None:
         if input_path and not os.path.isfile(input_path):
-            logging.error("Input file %s does not exist.", input_path)
+            logger.error("Input file %s does not exist.", input_path)
             sys.exit(1)
         else:
-            logging.info("Input file %s exists and is accessible.", input_path)
+            logger.info("Input file %s exists and is accessible.", input_path)
+
+
+class DirectoryCache:
+    def __init__(self, max_cache_size: int = 10) -> None:
+        self._cache: OrderedDict[Path, set[str]] = OrderedDict()
+        self._max_cache_size = max_cache_size
+
+    def get_stems(self, directory: Path) -> set[str]:
+        if directory in self._cache:
+            self._cache.move_to_end(directory)
+            return self._cache[directory]
+
+        try:
+            stems = {
+                os.path.splitext(entry.name)[0]
+                for entry in os.scandir(directory)
+                if entry.is_file()
+            }
+        except FileNotFoundError:
+            logger.warning("Directory not found: %s", directory)
+            stems = set()
+        except PermissionError:
+            logger.error("Permission denied for directory: %s", directory)
+            stems = set()
+
+        self._cache[directory] = stems
+        if len(self._cache) > self._max_cache_size:
+            self._cache.popitem(last=False)
+
+        return stems
+
+    def add_stem(self, directory: Path, stem: str) -> None:
+        if directory in self._cache:
+            self._cache[directory].add(stem)
+            self._cache.move_to_end(directory)
+        else:
+            self._cache[directory] = {stem}
+            if len(self._cache) > self._max_cache_size:
+                self._cache.popitem(last=False)
 
 
 class AlbumTracker:

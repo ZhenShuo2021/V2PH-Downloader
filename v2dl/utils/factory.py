@@ -7,6 +7,7 @@ from typing import Any
 from .download import (
     ActorDownloadAPI,
     BaseDownloadAPI,
+    DirectoryCache,
     ImageDownloadAPI,
     VideoDownloadAPI,
 )
@@ -80,10 +81,11 @@ class DownloadAPIFactory:
     ) -> BaseDownloadAPI:
         """Create a download API instance based on service type and media type."""
         api_class = cls._api_registry.get(service_type)
+        cache = DirectoryCache()
         if not api_class:
             raise ValueError(f"Unknown service type: {service_type}")
 
         if media_type == MediaType.VIDEO:
-            return VideoDownloadAPI(headers, rate_limit, force_download, logger)
+            return VideoDownloadAPI(headers, rate_limit, force_download, cache)
 
-        return api_class(headers, rate_limit, force_download, logger)
+        return api_class(headers, rate_limit, force_download, cache)
