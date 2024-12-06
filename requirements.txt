@@ -30,6 +30,11 @@ drissionpage==4.1.0.12
     # via v2dl (pyproject.toml)
 et-xmlfile==2.0.0
     # via openpyxl
+exceptiongroup==1.2.2
+    # via
+    #   anyio
+    #   trio
+    #   trio-websocket
 filelock==3.16.1
     # via tldextract
 h11==0.14.0
@@ -98,7 +103,9 @@ trio==0.27.0
 trio-websocket==0.11.1
     # via selenium
 typing-extensions==4.12.2
-    # via selenium
+    # via
+    #   anyio
+    #   selenium
 urllib3==2.2.3
     # via
     #   requests
