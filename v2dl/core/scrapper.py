@@ -139,7 +139,10 @@ class ScrapeHandler:
 
     def scrape_album(self, album_url: str, start_page: int, dry_run: bool) -> None:
         """Handle scraping of a single album page."""
-        if self.album_tracker.is_downloaded(album_url) and not self.runtime_config.force_download:
+        if (
+            self.album_tracker.is_downloaded(LinkParser.remove_query_params(album_url))
+            and not self.runtime_config.force_download
+        ):
             self.logger.info("Album %s already downloaded, skipping.", album_url)
             return
 
@@ -154,7 +157,7 @@ class ScrapeHandler:
             for link, _ in image_links:
                 self.logger.info("[DRY RUN] Image URL: %s", link)
         else:
-            self.album_tracker.log_downloaded(album_url)
+            self.album_tracker.log_downloaded(LinkParser.remove_query_params(album_url))
 
     def update_runtime_config(self, runtime_config: RuntimeConfig) -> None:
         if not isinstance(runtime_config, RuntimeConfig):
