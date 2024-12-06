@@ -40,7 +40,7 @@ DEMO_URL_ALBUM_LIST = "https://www.v2ph.com/category/nogizaka46"
 WORKFLOW_URL_ACTOR = (
     "https://www.v2ph.com/album/Weekly-Big-Comic-Spirits-2016-No22-23"  # only 1 page
 )
-
+AVAILABLE_LANGUAGES = ("zh-Hans", "ja", "zh-Hant", "en", "ko", "es", "fr", "ru", "de", "ar")
 
 # For selenium webdriver
 USER_OS = platform.system()

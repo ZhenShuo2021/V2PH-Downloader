@@ -43,6 +43,7 @@ def setup_test_env(tmp_path, base_config):
             force=True,
             use_default_chrome_profile=False,
             directory=None,
+            language="ja",
         )
 
         runtime_config = create_runtime_config(

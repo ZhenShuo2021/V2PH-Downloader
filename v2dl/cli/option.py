@@ -1,7 +1,7 @@
 import logging
 import argparse
 
-from ..common.const import DEFAULT_CONFIG
+from ..common.const import AVAILABLE_LANGUAGES, DEFAULT_CONFIG
 
 
 class CustomHelpFormatter(argparse.RawTextHelpFormatter):
@@ -45,7 +45,8 @@ def parse_arguments() -> argparse.Namespace:
         "-i",
         "--input-file",
         metavar="PATH",
-        help="Path to txt file containing URL list to be downloaded",
+        dest="input_file",
+        help="Path to file containing a list of URLs",
     )
     input_group.add_argument(
         "-a",
@@ -72,6 +73,15 @@ def parse_arguments() -> argparse.Namespace:
         metavar="PATH",
         default=None,
         help="Exact location for file downloads",
+    )
+
+    parser.add_argument(
+        "--language",
+        "-l",
+        default="ja",
+        dest="language",
+        metavar="LANG",
+        help="Preferred language, used for naming the download directory (default: ja)",
     )
 
     parser.add_argument(
@@ -150,6 +160,12 @@ def parse_arguments() -> argparse.Namespace:
 
 
 def setup_args(args: argparse.Namespace) -> argparse.Namespace:
+    # check language
+    if args.language not in AVAILABLE_LANGUAGES:
+        raise ValueError(
+            f"Unsupported language: {args.language}, must be in one of the {AVAILABLE_LANGUAGES}",
+        )
+
     # setup loglevel
     if args.quiet:
         log_level = logging.ERROR

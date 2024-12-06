@@ -23,6 +23,7 @@ class RuntimeConfig:
     dry_run: bool
     logger: Logger
     log_level: int
+    language: str = "ja"
     exact_dir: bool = False  # flag indicates if args.directory is used
     download_dir: str = ""
     force_download: bool = False

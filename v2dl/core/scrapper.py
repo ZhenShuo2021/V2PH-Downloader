@@ -39,6 +39,7 @@ class ScrapeManager:
         try:
             urls = self._load_urls()
             for url in urls:
+                url = LinkParser.update_language(url, self.runtime_config.language)
                 self.runtime_config.url = url
                 link_scraper = ScrapeHandler(self.runtime_config, self.base_config, self.web_bot)
                 link_scraper.scrape(url, self.dry_run)

@@ -95,6 +95,7 @@ def create_runtime_config(
         force_download=args.force,
         exact_dir=exact_dir,
         download_dir=dest,
+        language=args.language,
     )
 
 
