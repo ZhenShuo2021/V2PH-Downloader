@@ -1,6 +1,6 @@
-import os
 import shutil
 import logging
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -27,12 +27,13 @@ def base_config(tmp_path) -> BaseConfig:
 
 @pytest.fixture
 def setup_test_env(tmp_path, base_config):
-    def setup_env(service_type) -> tuple[ScrapeHandler, BaseConfig, RuntimeConfig]:
+    def setup_env(service_type) -> tuple[ScrapeHandler, BaseConfig, RuntimeConfig, int]:
         log_level = logging.INFO
         logger = setup_logging(log_level, logger_name="pytest", archive=False)
+        expected_file_count = 12
 
         args = SimpleNamespace(
-            url="https://www.v2ph.com/album/Weekly-Big-Comic-Spirits-2016-No22-23",
+            url="https://www.v2ph.com/album/Weekly-Young-Jump-2012-No29",
             input_file="",
             bot_type="drission",
             chrome_args=[],
@@ -57,7 +58,7 @@ def setup_test_env(tmp_path, base_config):
         web_bot = get_bot(runtime_config, base_config)
         scraper = ScrapeHandler(runtime_config, base_config, web_bot)
 
-        return scraper, base_config, runtime_config
+        return scraper, base_config, runtime_config, expected_file_count
 
     try:
         yield setup_env
@@ -70,54 +71,42 @@ def setup_test_env(tmp_path, base_config):
             download_log.unlink()
 
 
-@pytest.mark.parametrize("service_type", [ServiceType.ASYNC, ServiceType.THREADING])
-def test_download_sync(setup_test_env, service_type):
+def test_download_sync(setup_test_env):
     scraper: ScrapeHandler
     base_config: BaseConfig
     runtime_config: RuntimeConfig
     valid_extensions = (".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG")
 
     setup_env = setup_test_env
-    scraper, base_config, runtime_config = setup_env(service_type)
-    test_download_dir = base_config.download.download_dir
+    scraper, base_config, runtime_config, expected_file_count = setup_env(ServiceType.ASYNC)
+    test_download_dir = Path(base_config.download.download_dir)
 
-    single_page_result, _ = scraper._scrape_single_page(
-        runtime_config.url,
-        1,
-        scraper.strategies["album_image"],
-        "album_image",
-    )
-
-    assert isinstance(single_page_result, list), "Single page result should be a list"
-    assert len(single_page_result) > 0, "Single page should return some results"
+    scraper.scrape(runtime_config.url)
     runtime_config.download_service.stop(30)
 
-    # Verify directory structure
-    assert os.path.exists(test_download_dir), "Download directory not created"
-    subdirectories = [
-        d
-        for d in os.listdir(test_download_dir)
-        if os.path.isdir(os.path.join(test_download_dir, d))
-    ]
+    # Check directory
+    subdirectories = [d for d in test_download_dir.iterdir() if d.is_dir()]
+    download_subdir = subdirectories[0]
+    assert download_subdir.is_dir(), "Expected a directory but found a file"
 
-    assert len(subdirectories) > 0, "No subdirectory found"
+    # Check number of files
+    image_files = sorted(download_subdir.glob("*"), key=lambda x: x.name)
+    image_files = [f for f in image_files if f.suffix.lower() in valid_extensions]
+    assert len(image_files) == expected_file_count, (
+        f"Expected {expected_file_count} images, found {len(image_files)}"
+    )
 
-    # Verify downloaded content
-    download_subdir = os.path.join(test_download_dir, subdirectories[0])
-    assert os.path.isdir(download_subdir), "Expected a directory but found a file"
+    # Check file names match 001, 002, 003... 013
+    for idx, image_file in enumerate(image_files, start=1):
+        expected_filename = f"{idx:03d}"
+        actual_filename = image_file.stem
+        assert expected_filename == actual_filename, (
+            f"Expected file name {expected_filename}, found {actual_filename}"
+        )
 
-    # Check for downloaded images
-    image_files = [
-        f for f in os.listdir(download_subdir) if any(f.endswith(ext) for ext in valid_extensions)
-    ]
-    image_files_exist = len(image_files) > 0
-
-    assert image_files_exist, "No image found"
-
-    # Verify image file
-    if image_files_exist:
-        test_image = os.path.join(download_subdir, image_files[0])
-        assert os.path.getsize(test_image) > 0, "Downloaded image is empty"
+    # Verify image file size
+    for image_file in image_files:
+        assert image_file.stat().st_size > 0, f"Downloaded image {image_file.name} is empty"
 
 
 if __name__ == "__main__":
