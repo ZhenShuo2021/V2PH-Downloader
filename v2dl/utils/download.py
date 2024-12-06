@@ -10,6 +10,7 @@ from collections.abc import Callable
 from enum import Enum
 from mimetypes import guess_extension
 from pathlib import Path
+from typing import Any
 
 import httpx
 from pathvalidate import sanitize_filename
@@ -264,7 +265,7 @@ class DirectoryCache:
                 if entry.is_file()
             }
         except FileNotFoundError:
-            logger.warning("Directory not found: %s", directory)
+            logger.info("Directory not yet make: %s", directory)
             stems = set()
         except PermissionError:
             logger.error("Permission denied for directory: %s", directory)
@@ -287,9 +288,39 @@ class DirectoryCache:
 
 
 class DownloadStatus(Enum):
-    OK = "ok"
-    VIP = "vip"
-    FAIL = "fail"
+    OK = 10
+    VIP = 20
+    FAIL = 30
+
+    def __lt__(self, other: Any) -> bool:
+        if isinstance(other, DownloadStatus):
+            return self.value < other.value
+        return NotImplemented
+
+    def __le__(self, other: Any) -> bool:
+        if isinstance(other, DownloadStatus):
+            return self.value <= other.value
+        return NotImplemented
+
+    def __gt__(self, other: Any) -> bool:
+        if isinstance(other, DownloadStatus):
+            return self.value > other.value
+        return NotImplemented
+
+    def __ge__(self, other: Any) -> bool:
+        if isinstance(other, DownloadStatus):
+            return self.value >= other.value
+        return NotImplemented
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, DownloadStatus):
+            return self.value == other.value
+        return NotImplemented
+
+    def __ne__(self, other: Any) -> bool:
+        if isinstance(other, DownloadStatus):
+            return self.value != other.value
+        return NotImplemented
 
 
 class AlbumTracker:
@@ -297,7 +328,7 @@ class AlbumTracker:
 
     def __init__(self, download_log: str):
         self.album_log_path = download_log
-        self.download_status: list[tuple[str, DownloadStatus]] = []
+        self.download_status: dict[str, DownloadStatus] = {}
 
     def is_downloaded(self, album_url: str) -> bool:
         if os.path.exists(self.album_log_path):
@@ -313,8 +344,10 @@ class AlbumTracker:
                 f.write(album_url + "\n")
 
     def log_download_status(self, album_url: str, status: DownloadStatus) -> None:
-        self.download_status.append((album_url, status))
+        album_url = LinkParser.remove_query_params(album_url)
+        if album_url not in self.download_status or status > self.download_status[album_url]:
+            self.download_status[album_url] = status
 
     @property
-    def get_download_status(self) -> list[tuple[str, DownloadStatus]]:
+    def get_download_status(self) -> dict[str, DownloadStatus]:
         return self.download_status

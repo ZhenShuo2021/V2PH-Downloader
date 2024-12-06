@@ -116,12 +116,12 @@ def main() -> int:
 
     logger.info("Download finished, showing download status")
     download_status = scraper.get_download_status
-    for url, status in download_status:
+    for url, status in download_status.items():
         if status == utils.DownloadStatus.FAIL:
-            logger.error(f"{url}: {status.value}")
+            logger.error(f"{url}: Unexpected error")
         elif status == utils.DownloadStatus.VIP:
-            logger.warning(f"{url}: {status.value}")
+            logger.warning(f"{url}: VIP images found")
         else:
-            logger.info(f"{url}: {status.value}")
+            logger.info(f"{url}: Download successful")
 
     return 0

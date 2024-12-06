@@ -6,7 +6,7 @@ from typing import Any, ClassVar, Generic, Literal, TypeAlias, TypeVar
 from lxml import html
 
 from ..common import BaseConfig, RuntimeConfig, ScrapeError
-from ..common.const import BASE_URL
+from ..common.const import BASE_URL, IMAGE_PER_PAGE
 from ..utils import AlbumTracker, DownloadPathTool, DownloadStatus, LinkParser, Task
 
 # Manage return types of each scraper here
@@ -51,7 +51,7 @@ class ScrapeManager:
             self.web_bot.close_driver()
 
     @property
-    def get_download_status(self) -> list[tuple[str, DownloadStatus]]:
+    def get_download_status(self) -> dict[str, DownloadStatus]:
         return self.scrape_handler.album_tracker.get_download_status
 
     def _load_urls(self) -> list[str]:
@@ -86,23 +86,24 @@ class ScrapeHandler:
         self.logger = runtime_config.logger
         self.runtime_config = runtime_config
 
+        self.album_tracker = AlbumTracker(base_config.paths.download_log)
+        self.path_parts, self.start_page = LinkParser.parse_input_url(runtime_config.url)
         self.strategies: dict[ScrapeType, BaseScraper[Any]] = {
             "album_list": AlbumScraper(
                 runtime_config,
                 base_config,
+                self.album_tracker,
                 web_bot,
                 runtime_config.download_function,
             ),
             "album_image": ImageScraper(
                 runtime_config,
                 base_config,
+                self.album_tracker,
                 web_bot,
                 runtime_config.download_function,
             ),
         }
-
-        self.album_tracker = AlbumTracker(base_config.paths.download_log)
-        self.path_parts, self.start_page = LinkParser.parse_input_url(runtime_config.url)
 
     def scrape(self, url: str, dry_run: bool = False) -> None:
         """Main entry point for scraping operations."""
@@ -120,6 +121,7 @@ class ScrapeHandler:
         for album_url in album_links:
             if dry_run:
                 self.logger.info("[DRY RUN] Album URL: %s", album_url)
+                self.scrape_album(album_url, 1, dry_run)
             else:
                 self.scrape_album(album_url, 1, dry_run)
 
@@ -238,14 +240,15 @@ class ScrapeHandler:
             return [], False
 
         page_result: list[AlbumLink] | list[ImageLinkAndALT] = []
-        strategy.process_page_links(page_links, page_result, tree, page)
+        strategy.process_page_links(url, page_links, page_result, tree, page)
 
         # Check if we've reached the last page
         should_continue = page < LinkParser.get_max_page(tree)
         if not should_continue:
             self.logger.info("Reach last page, stopping")
             _url = LinkParser.remove_query_params(full_url)
-            self.album_tracker.log_download_status(_url, DownloadStatus.OK)
+            if scrape_type == "album_image":
+                self.album_tracker.log_download_status(_url, DownloadStatus.OK)
 
         return page_result, should_continue
 
@@ -276,11 +279,13 @@ class BaseScraper(Generic[LinkType], ABC):
         self,
         runtime_config: RuntimeConfig,
         base_config: BaseConfig,
+        album_tracker: AlbumTracker,
         web_bot: Any,
         download_function: Any,
     ) -> None:
         self.runtime_config = runtime_config
         self.base_config = base_config
+        self.album_tracker = album_tracker
         self.web_bot = web_bot
         self.download_service = runtime_config.download_service
         self.download_function = download_function
@@ -293,6 +298,7 @@ class BaseScraper(Generic[LinkType], ABC):
     @abstractmethod
     def process_page_links(
         self,
+        url: str,
         page_links: list[str],
         page_result: list[LinkType],
         tree: html.HtmlElement,
@@ -328,6 +334,7 @@ class AlbumScraper(BaseScraper[AlbumLink]):
 
     def process_page_links(
         self,
+        url: str,
         page_links: list[str],
         page_result: list[AlbumLink],
         tree: html.HtmlElement,
@@ -343,23 +350,14 @@ class ImageScraper(BaseScraper[ImageLinkAndALT]):
 
     XPATH_ALBUM = '//div[@class="album-photo my-2"]/img/@data-src'
     XPATH_ALTS = '//div[@class="album-photo my-2"]/img/@alt'
-
-    def __init__(
-        self,
-        runtime_config: RuntimeConfig,
-        base_config: BaseConfig,
-        web_bot: Any,
-        download_function: Any,
-    ) -> None:
-        super().__init__(runtime_config, base_config, web_bot, download_function)
-        self.dry_run = runtime_config.dry_run
-        self.alt_counter = 0
+    XPATH_VIP = ""
 
     def get_xpath(self) -> str:
         return self.XPATH_ALBUM
 
     def process_page_links(
         self,
+        url: str,
         page_links: list[str],
         page_result: list[ImageLinkAndALT],
         tree: html.HtmlElement,
@@ -375,20 +373,31 @@ class ImageScraper(BaseScraper[ImageLinkAndALT]):
         #     self.alt_counter += len(missing_alts)
 
         page_result.extend(zip(page_links, alts, strict=False))
-        idx = (page_num - 1) * 10 + 1
+
+        # check images
+        available_images = self.get_available_images(tree)
+        idx = (page_num - 1) * IMAGE_PER_PAGE + 1
 
         # Handle downloads if not in dry run mode
-        if not self.dry_run:
-            album_name = extract_album_name(alts)
-            dir_ = self.runtime_config.download_dir
+        album_name = extract_album_name(alts)
+        dir_ = self.runtime_config.download_dir
 
-            # assign download job for each image
-            for i, (url, _) in enumerate(zip(page_links, alts, strict=False)):
-                filename = f"{(idx + i):03d}"
-                if self.runtime_config.exact_dir:
-                    dest = DownloadPathTool.get_file_dest(dir_, "", filename)
-                else:
-                    dest = DownloadPathTool.get_file_dest(dir_, album_name, filename)
+        # assign download job for each image
+        page_link_ctr = 0
+        for i, available in enumerate(available_images):
+            if not available:
+                self.album_tracker.log_download_status(url, DownloadStatus.VIP)
+                continue
+            url = page_links[page_link_ctr]
+            page_link_ctr += 1
+
+            filename = f"{(idx + i):03d}"
+            if self.runtime_config.exact_dir:
+                dest = DownloadPathTool.get_file_dest(dir_, "", filename)
+            else:
+                dest = DownloadPathTool.get_file_dest(dir_, album_name, filename)
+
+            if not self.runtime_config.dry_run:
                 task = Task(
                     task_id=f"{album_name}_{i}",
                     func=self.download_function,
@@ -400,6 +409,16 @@ class ImageScraper(BaseScraper[ImageLinkAndALT]):
                 self.download_service.add_task(task)
 
         self.logger.info("Found %d images on page %d", len(page_links), page_num)
+
+    def get_available_images(self, tree: html.HtmlElement) -> list[bool]:
+        album_photos = tree.xpath("//div[@class='album-photo my-2']")
+        image_status = [False] * len(album_photos)
+
+        for i, photo in enumerate(album_photos):
+            if photo.xpath(".//img[@data-src]"):
+                image_status[i] = True
+
+        return image_status
 
 
 def extract_album_name(alts: list[str]) -> str:
