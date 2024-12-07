@@ -1,7 +1,5 @@
 import asyncio
-import logging
 from time import sleep
-from unittest.mock import MagicMock
 
 import pytest
 
@@ -28,18 +26,13 @@ async def async_failing_task():
 
 
 @pytest.fixture
-def logger():
-    return MagicMock(spec=logging.Logger)
+def threading_service(mock_logger):
+    return ThreadingService(mock_logger, max_workers=2)
 
 
 @pytest.fixture
-def threading_service(logger):
-    return ThreadingService(logger, max_workers=2)
-
-
-@pytest.fixture
-def async_service(logger):
-    return AsyncService(logger, max_workers=2)
+def async_service(mock_logger):
+    return AsyncService(mock_logger, max_workers=2)
 
 
 def test_threading_add_single_task(threading_service):

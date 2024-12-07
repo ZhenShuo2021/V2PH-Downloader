@@ -1,16 +1,10 @@
 import shutil
-import logging
-from unittest.mock import Mock
 
 import pytest
 
 from v2dl.utils.download import DirectoryCache, DownloadPathTool
 
-
 # ============ test is_file_exists ============
-@pytest.fixture
-def mock_logger():
-    return Mock(spec=logging.Logger)
 
 
 @pytest.fixture
