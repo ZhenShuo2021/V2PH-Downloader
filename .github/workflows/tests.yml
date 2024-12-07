@@ -16,16 +16,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - name: Install uv
         uses: astral-sh/setup-uv@v4
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
+          python-version: ${{ matrix.python-version }}
 
       - name: Test with python ${{ matrix.python-version }}
-        run: uv run --python ${{ matrix.python-version }} --frozen pytest
+        run: uv run --frozen pytest
