@@ -1,12 +1,12 @@
 <div align="center">
 
-![Python >= 3.10](https://img.shields.io/badge/python->=3.10-red.svg)
-![PyPI - Version](https://img.shields.io/pypi/v/v2dl)
-![PyPI Downloads](https://static.pepy.tech/badge/v2dl)
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/ZhenShuo2021/V2PH-Downloader)
-![GitHub last commit](https://img.shields.io/github/last-commit/ZhenShuo2021/V2PH-Downloader)
-![Python application](https://github.com/ZhenShuo2021/V2PH-Downloader/actions/workflows/python-publish.yml/badge.svg)
-![Python application](https://github.com/ZhenShuo2021/V2PH-Downloader/actions/workflows/tests.yml/badge.svg)
+![Python >= 3.10](https://img.shields.io/badge/python->=3.10-red.svg?style=for-the-badge)
+![PyPI - Version](https://img.shields.io/pypi/v/v2dl?style=for-the-badge)
+![Pepy Total Downloads](https://img.shields.io/pepy/dt/v2dl?style=for-the-badge&color=027ec7)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/ZhenShuo2021/V2PH-Downloader?style=for-the-badge)  
+[![Test Status](https://img.shields.io/github/actions/workflow/status/ZhenShuo2021/V2PH-Downloader/python-publish.yml?label=Tests&style=for-the-badge)](https://github.com/yt-dlp/yt-dlp/actions)
+![Build Status](https://img.shields.io/github/actions/workflow/status/ZhenShuo2021/V2PH-Downloader/tests.yml?label=Build&style=for-the-badge)
+![GitHub last commit](https://img.shields.io/github/last-commit/ZhenShuo2021/V2PH-Downloader?labelColor=555555&style=for-the-badge&color=027ec7)
 
 </div>
 
