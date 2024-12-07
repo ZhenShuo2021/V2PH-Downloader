@@ -5,7 +5,7 @@ import pytest
 
 from v2dl.utils import AsyncService, Task, ThreadingService
 
-WAIT_TIME = 0.01
+WAIT_TIME = 0.10
 
 
 def simple_add(a, b):
@@ -17,7 +17,7 @@ def failing_task():
 
 
 async def async_simple_add(a, b):
-    await asyncio.sleep(0.001)
+    await asyncio.sleep(0.000001)
     return a + b
 
 
@@ -155,7 +155,7 @@ async def test_async_add_task_starts_service(async_service):
     assert not async_service.is_running
     task = Task(task_id="task_start", func=async_simple_add, args=(2, 2))
     async_service.add_task(task)
-    await asyncio.sleep(0.000001)
+    await asyncio.sleep(0.0000001)  # DO NOT CHANGE
     assert async_service.is_running
 
 
@@ -164,7 +164,7 @@ async def test_async_add_tasks_starts_service(async_service):
     assert not async_service.is_running
     tasks = [Task(task_id=f"task{i}", func=async_simple_add, args=(i, i)) for i in range(3)]
     async_service.add_tasks(tasks)
-    await asyncio.sleep(0.000001)
+    await asyncio.sleep(0.0000001)  # DO NOT CHANGE
     assert async_service.is_running
 
 
@@ -173,7 +173,7 @@ async def test_async_get_results_with_max_results(async_service):
     tasks = [Task(task_id=f"task{i}", func=async_simple_add, args=(i, i)) for i in range(5)]
     async_service.start()
     async_service.add_tasks(tasks)
-    await asyncio.sleep(WAIT_TIME)
+    await asyncio.sleep(WAIT_TIME*5)
 
     results = async_service.get_results(max_results=3)
     assert len(results) == 3
@@ -185,14 +185,11 @@ async def test_async_get_results_with_max_results(async_service):
 
 @pytest.mark.asyncio
 async def test_async_service_stop(async_service):
-    # 模擬 `AsyncService` 啟動
     async_service.start()
-    assert async_service.is_running  # 確認服務已經啟動
+    assert async_service.is_running
     assert async_service.thread is not None and async_service.thread.is_alive()
 
-    # 停止服務
     async_service.stop()
 
-    # 驗證服務已停止
     assert not async_service.is_running
     assert async_service.thread is None

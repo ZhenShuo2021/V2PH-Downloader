@@ -18,12 +18,11 @@ TEST_ALBUM_URL = "http://example.com/album"
 @pytest.fixture
 def setup_test_env(tmp_path, real_base_config, real_runtime_config):
     def setup_env(service_type, log_level):
-        expected_file_count = 12
         runtime_config = real_runtime_config(service_type, log_level)
         web_bot = get_bot(runtime_config, real_base_config)
         scraper = ScrapeHandler(runtime_config, real_base_config, web_bot)
 
-        return scraper, real_base_config, runtime_config, expected_file_count
+        return scraper, real_base_config, runtime_config
 
     try:
         yield setup_env
@@ -77,16 +76,15 @@ def real_scrape_handler(mock_runtime_config, mock_base_config, mock_web_bot):
 
 
 @pytest.mark.skipif(os.getenv("GITHUB_ACTIONS") == "true", reason="No GUI on Github")
-def test_download(setup_test_env):
+def test_download(setup_test_env, real_args):
     scraper: ScrapeHandler
     base_config: BaseConfig
     runtime_config: RuntimeConfig
     valid_extensions = (".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG")
 
     setup_env = setup_test_env
-    scraper, base_config, runtime_config, expected_file_count = setup_env(
-        ServiceType.ASYNC, logging.DEBUG
-    )
+    scraper, base_config, runtime_config = setup_env(ServiceType.ASYNC, logging.DEBUG)
+    _, expected_file_count = real_args
     test_download_dir = Path(base_config.download.download_dir)
 
     scraper.scrape(runtime_config.url)
@@ -101,17 +99,17 @@ def test_download(setup_test_env):
     # Check number of files
     image_files = sorted(download_subdir.glob("*"), key=lambda x: x.name)
     image_files = [f for f in image_files if f.suffix.lower() in valid_extensions]
-    assert len(image_files) == expected_file_count, (
-        f"Expected {expected_file_count} images, found {len(image_files)}"
-    )
+    assert (
+        len(image_files) == expected_file_count
+    ), f"Expected {expected_file_count} images, found {len(image_files)}"
 
     # Check file names match 001, 002, 003...
     for idx, image_file in enumerate(image_files, start=1):
         expected_filename = f"{idx:03d}"
         actual_filename = image_file.stem
-        assert expected_filename == actual_filename, (
-            f"Expected file name {expected_filename}, found {actual_filename}"
-        )
+        assert (
+            expected_filename == actual_filename
+        ), f"Expected file name {expected_filename}, found {actual_filename}"
 
     # Verify image file size
     for image_file in image_files:
@@ -135,7 +133,8 @@ def test_load_urls(mock_runtime_config, real_scrape_manager, tmp_path):
     urls = scrape_manager._load_urls()
     assert urls == [TEST_ALBUM_URL]
 
-    shutil.rmtree(tmp_path)
+    if os.name != "nt":
+        shutil.rmtree(tmp_path)
 
 
 def test_start_scraping(real_scrape_manager):

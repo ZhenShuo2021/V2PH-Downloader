@@ -27,6 +27,7 @@ def real_base_config(tmp_path) -> BaseConfig:
 
 @pytest.fixture
 def real_args():
+    expected_file_count = 12
     return SimpleNamespace(
         url="https://www.v2ph.com/album/Weekly-Young-Jump-2012-No29",
         input_file="",
@@ -40,14 +41,15 @@ def real_args():
         use_default_chrome_profile=False,
         directory=None,
         language="ja",
-    )
+    ), expected_file_count
 
 
 @pytest.fixture
 def real_runtime_config(real_args, real_base_config, mock_logger):
+    args, _ = real_args
     def _create_runtime_config(service_type, log_level):
         return create_runtime_config(
-            args=real_args,
+            args=args,
             base_config=real_base_config,
             logger=mock_logger,
             log_level=log_level,

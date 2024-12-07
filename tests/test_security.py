@@ -1,3 +1,4 @@
+import os
 import atexit
 import base64
 import shutil
@@ -89,7 +90,8 @@ def account_manager(encryption_config, logger, tmp_path):
     yield account_manager_instance
 
     atexit.unregister(account_manager_instance._save_yaml)
-    shutil.rmtree(tmp_path)
+    if os.name != "nt":
+        shutil.rmtree(tmp_path)
 
 
 def test_create_account(account_manager: AccountManager):
