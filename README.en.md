@@ -5,6 +5,8 @@
 ![PyPI Downloads](https://static.pepy.tech/badge/v2dl)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/ZhenShuo2021/V2PH-Downloader)
 ![GitHub last commit](https://img.shields.io/github/last-commit/ZhenShuo2021/V2PH-Downloader)
+![Python application](https://github.com/ZhenShuo2021/V2PH-Downloader/actions/workflows/python-publish.yml/badge.svg)
+![Python application](https://github.com/ZhenShuo2021/V2PH-Downloader/actions/workflows/tests.yml/badge.svg)
 
 </div>
 
