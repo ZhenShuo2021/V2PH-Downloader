@@ -1,3 +1,4 @@
+import os
 import asyncio
 from time import sleep
 
@@ -5,7 +6,8 @@ import pytest
 
 from v2dl.utils import AsyncService, Task, ThreadingService
 
-WAIT_TIME = 0.10
+env = os.getenv("GITHUB_ACTIONS", "false")
+WAIT_TIME = 1.0 if env != "false" else 0.1
 
 
 def simple_add(a, b):
