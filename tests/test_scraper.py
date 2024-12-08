@@ -1,4 +1,6 @@
 import os
+
+# os.environ["GITHUB_ACTIONS"] = "true"
 import time
 import shutil
 import logging
@@ -99,17 +101,17 @@ def test_download(setup_test_env, real_args):
     # Check number of files
     image_files = sorted(download_subdir.glob("*"), key=lambda x: x.name)
     image_files = [f for f in image_files if f.suffix.lower() in valid_extensions]
-    assert (
-        len(image_files) == expected_file_count
-    ), f"Expected {expected_file_count} images, found {len(image_files)}"
+    assert len(image_files) == expected_file_count, (
+        f"Expected {expected_file_count} images, found {len(image_files)}"
+    )
 
     # Check file names match 001, 002, 003...
     for idx, image_file in enumerate(image_files, start=1):
         expected_filename = f"{idx:03d}"
         actual_filename = image_file.stem
-        assert (
-            expected_filename == actual_filename
-        ), f"Expected file name {expected_filename}, found {actual_filename}"
+        assert expected_filename == actual_filename, (
+            f"Expected file name {expected_filename}, found {actual_filename}"
+        )
 
     # Verify image file size
     for image_file in image_files:

@@ -47,6 +47,7 @@ def real_args():
 @pytest.fixture
 def real_runtime_config(real_args, real_base_config, mock_logger):
     args, _ = real_args
+
     def _create_runtime_config(service_type, log_level):
         return create_runtime_config(
             args=args,
