@@ -106,6 +106,7 @@ class SeleniumBot(BaseBot):
 
                 # main business
                 self.handle_login()
+                self.handle_read_limit()
                 self.driver.execute_script("document.body.style.zoom='50%'")
                 self.scroller.scroll_to_bottom()
                 SelBehavior.random_sleep(5, 15)
@@ -250,9 +251,23 @@ class SeleniumBot(BaseBot):
             for message in error_messages:
                 self.logger.error("Login error: %s", message.text)
         else:
-            self.logger.warning(
-                "No specific error message found. Login might have failed for unknown reasons.",
+            self.logger.error("Login failed for unknown reasons")
+            sys.exit(1)
+
+    def handle_read_limit(self) -> None:
+        if self.check_read_limit():
+            # click logout
+            logout_button = self.driver.find_element(
+                By.XPATH, '//ul[@class="nav justify-content-end"]//a[@href="/user/logout"]'
             )
+            logout_button.click()
+            now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+            self.account_manager.update_account(self.email, "exceed_quota", True)
+            self.account_manager.update_account(self.email, "exceed_time", now)
+            self.email, self.password = self.account_manager.random_pick(self.private_key)
+
+    def check_read_limit(self) -> bool:
+        return "https://www.v2ph.com/user/upgrade" in self.driver.current_url
 
 
 class SelCloudflareHandler:

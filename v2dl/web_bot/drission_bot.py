@@ -211,7 +211,9 @@ class DrissionBot(BaseBot):
             self.logger.info("Account %s login successful with cookies", self.email)
             return True
 
+        now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
         self.account_manager.update_runtime_state(self.email, "cookies_valid", False)
+        self.account_manager.update_account(self.email, "exceed_time", now)
         return False
 
     def check_login_errors(self) -> None:
@@ -232,7 +234,7 @@ class DrissionBot(BaseBot):
             self.email, self.password = self.account_manager.random_pick(self.private_key)
 
     def check_read_limit(self) -> bool:
-        return self.page.url == "https://www.v2ph.com/user/upgrade"
+        return "https://www.v2ph.com/user/upgrade" in self.page.url
 
     def click_logout(self) -> None:
         self.page.ele("@href=/user/logout").click()
