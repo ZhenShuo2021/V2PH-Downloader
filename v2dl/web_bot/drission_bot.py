@@ -115,7 +115,7 @@ class DrissionBot(BaseBot):
             return True
         retry = 1
         while retry <= max_retry:
-            self.logger.error(
+            self.logger.warning(
                 "Redirection handle failed for URL %s - Attempt %d/%d.",
                 url,
                 retry,

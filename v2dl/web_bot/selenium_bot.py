@@ -138,7 +138,7 @@ class SeleniumBot(BaseBot):
             return True
         retry = 1
         while retry <= max_retry:
-            self.logger.error("Connection failed - Attempt %d/%d", retry, max_retry)
+            self.logger.warning("Connection failed - Attempt %d/%d", retry, max_retry)
             SelBehavior.random_sleep(sleep_time, sleep_time + 5 * random.uniform(1, retry * 5))
 
             if self.cloudflare.handle_simple_block(retry, max_retry):
@@ -199,7 +199,7 @@ class SeleniumBot(BaseBot):
                         self.logger.info("Login successful")
                         success = True
                     else:
-                        self.logger.error("Login failed - Checking for error messages")
+                        self.logger.info("Login failed - Checking for error messages")
                         self.account_manager.update_runtime_state(
                             self.email,
                             "password_valid",
