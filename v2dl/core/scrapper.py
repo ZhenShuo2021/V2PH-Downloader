@@ -402,7 +402,7 @@ class ImageScraper(BaseScraper[ImageLinkAndALT]):
         page_link_ctr = 0
         for i, available in enumerate(available_images):
             if not available:
-                self.album_tracker.log_download_status(url, DownloadStatus.VIP)
+                self.album_tracker.log_download_status(self.runtime_config.url, DownloadStatus.VIP)
                 continue
             url = page_links[page_link_ctr]
             page_link_ctr += 1
