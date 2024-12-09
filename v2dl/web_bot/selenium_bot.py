@@ -258,7 +258,8 @@ class SeleniumBot(BaseBot):
         if self.check_read_limit():
             # click logout
             logout_button = self.driver.find_element(
-                By.XPATH, '//ul[@class="nav justify-content-end"]//a[contains(@href, "/user/logout")]'
+                By.XPATH,
+                '//ul[@class="nav justify-content-end"]//a[contains(@href, "/user/logout")]',
             )
             logout_button.click()
             now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")

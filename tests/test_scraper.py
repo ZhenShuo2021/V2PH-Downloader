@@ -11,7 +11,7 @@ import pytest
 
 from v2dl.common import BaseConfig, RuntimeConfig
 from v2dl.core import ScrapeHandler, ScrapeManager
-from v2dl.utils import DownloadStatus, ServiceType
+from v2dl.utils import DownloadLogKeys as LogKey, DownloadStatus, ServiceType
 from v2dl.web_bot import get_bot
 
 TEST_ALBUM_URL = "http://example.com/album"
@@ -152,27 +152,32 @@ def test_start_scraping(real_scrape_manager):
 
 
 def test_get_download_status(real_scrape_manager):
-    mock_status = (TEST_ALBUM_URL, DownloadStatus.OK)
-    real_scrape_manager.scrape_handler.album_tracker.log_download_status(*mock_status)
+    mock_status = (TEST_ALBUM_URL, {LogKey.status: DownloadStatus.OK})
+    real_scrape_manager.scrape_handler.album_tracker.update_download_log(*mock_status)
 
     status = real_scrape_manager.get_download_status
-    assert status == {mock_status[0]: mock_status[1]}
+    assert status[mock_status[0]] == {
+        LogKey.status: DownloadStatus.OK,
+        LogKey.dest: "",
+        LogKey.expect_num: 0,
+        LogKey.real_num: 0,
+    }
 
 
-def test_log_final_download_status(real_scrape_manager):
+def test_log_final_status(real_scrape_manager):
     url1, url2, url3 = TEST_ALBUM_URL + "1", TEST_ALBUM_URL + "2", TEST_ALBUM_URL + "3"
     mock_status = {
-        url1: DownloadStatus.OK,
-        url2: DownloadStatus.FAIL,
-        url3: DownloadStatus.VIP,
+        url1: {LogKey.status: DownloadStatus.OK},
+        url2: {LogKey.status: DownloadStatus.FAIL},
+        url3: {LogKey.status: DownloadStatus.VIP},
     }
     for k, v in mock_status.items():
-        real_scrape_manager.scrape_handler.album_tracker.log_download_status(k, v)
+        real_scrape_manager.scrape_handler.album_tracker.update_download_log(k, v)
     real_scrape_manager.logger.info = MagicMock()
     real_scrape_manager.logger.error = MagicMock()
     real_scrape_manager.logger.warning = MagicMock()
 
-    real_scrape_manager.log_final_download_status()
+    real_scrape_manager.log_final_status()
 
     real_scrape_manager.logger.info.assert_any_call("Download finished, showing download status")
     real_scrape_manager.logger.info.assert_any_call(f"{url1}: Download successful")
