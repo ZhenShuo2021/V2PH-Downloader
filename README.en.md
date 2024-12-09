@@ -20,7 +20,7 @@ V2PH Downloader
 🛠️ Convenient: Supports multiple accounts for auto-login and switching, supports cookies/password login   
 ⚡️ Fast: High-efficiency download with asynchronous event loop   
 🧩 Customizable: Offers many configuration options   
-🔑 Secure: Uses PyNaCL backend, same as [Psono](https://psono.com/zh-Hant/security)    
+🔑 Secure: Uses PyNaCL as encryption backend.    
 
 
 ## Installation
