@@ -37,6 +37,8 @@ def real_args():
         terminate=True,
         dry_run=False,
         concurrency=3,
+        history_file="",
+        no_history=False,
         force=True,
         use_default_chrome_profile=False,
         directory=None,

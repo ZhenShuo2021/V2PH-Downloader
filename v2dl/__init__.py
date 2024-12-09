@@ -87,6 +87,8 @@ def create_runtime_config(
         user_agent=args.user_agent,
         use_chrome_default_profile=args.use_default_chrome_profile,
         terminate=args.terminate,
+        history_file=args.history_file,
+        no_history=args.no_history,
         download_service=download_service,
         download_function=download_function,
         dry_run=args.dry_run,
@@ -113,7 +115,8 @@ def main() -> int:
     web_bot_ = web_bot.get_bot(runtime_config, base_config)
     scraper = core.ScrapeManager(runtime_config, base_config, web_bot_)
     scraper.start_scraping()
-    scraper.final_process()
+    if not args.no_history:
+        scraper.final_process()
     scraper.log_final_status()
 
     return 0

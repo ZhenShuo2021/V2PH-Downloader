@@ -103,6 +103,21 @@ def parse_arguments() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--no-history",
+        dest="no_history",
+        action="store_true",
+        help="Disable writing json download metadata history",
+    )
+
+    parser.add_argument(
+        "--history-file",
+        dest="history_file",
+        metavar="PATH",
+        default="",
+        help="Path to json file for download metadata history",
+    )
+
+    parser.add_argument(
         "--concurrency",
         default=5,
         type=int,

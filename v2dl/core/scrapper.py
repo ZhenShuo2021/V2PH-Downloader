@@ -68,10 +68,7 @@ class ScrapeManager:
         for url, album_status in download_status.items():
             if album_status[LogKey.status] == DownloadStatus.FAIL:
                 self.logger.error(f"{url}: Unexpected error")
-            elif (
-                album_status[LogKey.status] == DownloadStatus.VIP
-                or album_status[LogKey.expect_num] != album_status[LogKey.real_num]
-            ):
+            elif album_status[LogKey.status] == DownloadStatus.VIP:
                 self.logger.warning(f"{url}: VIP images found")
             else:
                 self.logger.info(f"{url}: Download successful")
@@ -86,8 +83,11 @@ class ScrapeManager:
             self.scrape_handler.album_tracker.update_download_log(url, {LogKey.real_num: real_num})
 
         # write metadata
-        metadata_name = "metadata_" + str(datetime.now().strftime("%Y%m%d_%H%M%S")) + ".json"
-        metadata_dest = Path(self.runtime_config.download_dir) / metadata_name
+        if self.runtime_config.history_file:
+            metadata_dest = Path(self.runtime_config.history_file)
+        else:
+            metadata_name = "metadata_" + str(datetime.now().strftime("%Y%m%d_%H%M%S")) + ".json"
+            metadata_dest = Path(self.runtime_config.download_dir) / metadata_name
         metadata_dest.parent.mkdir(exist_ok=True)
         with metadata_dest.open("w", encoding="utf-8") as f:
             f.write(
