@@ -1,7 +1,9 @@
 # v2dl/utils/__init__.py
+from .common import count_files, enum_to_string
 from .download import (
     AlbumTracker,
     BaseDownloadAPI,
+    DownloadLogKeys,
     DownloadPathTool,
     DownloadStatus,
     ImageDownloadAPI,
@@ -24,6 +26,7 @@ __all__ = [
     "BaseDownloadAPI",
     "BaseTaskService",
     "DownloadAPIFactory",
+    "DownloadLogKeys",
     "DownloadPathTool",
     "DownloadStatus",
     "Encryptor",
@@ -35,4 +38,6 @@ __all__ = [
     "Task",
     "TaskServiceFactory",
     "ThreadingService",
+    "count_files",
+    "enum_to_string",
 ]

@@ -113,6 +113,7 @@ def main() -> int:
     web_bot_ = web_bot.get_bot(runtime_config, base_config)
     scraper = core.ScrapeManager(runtime_config, base_config, web_bot_)
     scraper.start_scraping()
-    scraper.log_final_download_status()
+    scraper.final_process()
+    scraper.log_final_status()
 
     return 0

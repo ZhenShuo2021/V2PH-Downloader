@@ -1,13 +1,25 @@
 import re
+import json
 import time
 from abc import ABC, abstractmethod
+from datetime import datetime
+from pathlib import Path
 from typing import Any, ClassVar, Generic, Literal, TypeAlias, TypeVar
 
 from lxml import html
 
 from ..common import BaseConfig, RuntimeConfig, ScrapeError
 from ..common.const import BASE_URL, IMAGE_PER_PAGE
-from ..utils import AlbumTracker, DownloadPathTool, DownloadStatus, LinkParser, Task
+from ..utils import (
+    AlbumTracker,
+    DownloadLogKeys as LogKey,
+    DownloadPathTool,
+    DownloadStatus,
+    LinkParser,
+    Task,
+    count_files,
+    enum_to_string,
+)
 
 # Manage return types of each scraper here
 AlbumLink: TypeAlias = str
@@ -50,20 +62,46 @@ class ScrapeManager:
             self.download_service.stop()  # DO NOT REMOVE
             self.web_bot.close_driver()
 
-    @property
-    def get_download_status(self) -> dict[str, DownloadStatus]:
-        return self.scrape_handler.album_tracker.get_download_status
-
-    def log_final_download_status(self) -> None:
+    def log_final_status(self) -> None:
         self.logger.info("Download finished, showing download status")
         download_status = self.get_download_status
-        for url, status in download_status.items():
-            if status == DownloadStatus.FAIL:
+        for url, album_status in download_status.items():
+            if album_status[LogKey.status] == DownloadStatus.FAIL:
                 self.logger.error(f"{url}: Unexpected error")
-            elif status == DownloadStatus.VIP:
+            elif (
+                album_status[LogKey.status] == DownloadStatus.VIP
+                or album_status[LogKey.expect_num] != album_status[LogKey.real_num]
+            ):
                 self.logger.warning(f"{url}: VIP images found")
             else:
                 self.logger.info(f"{url}: Download successful")
+
+    def final_process(self) -> None:
+        download_status = self.get_download_status
+
+        # count real files
+        for url, album_status in download_status.items():
+            dest = album_status[LogKey.dest]
+            real_num = 0 if not dest else count_files(Path(dest))
+            self.scrape_handler.album_tracker.update_download_log(url, {LogKey.real_num: real_num})
+
+        # write metadata
+        metadata_name = "metadata_" + str(datetime.now().strftime("%Y%m%d_%H%M%S")) + ".json"
+        metadata_dest = Path(self.runtime_config.download_dir) / metadata_name
+        metadata_dest.parent.mkdir(exist_ok=True)
+        with metadata_dest.open("w", encoding="utf-8") as f:
+            f.write(
+                json.dumps(
+                    self.get_download_status,
+                    indent=4,
+                    ensure_ascii=False,
+                    default=enum_to_string,
+                )
+            )
+
+    @property
+    def get_download_status(self) -> dict[str, dict[str, Any]]:
+        return self.scrape_handler.album_tracker.get_download_status
 
     def _load_urls(self) -> list[str]:
         """Load URLs from runtime_config (URL or txt file)."""
@@ -238,9 +276,10 @@ class ScrapeHandler:
         if tree is None:
             return [], False
 
+        # update_download_log for VIP only album
         if strategy.is_vip_page(tree):
             _url = LinkParser.remove_query_params(full_url)
-            self.album_tracker.log_download_status(_url, DownloadStatus.VIP)
+            self.album_tracker.update_download_log(_url, {LogKey.status: DownloadStatus.VIP})
             return [], False
 
         self.logger.info("Fetching content from %s", full_url)
@@ -262,8 +301,6 @@ class ScrapeHandler:
         if not should_continue:
             self.logger.info("Reach last page, stopping")
             _url = LinkParser.remove_query_params(full_url)
-            if scrape_type == "album_image":
-                self.album_tracker.log_download_status(_url, DownloadStatus.OK)
 
         return page_result, should_continue
 
@@ -380,14 +417,8 @@ class ImageScraper(BaseScraper[ImageLinkAndALT]):
         page_num: int,
         **kwargs: dict[Any, Any],
     ) -> None:
+        is_VIP = False
         alts: list[str] = tree.xpath(self.XPATH_ALTS)
-
-        # Handle missing alt texts
-        # if len(alts) < len(page_links):
-        #     missing_alts = [str(i + self.alt_counter) for i in range(len(page_links) - len(alts))]
-        #     alts.extend(missing_alts)
-        #     self.alt_counter += len(missing_alts)
-
         page_result.extend(zip(page_links, alts, strict=False))
 
         # check images
@@ -402,7 +433,7 @@ class ImageScraper(BaseScraper[ImageLinkAndALT]):
         page_link_ctr = 0
         for i, available in enumerate(available_images):
             if not available:
-                self.album_tracker.log_download_status(self.runtime_config.url, DownloadStatus.VIP)
+                is_VIP = True
                 continue
             url = page_links[page_link_ctr]
             page_link_ctr += 1
@@ -425,6 +456,15 @@ class ImageScraper(BaseScraper[ImageLinkAndALT]):
                 self.download_service.add_task(task)
 
         self.logger.info("Found %d images on page %d", len(page_links), page_num)
+        album_status = DownloadStatus.VIP if is_VIP else DownloadStatus.OK
+        self.album_tracker.update_download_log(
+            self.runtime_config.url,
+            {
+                LogKey.status: album_status,
+                LogKey.dest: str(dest.parent),
+                LogKey.expect_num: len(page_links),
+            },
+        )
 
     def get_available_images(self, tree: html.HtmlElement) -> list[bool]:
         album_photos = tree.xpath("//div[@class='album-photo my-2']")

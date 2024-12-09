@@ -7,6 +7,7 @@ import logging
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from collections.abc import Callable
+from dataclasses import dataclass
 from enum import Enum
 from mimetypes import guess_extension
 from pathlib import Path
@@ -323,12 +324,21 @@ class DownloadStatus(Enum):
         return NotImplemented
 
 
+@dataclass(frozen=True)
+class DownloadLogKeys:
+    status: str = "status"
+    dest: str = "dest"
+    expect_num: str = "expect_num"
+    real_num: str = "real_num"
+
+
 class AlbumTracker:
     """Download log in units of albums."""
 
     def __init__(self, download_log: str):
         self.album_log_path = download_log
-        self.download_status: dict[str, DownloadStatus] = {}
+        self.download_status: dict[str, dict[str, Any]] = {}
+        self.keys = DownloadLogKeys()
 
     def is_downloaded(self, album_url: str) -> bool:
         if os.path.exists(self.album_log_path):
@@ -343,11 +353,31 @@ class AlbumTracker:
             with open(self.album_log_path, "a") as f:
                 f.write(album_url + "\n")
 
-    def log_download_status(self, album_url: str, status: DownloadStatus) -> None:
+    def update_download_log(self, album_url: str, metadata: dict[str, Any]) -> None:
         album_url = LinkParser.remove_query_params(album_url)
-        if album_url not in self.download_status or status > self.download_status[album_url]:
-            self.download_status[album_url] = status
+        if album_url not in self.download_status:
+            self.download_status[album_url] = {
+                self.keys.status: DownloadStatus.OK,
+                self.keys.dest: "",
+                self.keys.expect_num: 0,
+                self.keys.real_num: 0,
+            }
+
+        for key, value in metadata.items():
+            if key in self.keys.__dict__.values():
+                self.download_status[album_url][key] = value
+
+    def init_download_log(self, album_url: str, **kwargs: Any) -> None:
+        album_url = LinkParser.remove_query_params(album_url)
+        default_metadata = {
+            self.keys.status: DownloadStatus.OK,
+            self.keys.dest: "",
+            self.keys.expect_num: 0,
+            self.keys.real_num: 0,
+        }
+        default_metadata.update(kwargs)
+        self.download_status[album_url] = default_metadata
 
     @property
-    def get_download_status(self) -> dict[str, DownloadStatus]:
+    def get_download_status(self) -> dict[str, dict[str, Any]]:
         return self.download_status
