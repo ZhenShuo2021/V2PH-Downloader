@@ -7,7 +7,7 @@ from subprocess import run
 from typing import Any
 
 from ..common import const
-from ..config import BaseConfig, RuntimeConfig
+from ..config import Config
 from ..utils import AccountManager, KeyManager
 
 
@@ -16,15 +16,14 @@ class BaseBot(ABC):
 
     def __init__(
         self,
-        runtime_config: RuntimeConfig,
-        base_config: BaseConfig,
+        config: Config,
         key_manager: KeyManager,
         account_manager: AccountManager,
     ):
-        self.runtime_config = runtime_config
-        self.base_config = base_config
-        self.close_browser = runtime_config.terminate
-        self.logger = runtime_config.logger
+        self.config = config
+        self.runtime_config = config.runtime_config
+        self.close_browser = config.static_config.terminate
+        self.logger = config.runtime_config.logger
 
         self.key_manager = key_manager
         self.account_manager = account_manager
@@ -42,7 +41,7 @@ class BaseBot(ABC):
         """Close the browser and handle cleanup."""
 
     def prepare_chrome_profile(self) -> str:
-        user_data_dir = self.base_config.chrome.profile_path
+        user_data_dir = self.config.path_config.chrome_profile_path
 
         if not os.path.exists(user_data_dir):
             os.makedirs(user_data_dir)
@@ -96,8 +95,8 @@ class BaseBehavior:
 
 
 class BaseScroll:
-    def __init__(self, base_config: BaseConfig, logger: Logger) -> None:
-        self.base_config = base_config
+    def __init__(self, config: Config, logger: Logger) -> None:
+        self.config = config
         self.logger = logger
         self.scroll_position = 0
         self.last_content_height = 0

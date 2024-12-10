@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from v2dl.config import BaseConfig, RuntimeConfig
+from v2dl.config import Config, RuntimeConfig
 from v2dl.core import ScrapeHandler, ScrapeManager
 from v2dl.utils import DownloadLogKeys as LogKey, DownloadStatus, ServiceType
 from v2dl.web_bot import get_bot
@@ -80,7 +80,7 @@ def real_scrape_handler(mock_runtime_config, mock_base_config, mock_web_bot):
 @pytest.mark.skipif(os.getenv("GITHUB_ACTIONS") == "true", reason="No GUI on Github")
 def test_download(setup_test_env, real_args):
     scraper: ScrapeHandler
-    base_config: BaseConfig
+    base_config: Config
     runtime_config: RuntimeConfig
     valid_extensions = (".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG")
 

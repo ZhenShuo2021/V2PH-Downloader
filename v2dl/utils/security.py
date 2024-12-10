@@ -19,7 +19,7 @@ from nacl.secret import SecretBox
 from nacl.utils import EncryptedMessage, random as nacl_random
 
 from ..common import SecurityError
-from ..config import BaseConfigManager, EncryptionConfig
+from ..config import ConfigManager, EncryptionConfig
 
 
 @dataclass
@@ -132,7 +132,7 @@ class KeyIOHelper(Encryptor):
 
     def init_conf(self, path_config: dict[str, str] | None) -> dict[str, str]:
         if path_config is None:
-            base_dir = BaseConfigManager.get_system_config_dir()
+            base_dir = ConfigManager.get_system_config_dir()
             self.logger.debug("Initializing config with base directory: %s", base_dir)
             return {
                 "key_folder": os.path.join(base_dir, ".keys"),
@@ -258,7 +258,7 @@ class AccountManager:
         self.yaml_path = (
             yaml_path
             if yaml_path
-            else os.path.join(BaseConfigManager.get_system_config_dir(), "accounts.yaml")
+            else os.path.join(ConfigManager.get_system_config_dir(), "accounts.yaml")
         )
         self.key_manager = key_manager
         self.lock = threading.RLock()

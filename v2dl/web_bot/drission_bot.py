@@ -14,33 +14,32 @@ from .cookies import load_cookies
 from ..common.error import BotError
 
 if TYPE_CHECKING:
-    from ..config import BaseConfig, RuntimeConfig
+    from ..config import Config
     from ..utils import AccountManager, KeyManager
 
 
 class DrissionBot(BaseBot):
     def __init__(
         self,
-        runtime_config: "RuntimeConfig",
-        base_config: "BaseConfig",
+        config: "Config",
         key_manager: "KeyManager",
         account_manager: "AccountManager",
     ) -> None:
-        super().__init__(runtime_config, base_config, key_manager, account_manager)
-        self.base_config = base_config
+        super().__init__(config, key_manager, account_manager)
+        self.config = config
         self.init_driver()
         self.cloudflare = DriCloudflareHandler(self.page, self.logger)
 
     def init_driver(self) -> None:
         co = ChromiumOptions()
-        if self.runtime_config.chrome_args is not None:
-            for conf in self.runtime_config.chrome_args:
+        if self.config.static_config.chrome_args is not None:
+            for conf in self.config.static_config.chrome_args:
                 co.set_argument(conf)
 
         if self.runtime_config.user_agent is not None:
             co.set_user_agent(user_agent=self.runtime_config.user_agent)
 
-        if not self.runtime_config.use_chrome_default_profile:
+        if not self.config.static_config.use_chrome_default_profile:
             user_data_dir = self.prepare_chrome_profile()
             co.set_user_data_path(user_data_dir)
         else:
@@ -50,7 +49,7 @@ class DrissionBot(BaseBot):
         self.page.set.scroll.smooth(on_off=True)
         self.page.set.scroll.wait_complete(on_off=True)
 
-        self.scroller = DriScroll(self.page, self.base_config, self.logger)
+        self.scroller = DriScroll(self.page, self.config, self.logger)
 
     def close_driver(self) -> None:
         if self.close_browser:
@@ -335,8 +334,8 @@ class DriBehavior(BaseBehavior):
 
 
 class DriScroll(BaseScroll):
-    def __init__(self, page: ChromiumPage, base_config: "BaseConfig", logger: Logger) -> None:
-        super().__init__(base_config, logger)
+    def __init__(self, page: ChromiumPage, config: "Config", logger: Logger) -> None:
+        super().__init__(config, logger)
         self.page = page
         self.page.set.scroll.smooth(on_off=True)
 
@@ -346,8 +345,8 @@ class DriScroll(BaseScroll):
         wait_time = (1, 2)
         last_position = -123459
         scroll_length = lambda: random.randint(
-            self.base_config.download.min_scroll_length,
-            self.base_config.download.max_scroll_length,
+            self.config.static_config.min_scroll_length,
+            self.config.static_config.max_scroll_length,
         )
 
         while attempts < max_attempts:
@@ -432,16 +431,16 @@ class DriScroll(BaseScroll):
 
         if action == "scroll_down":
             scroll_length = random.randint(
-                self.base_config.download.min_scroll_step,
-                self.base_config.download.max_scroll_step,
+                self.config.static_config.min_scroll_step,
+                self.config.static_config.max_scroll_step,
             )
             self.logger.debug("Trying to scroll down %d", scroll_length)
             self.page.scroll.down(pixel=scroll_length)
             time.sleep(random.uniform(*BaseBehavior.pause_time))
         elif action == "scroll_up":
             scroll_length = random.randint(
-                self.base_config.download.min_scroll_step,
-                self.base_config.download.max_scroll_step,
+                self.config.static_config.min_scroll_step,
+                self.config.static_config.max_scroll_step,
             )
             self.logger.debug("Trying to scroll up %d", scroll_length)
             self.page.scroll.up(pixel=scroll_length)

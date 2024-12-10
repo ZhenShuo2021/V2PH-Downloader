@@ -3,27 +3,36 @@ import platform
 from typing import Any
 
 DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
-    "download": {
+    "static_config": {
         "min_scroll_length": 1000,
         "max_scroll_length": 2000,
         "min_scroll_step": 300,
         "max_scroll_step": 500,
+        "max_worker": 5,
         "rate_limit": 400,
-        "download_dir": "v2dl",
+        "language": "ja",
+        "no_history": False,
+        "exact_dir": False,
+        "force_download": False,
+        "use_chrome_default_profile": False,
+        "dry_run": False,
     },
-    "paths": {
+    "runtime_config": {
+        "bot_type": "drissionpage",
+        "url_file": None,
+    },
+    "path_config": {
+        "history_file": "",
         "download_log": "downloaded_albums.txt",
         "system_log": "v2dl.log",
-    },
-    "chrome": {
-        "profile_path": "v2dl_chrome_profile",
-        "exec_path": {
+        "chrome_profile_path": "v2dl_chrome_profile",
+        "chrome_exec_path": {
             "Linux": "/usr/bin/google-chrome",
             "Darwin": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
             "Windows": r"C:\Program Files\Google\Chrome\Application\chrome.exe",
         },
     },
-    "encryption": {
+    "encryption_config": {
         "key_bytes": 32,
         "salt_bytes": 16,
         "nonce_bytes": 24,

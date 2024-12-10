@@ -1,20 +1,12 @@
 # v2dl/common/__init__.py
-from .config import BaseConfigManager
-from .model import (
-    BaseConfig,
-    ChromeConfig,
-    DownloadConfig,
-    EncryptionConfig,
-    PathConfig,
-    RuntimeConfig,
-)
+from .config import ConfigManager
+from .model import Config, EncryptionConfig, PathConfig, RuntimeConfig, StaticConfig
 
 __all__ = [
-    "BaseConfig",
-    "BaseConfigManager",
-    "ChromeConfig",
-    "DownloadConfig",
+    "Config",
+    "ConfigManager",
     "EncryptionConfig",
     "PathConfig",
     "RuntimeConfig",
+    "StaticConfig",
 ]

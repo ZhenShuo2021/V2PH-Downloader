@@ -10,7 +10,7 @@ from lxml import html
 
 from ..common import ScrapeError
 from ..common.const import BASE_URL, IMAGE_PER_PAGE
-from ..config import BaseConfig, RuntimeConfig
+from ..config import Config, RuntimeConfig
 from ..utils import (
     AlbumTracker,
     DownloadLogKeys as LogKey,
@@ -34,26 +34,25 @@ class ScrapeManager:
 
     def __init__(
         self,
-        runtime_config: RuntimeConfig,
-        base_config: BaseConfig,
+        config: Config,
         web_bot: Any,
     ) -> None:
-        self.runtime_config = runtime_config
-        self.base_config = base_config
+        self.config = config
+        self.runtime_config = config.runtime_config
 
         self.web_bot = web_bot
-        self.dry_run = runtime_config.dry_run
-        self.logger = runtime_config.logger
+        self.dry_run = config.static_config.dry_run
+        self.logger = config.runtime_config.logger
 
-        self.download_service = runtime_config.download_service
-        self.scrape_handler = ScrapeHandler(self.runtime_config, self.base_config, self.web_bot)
+        self.download_service = config.runtime_config.download_service
+        self.scrape_handler = ScrapeHandler(self.config, self.web_bot)
 
     def start_scraping(self) -> None:
         """Start scraping based on URL type."""
         try:
             urls = self._load_urls()
             for url in urls:
-                url = LinkParser.update_language(url, self.runtime_config.language)
+                url = LinkParser.update_language(url, self.config.static_config.language)
                 self.runtime_config.url = url
                 self.scrape_handler.update_runtime_config(self.runtime_config)
                 self.scrape_handler.scrape(url, self.dry_run)
@@ -84,11 +83,11 @@ class ScrapeManager:
             self.scrape_handler.album_tracker.update_download_log(url, {LogKey.real_num: real_num})
 
         # write metadata
-        if self.runtime_config.history_file:
-            metadata_dest = Path(self.runtime_config.history_file)
+        if self.config.path_config.history_file:
+            metadata_dest = Path(self.config.path_config.history_file)
         else:
             metadata_name = "metadata_" + str(datetime.now().strftime("%Y%m%d_%H%M%S")) + ".json"
-            metadata_dest = Path(self.runtime_config.download_dir) / metadata_name
+            metadata_dest = Path(self.config.static_config.download_dir) / metadata_name
         metadata_dest.parent.mkdir(exist_ok=True)
         with metadata_dest.open("w", encoding="utf-8") as f:
             f.write(
@@ -106,8 +105,8 @@ class ScrapeManager:
 
     def _load_urls(self) -> list[str]:
         """Load URLs from runtime_config (URL or txt file)."""
-        if self.runtime_config.input_file:
-            with open(self.runtime_config.input_file) as file:
+        if self.runtime_config.url_file:
+            with open(self.runtime_config.url_file) as file:
                 urls = [line.strip() for line in file if line.strip()]
         else:
             urls = [self.runtime_config.url]
@@ -128,29 +127,27 @@ class ScrapeHandler:
 
     def __init__(
         self,
-        runtime_config: RuntimeConfig,
-        base_config: BaseConfig,
+        config: Config,
         web_bot: Any,
     ) -> None:
+        self.config = config
+        self.runtime_config = config.runtime_config
+        self.logger = config.runtime_config.logger
         self.web_bot = web_bot
-        self.logger = runtime_config.logger
-        self.runtime_config = runtime_config
 
-        self.album_tracker = AlbumTracker(base_config.paths.download_log)
+        self.album_tracker = AlbumTracker(config.path_config.download_log)
         self.strategies: dict[ScrapeType, BaseScraper[Any]] = {
             "album_list": AlbumScraper(
-                runtime_config,
-                base_config,
+                config,
                 self.album_tracker,
                 web_bot,
-                runtime_config.download_function,
+                config.runtime_config.download_function,
             ),
             "album_image": ImageScraper(
-                runtime_config,
-                base_config,
+                config,
                 self.album_tracker,
                 web_bot,
-                runtime_config.download_function,
+                config.runtime_config.download_function,
             ),
         }
 
@@ -180,7 +177,7 @@ class ScrapeHandler:
         """Handle scraping of a single album page."""
         if (
             self.album_tracker.is_downloaded(LinkParser.remove_query_params(album_url))
-            and not self.runtime_config.force_download
+            and not self.config.static_config.force_download
         ):
             self.logger.info("Album %s already downloaded, skipping.", album_url)
             return
@@ -331,19 +328,19 @@ class BaseScraper(Generic[LinkType], ABC):
 
     def __init__(
         self,
-        runtime_config: RuntimeConfig,
-        base_config: BaseConfig,
+        config: Config,
         album_tracker: AlbumTracker,
         web_bot: Any,
         download_function: Any,
     ) -> None:
-        self.runtime_config = runtime_config
-        self.base_config = base_config
+        self.config = config
+        self.runtime_config = config.runtime_config
+        self.base_config = config
         self.album_tracker = album_tracker
         self.web_bot = web_bot
-        self.download_service = runtime_config.download_service
+        self.download_service = config.runtime_config.download_service
         self.download_function = download_function
-        self.logger = runtime_config.logger
+        self.logger = config.runtime_config.logger
 
     @abstractmethod
     def get_xpath(self) -> str:
@@ -428,7 +425,7 @@ class ImageScraper(BaseScraper[ImageLinkAndALT]):
 
         # Handle downloads if not in dry run mode
         album_name = extract_album_name(alts)
-        dir_ = self.runtime_config.download_dir
+        dir_ = self.config.static_config.download_dir
 
         # assign download job for each image
         page_link_ctr = 0
@@ -440,12 +437,12 @@ class ImageScraper(BaseScraper[ImageLinkAndALT]):
             page_link_ctr += 1
 
             filename = f"{(idx + i):03d}"
-            if self.runtime_config.exact_dir:
+            if self.config.static_config.exact_dir:
                 dest = DownloadPathTool.get_file_dest(dir_, "", filename)
             else:
                 dest = DownloadPathTool.get_file_dest(dir_, album_name, filename)
 
-            if not self.runtime_config.dry_run:
+            if not self.config.static_config.dry_run:
                 task = Task(
                     task_id=f"{album_name}_{i}",
                     func=self.download_function,
