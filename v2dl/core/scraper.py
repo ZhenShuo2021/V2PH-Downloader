@@ -39,10 +39,11 @@ class ScrapeManager:
     ) -> None:
         self.config = config
         self.runtime_config = config.runtime_config
-
         self.web_bot = web_bot
         self.dry_run = config.static_config.dry_run
         self.logger = config.runtime_config.logger
+
+        self.no_log = False  # flag to not log download status
 
         self.download_service = config.runtime_config.download_service
         self.scrape_handler = ScrapeHandler(self.config, self.web_bot)
@@ -51,6 +52,10 @@ class ScrapeManager:
         """Start scraping based on URL type."""
         try:
             urls = self._load_urls()
+            if not urls:
+                self.logger.info(f"No valid urls found in {self.runtime_config.url_file}")
+                self.no_log = True
+
             for url in urls:
                 url = LinkParser.update_language(url, self.config.static_config.language)
                 self.runtime_config.url = url
@@ -68,6 +73,9 @@ class ScrapeManager:
                 self.web_bot.close_driver()
 
     def log_final_status(self) -> None:
+        if self.no_log:
+            return
+
         self.logger.info("Download finished, showing download status")
         download_status = self.get_download_status
         for url, album_status in download_status.items():
@@ -112,7 +120,7 @@ class ScrapeManager:
         """Load URLs from runtime_config (URL or txt file)."""
         if self.runtime_config.url_file:
             with open(self.runtime_config.url_file) as file:
-                urls = [line.strip() for line in file if line.strip()]
+                urls = [line.strip() for line in file if line.strip() and not line.startswith("#")]
         else:
             urls = [self.runtime_config.url]
         return urls
@@ -171,7 +179,8 @@ class ScrapeHandler:
 
     def scrape(self, url: str, dry_run: bool = False) -> None:
         """Main entry point for scraping operations."""
-        scrape_type = self._get_scrape_type()
+        if (scrape_type := self._get_scrape_type()) is None:
+            return
         _, start_page = LinkParser.parse_input_url(self.runtime_config.url)
 
         if scrape_type == "album_list":
@@ -336,13 +345,14 @@ class ScrapeHandler:
             time.sleep(consecutive_sleep)
         return next_page
 
-    def _get_scrape_type(self) -> ScrapeType:
+    def _get_scrape_type(self) -> ScrapeType | None:
         """Get the appropriate handler method based on URL path."""
         path_parts, _ = LinkParser.parse_input_url(self.runtime_config.url)
         for part in path_parts:
             if part in self.URL_HANDLERS:
                 return self.URL_HANDLERS[part]
-        raise ValueError(f"Unsupported URL type: {self.runtime_config.url}")
+        self.logger.error(f"Unsupported URL type: {self.runtime_config.url}")
+        return None
 
 
 class BaseScraper(Generic[LinkType], ABC):
