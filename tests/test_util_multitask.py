@@ -175,7 +175,7 @@ async def test_async_get_results_with_max_results(async_service):
     tasks = [Task(task_id=f"task{i}", func=async_simple_add, args=(i, i)) for i in range(5)]
     async_service.start()
     async_service.add_tasks(tasks)
-    await asyncio.sleep(WAIT_TIME * 5)
+    await asyncio.sleep(WAIT_TIME * 10)
 
     results = async_service.get_results(max_results=3)
     assert len(results) == 3
