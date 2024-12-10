@@ -54,8 +54,8 @@ IMAGE_PER_PAGE = 10
 
 # For selenium webdriver
 USER_OS = platform.system()
-DEFAULT_VERSION = "130.0.6723.59"
-SELENIUM_AGENT = "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{} Safari/537.36"
+DEFAULT_VERSION = "131.0.6778.109"
+SELENIUM_AGENT = f"user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{DEFAULT_VERSION} Safari/537.36"
 
 
 # For requests to download from the v2ph cdn, somehow the fake_useragent is not working.

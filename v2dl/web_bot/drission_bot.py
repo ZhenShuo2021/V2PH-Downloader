@@ -36,8 +36,9 @@ class DrissionBot(BaseBot):
             for conf in self.config.static_config.chrome_args:
                 co.set_argument(conf)
 
-        if self.runtime_config.user_agent is not None:
-            co.set_user_agent(user_agent=self.runtime_config.user_agent)
+        # Do not use user_agent on drissionpage
+        # if self.runtime_config.user_agent is not None:
+        #     co.set_user_agent(user_agent=self.runtime_config.user_agent)
 
         if not self.config.static_config.use_chrome_default_profile:
             user_data_dir = self.prepare_chrome_profile()

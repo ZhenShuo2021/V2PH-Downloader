@@ -4,9 +4,10 @@ from unittest.mock import Mock
 
 import pytest
 
-from v2dl import create_runtime_config
-from v2dl.common.const import DEFAULT_CONFIG
-from v2dl.config import BaseConfig, BaseConfigManager
+from v2dl import create_download_service
+from v2dl.common.const import DEFAULT_CONFIG, SELENIUM_AGENT
+from v2dl.config import Config, ConfigManager
+from v2dl.utils.factory import ServiceType
 
 
 @pytest.fixture
@@ -15,14 +16,52 @@ def mock_logger():
 
 
 @pytest.fixture
-def real_base_config(tmp_path) -> BaseConfig:
-    base_config = BaseConfigManager(DEFAULT_CONFIG).load()
-    base_config.paths.download_log = tmp_path / "download.log"
-    base_config.download.download_dir = tmp_path / "Downloads"
-    base_config.download.rate_limit = 1000
-    base_config.download.min_scroll_length *= 2
-    base_config.download.max_scroll_length = base_config.download.max_scroll_length * 16 + 1
-    return base_config
+def real_download_service(real_args, mock_logger):
+    args, _ = real_args
+
+    def _create_download_service(service_type):
+        return create_download_service(
+            args=args,
+            max_worker=5,
+            rate_limit=400,
+            logger=mock_logger,
+            service_type=service_type,
+        )
+
+    return _create_download_service
+
+
+@pytest.fixture
+def real_config(tmp_path, real_download_service, real_args, mock_logger) -> Config:
+    real_arg = real_args[0]
+    config_manager = ConfigManager(DEFAULT_CONFIG)
+    download_service, download_function = real_download_service(ServiceType.ASYNC)
+    # prepare runtime_config
+    download_service, download_function = create_download_service(
+        SimpleNamespace(force_download=True),  # type: ignore
+        config_manager.get("static_config", "max_worker"),
+        config_manager.get("static_config", "rate_limit"),
+        mock_logger,
+    )
+
+    # setup static_config
+    config_manager.set("static_config", "download_dir", str(tmp_path / "Downloads"))
+
+    # setup runtime_config
+    config_manager.set("runtime_config", "url", real_arg.url)
+    config_manager.set("runtime_config", "download_service", download_service)
+    config_manager.set("runtime_config", "download_function", download_function)
+    config_manager.set("runtime_config", "logger", mock_logger)
+    config_manager.set("runtime_config", "user_agent", SELENIUM_AGENT)
+
+    # setup static_config
+    config_manager.set("static_config", "rate_limit", 10000)
+    config_manager.set("static_config", "min_scroll_length", 2000)
+    config_manager.set("static_config", "max_scroll_length", 4000)
+
+    # setup path_config
+    config_manager.set("path_config", "download_log", str(tmp_path / "download.log"))
+    return config_manager.initialize_config()
 
 
 @pytest.fixture
@@ -31,7 +70,7 @@ def real_args():
     return SimpleNamespace(
         url="https://www.v2ph.com/album/Weekly-Young-Jump-2012-No29",
         input_file="",
-        bot_type="drission",
+        bot_type="drissionpage",
         chrome_args=[],
         user_agent=None,
         terminate=True,
@@ -39,24 +78,8 @@ def real_args():
         concurrency=3,
         history_file="",
         no_history=False,
-        force=True,
+        force_download=True,
         use_default_chrome_profile=False,
         directory=None,
         language="ja",
     ), expected_file_count
-
-
-@pytest.fixture
-def real_runtime_config(real_args, real_base_config, mock_logger):
-    args, _ = real_args
-
-    def _create_runtime_config(service_type, log_level):
-        return create_runtime_config(
-            args=args,
-            base_config=real_base_config,
-            logger=mock_logger,
-            log_level=log_level,
-            service_type=service_type,
-        )
-
-    return _create_runtime_config

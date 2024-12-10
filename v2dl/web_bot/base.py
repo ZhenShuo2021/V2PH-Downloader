@@ -139,9 +139,9 @@ def get_chrome_version() -> str:
         return const.DEFAULT_VERSION
 
     if system == "Darwin":  # macOS
-        return get_chrome_version_unix(const.DEFAULT_CONFIG["chrome"]["exec_path"]["Darwin"])
+        return get_chrome_version_unix(const.DEFAULT_CONFIG["path_config"]["chrome_exec_path"]["Darwin"])
 
     if system == "Linux":
-        return get_chrome_version_unix(const.DEFAULT_CONFIG["chrome"]["exec_path"]["Linux"])
+        return get_chrome_version_unix(const.DEFAULT_CONFIG["path_config"]["chrome_exec_path"]["Linux"])
 
     return const.DEFAULT_VERSION

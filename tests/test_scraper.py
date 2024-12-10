@@ -1,7 +1,6 @@
 import os
 
 # os.environ["GITHUB_ACTIONS"] = "true"
-import time
 import shutil
 import logging
 from pathlib import Path
@@ -9,22 +8,21 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from v2dl.config import Config, RuntimeConfig
+from v2dl.config import Config, ConfigManager, RuntimeConfig
 from v2dl.core import ScrapeHandler, ScrapeManager
-from v2dl.utils import DownloadLogKeys as LogKey, DownloadStatus, ServiceType
+from v2dl.utils import DownloadLogKeys as LogKey, DownloadStatus
 from v2dl.web_bot import get_bot
 
 TEST_ALBUM_URL = "http://example.com/album"
 
 
 @pytest.fixture
-def setup_test_env(tmp_path, real_base_config, real_runtime_config):
-    def setup_env(service_type, log_level):
-        runtime_config = real_runtime_config(service_type, log_level)
-        web_bot = get_bot(runtime_config, real_base_config)
-        scraper = ScrapeHandler(runtime_config, real_base_config, web_bot)
+def setup_test_env(tmp_path, real_config):
+    def setup_env():
+        web_bot = get_bot(real_config)
+        scraper = ScrapeHandler(real_config, web_bot)
 
-        return scraper, real_base_config, runtime_config
+        return scraper, real_config
 
     try:
         yield setup_env
@@ -46,17 +44,17 @@ def mock_runtime_config():
     runtime_config.logger = logging.getLogger()
     runtime_config.download_service = MagicMock()
     runtime_config.download_function = MagicMock()
-    runtime_config.input_file = None
+    runtime_config.url_file = None
     runtime_config.force_download = False
     runtime_config.log_level = logging.DEBUG
     return runtime_config
 
 
 @pytest.fixture
-def mock_base_config(tmp_path):
-    base_config = MagicMock()
-    base_config.paths.download_log = tmp_path / "mock_log_path"
-    return base_config
+def mock_config(tmp_path):
+    config = MagicMock()
+    config.paths.download_log = tmp_path / "mock_log_path"
+    return config
 
 
 @pytest.fixture
@@ -68,30 +66,29 @@ def mock_web_bot():
 
 
 @pytest.fixture
-def real_scrape_manager(mock_runtime_config, mock_base_config, mock_web_bot):
-    return ScrapeManager(mock_runtime_config, mock_base_config, mock_web_bot)
+def real_scrape_manager(mock_config, mock_web_bot):
+    return ScrapeManager(mock_config, mock_web_bot)
 
 
 @pytest.fixture
-def real_scrape_handler(mock_runtime_config, mock_base_config, mock_web_bot):
-    return ScrapeHandler(mock_runtime_config, mock_base_config, mock_web_bot)
+def real_scrape_handler(mock_config, mock_web_bot):
+    return ScrapeHandler(mock_config, mock_web_bot)
 
 
 @pytest.mark.skipif(os.getenv("GITHUB_ACTIONS") == "true", reason="No GUI on Github")
 def test_download(setup_test_env, real_args):
     scraper: ScrapeHandler
-    base_config: Config
+    config: Config
     runtime_config: RuntimeConfig
     valid_extensions = (".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG")
 
-    setup_env = setup_test_env
-    scraper, base_config, runtime_config = setup_env(ServiceType.ASYNC, logging.DEBUG)
+    scraper, config = setup_test_env()
+    runtime_config = config.runtime_config
     _, expected_file_count = real_args
-    test_download_dir = Path(base_config.download.download_dir)
+    test_download_dir = Path(config.static_config.download_dir)
 
     scraper.scrape(runtime_config.url)
     runtime_config.download_service.stop(30)
-    time.sleep(10)
 
     # Check directory
     subdirectories = [d for d in test_download_dir.iterdir() if d.is_dir()]
@@ -123,15 +120,16 @@ def test_download(setup_test_env, real_args):
 
 def test_load_urls(mock_runtime_config, real_scrape_manager, tmp_path):
     scrape_manager = real_scrape_manager
+    scrape_manager.runtime_config = mock_runtime_config
     test_file = tmp_path / "input_urls.txt"
     test_file.write_text(f"{TEST_ALBUM_URL}1\n{TEST_ALBUM_URL}2\n")
 
-    mock_runtime_config.input_file = str(test_file)
+    mock_runtime_config.url_file = str(test_file)
     urls = scrape_manager._load_urls()
     assert urls == [TEST_ALBUM_URL + "1", TEST_ALBUM_URL + "2"]
 
     scrape_manager.runtime_config.url = TEST_ALBUM_URL
-    scrape_manager.runtime_config.input_file = None
+    scrape_manager.runtime_config.url_file = None
     urls = scrape_manager._load_urls()
     assert urls == [TEST_ALBUM_URL]
 
@@ -225,12 +223,19 @@ def test_scrape_album(real_scrape_handler, mock_logger):
     real_scrape_handler.logger.info.assert_called()
 
 
-def test_update_runtime_config(real_scrape_handler, real_runtime_config):
+def test_update_runtime_config(real_scrape_handler):
     wrong_runtime_config = MagicMock()
     with pytest.raises(TypeError):
         real_scrape_handler.update_runtime_config(wrong_runtime_config)
 
-    correct_runtime_config = real_runtime_config(ServiceType.ASYNC, logging.ERROR)
+    config_manager = ConfigManager()
+    config_manager.set("runtime_config", "url", "")
+    config_manager.set("runtime_config", "download_service", None)
+    config_manager.set("runtime_config", "download_function", None)
+    config_manager.set("runtime_config", "logger", None)
+
+    config = config_manager.initialize_config()
+    correct_runtime_config = config.runtime_config
     real_scrape_handler.update_runtime_config(correct_runtime_config)
 
     assert real_scrape_handler.runtime_config == correct_runtime_config

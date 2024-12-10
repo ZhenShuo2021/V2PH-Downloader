@@ -335,7 +335,7 @@ class BaseScraper(Generic[LinkType], ABC):
     ) -> None:
         self.config = config
         self.runtime_config = config.runtime_config
-        self.base_config = config
+        self.config = config
         self.album_tracker = album_tracker
         self.web_bot = web_bot
         self.download_service = config.runtime_config.download_service

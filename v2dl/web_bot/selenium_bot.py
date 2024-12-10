@@ -3,13 +3,11 @@ import time
 import random
 from datetime import datetime
 from logging import Logger
-from subprocess import Popen
 from typing import TYPE_CHECKING, Any
 
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -17,12 +15,11 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from .base import BaseBehavior, BaseBot, BaseScroll, get_chrome_version
+from .base import BaseBehavior, BaseBot, BaseScroll
 from .cookies import load_cookies
-from ..common import SELENIUM_AGENT
 
 if TYPE_CHECKING:
-    from ..config import Config, RuntimeConfig
+    from ..config import Config
     from ..utils import AccountManager, KeyManager
 
 DEFAULT_BOT_OPT = [
@@ -38,12 +35,11 @@ DEFAULT_BOT_OPT = [
 class SeleniumBot(BaseBot):
     def __init__(
         self,
-        runtime_config: "RuntimeConfig",
-        base_config: "Config",
+        config: "Config",
         key_manager: "KeyManager",
         account_manager: "AccountManager",
     ) -> None:
-        super().__init__(base_config, key_manager, account_manager)
+        super().__init__(config, key_manager, account_manager)
         self.init_driver()
         self.scroller = SelScroll(self.driver, self.config, self.logger)
         self.cloudflare = SelCloudflareHandler(self.driver, self.logger)
@@ -51,14 +47,10 @@ class SeleniumBot(BaseBot):
     def init_driver(self) -> None:
         self.driver: WebDriver
         options = Options()
-
         chrome_path = [self.config.path_config.chrome_exec_path]
+
         # commands for running subprocess
         subprocess_cmd = chrome_path + (self.config.static_config.chrome_args or DEFAULT_BOT_OPT)
-        subprocess_cmd = [
-            *subprocess_cmd,
-            self.runtime_config.user_agent or SELENIUM_AGENT.format(get_chrome_version()),
-        ]
 
         if not self.config.static_config.use_chrome_default_profile:
             user_data_dir = self.prepare_chrome_profile()
@@ -70,8 +62,8 @@ class SeleniumBot(BaseBot):
         # additional args for webdriver.Chrome to takeover the control of created browser
         options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
         try:
-            self.chrome_process = Popen(subprocess_cmd)  # subprocess.run fails
-            self.driver = webdriver.Chrome(service=Service(), options=options)
+            # self.chrome_process = Popen(subprocess_cmd)  # subprocess.run fails
+            self.driver = webdriver.Chrome()
         except Exception as e:
             self.logger.error("Unable to start Selenium WebDriver: %s", e)
             sys.exit("Unable to start Selenium WebDriver")
@@ -79,7 +71,7 @@ class SeleniumBot(BaseBot):
     def close_driver(self) -> None:
         if self.close_browser:
             self.driver.quit()
-            self.chrome_process.terminate()
+            # self.chrome_process.terminate()
 
     def auto_page_scroll(
         self,

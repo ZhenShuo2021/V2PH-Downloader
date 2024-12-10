@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any
 import yaml
 
 from .model import Config, EncryptionConfig, PathConfig, RuntimeConfig, StaticConfig
-from ..common.const import AVAILABLE_LANGUAGES, DEFAULT_CONFIG
+from ..common.const import AVAILABLE_LANGUAGES, DEFAULT_CONFIG, SELENIUM_AGENT
 
 if TYPE_CHECKING:
     import argparse
@@ -49,7 +49,7 @@ class ConfigPathTool:
     @staticmethod
     def get_chrome_exec_path(config_data: dict[str, Any]) -> str:
         current_os = platform.system()
-        exec_path = config_data["chrome"]["exec_path"].get(current_os)
+        exec_path = config_data.get(current_os)
         if not exec_path:
             raise ValueError(f"Unsupported OS: {current_os}")
         if not isinstance(exec_path, str):
@@ -114,10 +114,12 @@ class ConfigManager(ConfigPathTool):
         self.set(path, "force_download", args.force_download)
 
         # setup scroll distance
-        args.max_scroll = 500 if args.max_scroll is None else max(args.max_scroll, 500)
-        args.min_scroll = 100 if args.min_scroll is None else max(args.min_scroll, 100)
+        max_s = self.default_config["static_config"]["max_scroll_length"]
+        min_s = self.default_config["static_config"]["min_scroll_length"]
+        args.max_scroll = max_s if args.max_scroll is None else max(args.max_scroll, max_s)
+        args.min_scroll = min_s if args.min_scroll is None else max(args.min_scroll, min_s)
         if args.min_scroll > args.max_scroll:
-            args.max_scroll = args.min_scroll + 1
+            args.max_scroll = args.min_scroll // 2
         self.set(path, "min_scroll", args.min_scroll)
 
         # toggle dry run mode
@@ -127,7 +129,7 @@ class ConfigManager(ConfigPathTool):
         self.set(path, "terminate", args.terminate)
 
         # setup chrome_args
-        chrome_args = args.chrome_args.split("//") if args.chrome_args else None
+        chrome_args = args.chrome_args.split("//") if args.chrome_args else []
         self.set(path, "chrome_args", chrome_args)
 
         # toggle default chrome profile
@@ -167,6 +169,15 @@ class ConfigManager(ConfigPathTool):
         path = "path_config"
         # setup history file path
         self.set(path, "history_file", args.history_file)
+
+        # setup chrome_exec_path
+        self.set(
+            path,
+            "chrome_exec_path",
+            ConfigPathTool.get_chrome_exec_path(
+                self.default_config["path_config"]["chrome_exec_path"],
+            ),
+        )
 
     def load_all(self, kwargs: Any) -> None:
         self.load_from_defaults()
@@ -228,7 +239,7 @@ class ConfigManager(ConfigPathTool):
             exact_dir=self.config[key].get("exact_dir", False),
             download_dir=self.config[key].get("download_dir", ""),
             force_download=self.config[key].get("force_download", False),
-            chrome_args=self.config[key].get("chrome_args", False),
+            chrome_args=self.config[key].get("chrome_args", []),
             use_chrome_default_profile=self.config[key].get("use_chrome_default_profile", False),
             dry_run=self.config[key].get("dry_run", False),
             terminate=self.config[key].get("terminate", False),
@@ -240,19 +251,16 @@ class ConfigManager(ConfigPathTool):
         Note that the download service and function is None!
         """
         key = "runtime_config"
-        return RuntimeConfig(**self.config[key])
-        # return RuntimeConfig(
-        #     url=self.get("url"),
-        #     url_file=self.get("input_file"),
-        #     bot_type=self.get("bot_type"),
-        #     download_service=self.get("download_service"),
-        #     download_function=self.get("download_function"),
-        #     logger=self.get("logger"),
-        #     log_level=self.get("log_level"),
-        #     chrome_args=self.get("chrome_args"),
-        #     user_agent=self.get("user_agent"),
-        #     terminate=self.get("terminate"),
-        # )
+        return RuntimeConfig(
+            url=self.config[key]["url"],
+            url_file=self.config[key]["url_file"],
+            bot_type=self.config[key]["bot_type"],
+            download_service=self.config[key]["download_service"],
+            download_function=self.config[key]["download_function"],
+            logger=self.config[key]["logger"],
+            log_level=self.config[key].get("log_level", logging.INFO),
+            user_agent=self.config[key].get("user_agent", SELENIUM_AGENT),
+        )
 
     def create_path_config(self) -> PathConfig:
         key = "path_config"
