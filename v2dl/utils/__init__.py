@@ -1,5 +1,5 @@
 # v2dl/utils/__init__.py
-from .common import count_files, enum_to_string
+from .common import check_module_installed, count_files, enum_to_string
 from .download import (
     AlbumTracker,
     BaseDownloadAPI,
@@ -38,6 +38,7 @@ __all__ = [
     "Task",
     "TaskServiceFactory",
     "ThreadingService",
+    "check_module_installed",
     "count_files",
     "enum_to_string",
 ]

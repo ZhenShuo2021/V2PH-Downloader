@@ -1008,6 +1008,10 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "pyyaml" },
     { name = "questionary" },
+]
+
+[package.optional-dependencies]
+all = [
     { name = "selenium" },
 ]
 
@@ -1035,7 +1039,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "questionary", specifier = ">=2.0.1" },
-    { name = "selenium", specifier = ">=4.25.0" },
+    { name = "selenium", marker = "extra == 'all'", specifier = ">=4.27.1" },
 ]
 
 [package.metadata.requires-dev]

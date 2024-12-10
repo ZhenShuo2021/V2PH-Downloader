@@ -1,6 +1,14 @@
+import importlib.util
 from enum import Enum
 from pathlib import Path
 from typing import Any
+
+
+def check_module_installed() -> None:
+    if importlib.util.find_spec("selenium") is None:
+        raise ImportError(
+            "Optional package selenium is not installed. Please install it with pip install 'v2dl[all]'."
+        )
 
 
 def count_files(dest: str | Path) -> int:

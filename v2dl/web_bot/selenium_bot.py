@@ -3,11 +3,13 @@ import time
 import random
 from datetime import datetime
 from logging import Logger
+from subprocess import Popen
 from typing import TYPE_CHECKING, Any
 
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -47,6 +49,7 @@ class SeleniumBot(BaseBot):
     def init_driver(self) -> None:
         self.driver: WebDriver
         options = Options()
+        options.add_argument("--no-exit")
         chrome_path = [self.config.path_config.chrome_exec_path]
 
         # commands for running subprocess
@@ -62,16 +65,15 @@ class SeleniumBot(BaseBot):
         # additional args for webdriver.Chrome to takeover the control of created browser
         options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
         try:
-            # self.chrome_process = Popen(subprocess_cmd)  # subprocess.run fails
-            self.driver = webdriver.Chrome()
+            self.chrome_process = Popen(subprocess_cmd)  # subprocess.run fails
+            self.driver = webdriver.Chrome(service=Service(), options=options)
         except Exception as e:
             self.logger.error("Unable to start Selenium WebDriver: %s", e)
             sys.exit("Unable to start Selenium WebDriver")
 
     def close_driver(self) -> None:
-        if self.close_browser:
-            self.driver.quit()
-            # self.chrome_process.terminate()
+        self.driver.quit()
+        self.chrome_process.terminate()
 
     def auto_page_scroll(
         self,

@@ -49,6 +49,9 @@ def create_download_service(
 
 def main() -> int:
     args = cli.parse_arguments()
+    if args.bot_type == "selenium":
+        utils.check_module_installed()
+
     config_manager = config.ConfigManager()
     config_manager.load_all({"args": args})
 
