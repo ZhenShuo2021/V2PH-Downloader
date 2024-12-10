@@ -60,7 +60,8 @@ class ScrapeManager:
             self.logger.exception("Scraping error: '%s'", e)
         finally:
             self.download_service.stop()  # DO NOT REMOVE
-            self.web_bot.close_driver()
+            if self.config.static_config.terminate:
+                self.web_bot.close_driver()
 
     def log_final_status(self) -> None:
         self.logger.info("Download finished, showing download status")

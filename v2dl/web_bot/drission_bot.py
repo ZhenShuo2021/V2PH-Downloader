@@ -53,8 +53,7 @@ class DrissionBot(BaseBot):
         self.scroller = DriScroll(self.page, self.config, self.logger)
 
     def close_driver(self) -> None:
-        if self.close_browser:
-            self.page.quit()
+        self.page.quit()
 
     def auto_page_scroll(
         self,
