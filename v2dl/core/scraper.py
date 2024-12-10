@@ -56,6 +56,10 @@ class ScrapeManager:
                 self.runtime_config.url = url
                 self.scrape_handler.update_runtime_config(self.runtime_config)
                 self.scrape_handler.scrape(url, self.dry_run)
+
+                if self.runtime_config.url_file:
+                    self._mark_urls(url)
+
         except ScrapeError as e:
             self.logger.exception("Scraping error: '%s'", e)
         finally:
@@ -112,6 +116,19 @@ class ScrapeManager:
         else:
             urls = [self.runtime_config.url]
         return urls
+
+    def _mark_urls(self, target_url: str) -> None:
+        with open(self.runtime_config.url_file, "r+") as file:
+            lines = file.readlines()
+            file.seek(0)
+
+            for line in lines:
+                if line.strip().startswith(LinkParser.remove_query_params(target_url)):
+                    file.write(f"# {line}")
+                else:
+                    file.write(line)
+
+            file.truncate()
 
 
 class ScrapeHandler:
