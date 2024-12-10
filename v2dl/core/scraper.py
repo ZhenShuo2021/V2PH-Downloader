@@ -183,6 +183,10 @@ class ScrapeHandler:
             return
 
         image_links = self._real_scrape(album_url, start_page, "album_image")
+        self.album_tracker.update_download_log(
+            self.runtime_config.url,
+            {LogKey.expect_num: len(image_links)},
+        )
         if not image_links:
             return
 
@@ -460,7 +464,6 @@ class ImageScraper(BaseScraper[ImageLinkAndALT]):
             {
                 LogKey.status: album_status,
                 LogKey.dest: str(dest.parent),
-                LogKey.expect_num: len(page_links),
             },
         )
 

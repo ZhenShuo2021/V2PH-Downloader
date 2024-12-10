@@ -203,6 +203,7 @@ def test_scrape_album_list(real_scrape_handler):
 def test_scrape_album(real_scrape_handler, mock_logger):
     real_scrape_handler.album_tracker.is_downloaded = MagicMock(return_value=False)
     real_scrape_handler.album_tracker.log_downloaded = MagicMock(return_value=False)
+    real_scrape_handler.runtime_config.url = TEST_ALBUM_URL
     real_scrape_handler._real_scrape = MagicMock(
         return_value=[("http://example.com/image1.jpg", "image1")]
     )
