@@ -5,8 +5,8 @@ from unittest.mock import Mock
 import pytest
 
 from v2dl import create_runtime_config
-from v2dl.common import BaseConfig, BaseConfigManager
 from v2dl.common.const import DEFAULT_CONFIG
+from v2dl.config import BaseConfig, BaseConfigManager
 
 
 @pytest.fixture

@@ -25,7 +25,7 @@ def args():
     )
 
 
-@patch("v2dl.common.BaseConfigManager.load")
+@patch("v2dl.config.BaseConfigManager.load")
 @patch("v2dl.utils.DownloadPathTool.check_input_file")
 def test_process_input_no_version(mock_check_input_file, mock_load, args):
     mock_base_config = MagicMock()
@@ -60,7 +60,7 @@ def args_valued():
     )
 
 
-@patch("v2dl.common.BaseConfigManager.load")
+@patch("v2dl.config.BaseConfigManager.load")
 @patch("v2dl.utils.DownloadPathTool.check_input_file")
 @patch("v2dl.cli.cli")
 def test_process_input_with_values(mock_cli, mock_check_input_file, mock_load, args_valued):

@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from v2dl.common import BaseConfig, RuntimeConfig
+from v2dl.config import BaseConfig, RuntimeConfig
 from v2dl.core import ScrapeHandler, ScrapeManager
 from v2dl.utils import DownloadLogKeys as LogKey, DownloadStatus, ServiceType
 from v2dl.web_bot import get_bot
