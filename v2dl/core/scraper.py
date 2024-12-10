@@ -8,18 +8,19 @@ from typing import Any, ClassVar, Generic, Literal, TypeAlias, TypeVar
 
 from lxml import html
 
-from ..common import BaseConfig, RuntimeConfig, ScrapeError
+from ..common import ScrapeError
 from ..common.const import BASE_URL, IMAGE_PER_PAGE
+from ..config import BaseConfig, RuntimeConfig
 from ..utils import (
     AlbumTracker,
     DownloadLogKeys as LogKey,
     DownloadPathTool,
     DownloadStatus,
-    LinkParser,
     Task,
     count_files,
     enum_to_string,
 )
+from ..utils.parser import LinkParser
 
 # Manage return types of each scraper here
 AlbumLink: TypeAlias = str

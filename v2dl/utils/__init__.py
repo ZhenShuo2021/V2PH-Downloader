@@ -15,7 +15,6 @@ from .multitask import (
     Task,
     ThreadingService,
 )
-from .parser import LinkParser
 from .security import AccountManager, Encryptor, KeyManager, SecureFileHandler
 
 # only import __all__ when using from automation import *
@@ -32,7 +31,6 @@ __all__ = [
     "Encryptor",
     "ImageDownloadAPI",
     "KeyManager",
-    "LinkParser",
     "SecureFileHandler",
     "ServiceType",
     "Task",

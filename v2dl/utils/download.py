@@ -17,7 +17,7 @@ import httpx
 from pathvalidate import sanitize_filename
 
 from .parser import LinkParser
-from ..common._types import PathType
+from ..config.model import PathType
 
 logger = logging.getLogger()
 

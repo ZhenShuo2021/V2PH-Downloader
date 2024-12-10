@@ -9,12 +9,12 @@ import sys
 import logging
 from argparse import Namespace as NamespaceT
 
-from . import cli, common, core, utils, version, web_bot
+from . import cli, common, config, core, utils, version, web_bot
 
 __all__ = ["cli", "common", "core", "utils", "version", "version", "web_bot"]
 
 
-def process_input(args: NamespaceT) -> common._types.BaseConfig:
+def process_input(args: NamespaceT) -> config.BaseConfig:
     if args.version:
         print(version.__version__)  # noqa
         sys.exit(0)
@@ -22,7 +22,7 @@ def process_input(args: NamespaceT) -> common._types.BaseConfig:
     if args.input_file:
         utils.DownloadPathTool.check_input_file(args.input_file)
 
-    base_config = common.BaseConfigManager(common.DEFAULT_CONFIG).load()
+    base_config = config.BaseConfigManager(common.DEFAULT_CONFIG).load()
 
     if args.account:
         cli.cli(base_config.encryption)
@@ -44,11 +44,11 @@ def process_input(args: NamespaceT) -> common._types.BaseConfig:
 
 def create_runtime_config(
     args: NamespaceT,
-    base_config: common.BaseConfig,
+    base_config: config.BaseConfig,
     logger: logging.Logger,
     log_level: int,
     service_type: utils.ServiceType = utils.ServiceType.ASYNC,
-) -> common.RuntimeConfig:
+) -> config.RuntimeConfig:
     """Create runtime configuration with integrated download service and function."""
 
     download_service = utils.TaskServiceFactory.create(
@@ -79,7 +79,7 @@ def create_runtime_config(
     else:
         exact_dir = False
 
-    return common.RuntimeConfig(
+    return config.RuntimeConfig(
         url=args.url,
         input_file=args.input_file,
         bot_type=args.bot_type,

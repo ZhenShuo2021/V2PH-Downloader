@@ -6,7 +6,8 @@ from logging import Logger
 from subprocess import run
 from typing import Any
 
-from ..common import BaseConfig, RuntimeConfig, const
+from ..common import const
+from ..config import BaseConfig, RuntimeConfig
 from ..utils import AccountManager, KeyManager
 
 

@@ -3,7 +3,7 @@ from typing import Any
 
 from .drission_bot import DrissionBot
 from .selenium_bot import SeleniumBot
-from ..common import BaseConfig, RuntimeConfig
+from ..config import BaseConfig, RuntimeConfig
 from ..utils import AccountManager, KeyManager
 
 

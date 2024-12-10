@@ -14,7 +14,7 @@ from .cookies import load_cookies
 from ..common.error import BotError
 
 if TYPE_CHECKING:
-    from ..common import BaseConfig, RuntimeConfig
+    from ..config import BaseConfig, RuntimeConfig
     from ..utils import AccountManager, KeyManager
 
 

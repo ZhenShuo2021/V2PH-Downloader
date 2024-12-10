@@ -6,7 +6,7 @@ from typing import Any
 import yaml
 from dotenv import load_dotenv
 
-from ._types import BaseConfig, ChromeConfig, DownloadConfig, EncryptionConfig, PathConfig
+from .model import BaseConfig, ChromeConfig, DownloadConfig, EncryptionConfig, PathConfig
 
 
 class ConfigPathTool:

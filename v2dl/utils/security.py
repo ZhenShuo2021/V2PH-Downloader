@@ -18,7 +18,8 @@ from nacl.pwhash import argon2id
 from nacl.secret import SecretBox
 from nacl.utils import EncryptedMessage, random as nacl_random
 
-from ..common import BaseConfigManager, EncryptionConfig, SecurityError
+from ..common import SecurityError
+from ..config import BaseConfigManager, EncryptionConfig
 
 
 @dataclass

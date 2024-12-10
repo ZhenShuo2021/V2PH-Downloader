@@ -22,7 +22,7 @@ from .cookies import load_cookies
 from ..common import SELENIUM_AGENT
 
 if TYPE_CHECKING:
-    from ..common import BaseConfig, RuntimeConfig
+    from ..config import BaseConfig, RuntimeConfig
     from ..utils import AccountManager, KeyManager
 
 DEFAULT_BOT_OPT = [
