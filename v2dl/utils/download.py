@@ -17,6 +17,7 @@ import httpx
 from pathvalidate import sanitize_filename
 
 from .parser import LinkParser
+from ..common.const import VALID_EXTENSIONS
 from ..config.model import PathType
 
 logger = logging.getLogger()
@@ -215,13 +216,19 @@ class DownloadPathTool:
         return folder / f"{sf}{ext}"
 
     @staticmethod
-    def get_image_ext(url: str, default_ext: str = "jpg") -> str:
-        """Get the extension of a URL."""
-        image_extensions = r"\.(jpg|jpeg|png|gif|bmp|webp|tiff|svg)(?:\?.*|#.*|$)"
+    def get_image_ext(
+        url: str, default_ext: str = "jpg", valid_ext: tuple[str, ...] = VALID_EXTENSIONS
+    ) -> str:
+        """Get the extension of a URL based on a list of valid extensions."""
+        image_extensions = r"\.(" + "|".join(valid_ext) + r")(?:\?.*|#.*|$)"
         match = re.search(image_extensions, url, re.IGNORECASE)
+
         if match:
+            ext = match.group(1).lower()
             # Normalize 'jpeg' to 'jpg'
-            return "jpg" if match.group(1).lower() == "jpeg" else match.group(1).lower()
+            return "jpg" if ext == "jpeg" else ext
+
+        logger.warning(f"Unrecognized extension of 'url', using default {default_ext}")
         return default_ext
 
     @staticmethod

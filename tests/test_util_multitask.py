@@ -19,7 +19,7 @@ def failing_task():
 
 
 async def async_simple_add(a, b):
-    await asyncio.sleep(0.000001)
+    await asyncio.sleep(0.0001)
     return a + b
 
 

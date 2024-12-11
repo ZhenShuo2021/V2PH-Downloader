@@ -85,3 +85,21 @@ def test_cache_eviction(dir_cache, test_dir):
     assert dir2 in dir_cache._cache
     assert dir3 in dir_cache._cache
     assert dir4 in dir_cache._cache
+
+
+def test_get_image_ext():
+    assert DownloadPathTool.get_image_ext("photo.jpg") == "jpg"
+    assert DownloadPathTool.get_image_ext("picture.jpeg") == "jpg"
+    assert DownloadPathTool.get_image_ext("image.png") == "png"
+    assert DownloadPathTool.get_image_ext("file.PNG") == "png"
+    assert DownloadPathTool.get_image_ext("banner.GIF") == "gif"
+
+    # test edge case
+    assert DownloadPathTool.get_image_ext("image.png?param=value") == "png"  # With query params
+    assert DownloadPathTool.get_image_ext("photo.jpg#fragment") == "jpg"  # With fragment
+
+    # test not support
+    assert DownloadPathTool.get_image_ext("file.txt") == "jpg"
+    assert DownloadPathTool.get_image_ext("doc.docx") == "jpg"
+    assert DownloadPathTool.get_image_ext("example") == "jpg"
+    assert DownloadPathTool.get_image_ext("") == "jpg"

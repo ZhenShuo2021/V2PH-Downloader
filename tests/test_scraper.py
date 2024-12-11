@@ -8,6 +8,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from v2dl.common.const import VALID_EXTENSIONS
 from v2dl.config import Config, ConfigManager, RuntimeConfig
 from v2dl.core import ScrapeHandler, ScrapeManager
 from v2dl.utils import DownloadLogKeys as LogKey, DownloadStatus
@@ -80,7 +81,7 @@ def test_download(setup_test_env, real_args):
     scraper: ScrapeHandler
     config: Config
     runtime_config: RuntimeConfig
-    valid_extensions = (".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG")
+    valid_extensions = VALID_EXTENSIONS
 
     scraper, config = setup_test_env()
     runtime_config = config.runtime_config
@@ -97,7 +98,7 @@ def test_download(setup_test_env, real_args):
 
     # Check number of files
     image_files = sorted(download_subdir.glob("*"), key=lambda x: x.name)
-    image_files = [f for f in image_files if f.suffix.lower() in valid_extensions]
+    image_files = [f for f in image_files if f.suffix.lower()[1:] in valid_extensions]
     assert len(image_files) == expected_file_count, (
         f"Expected {expected_file_count} images, found {len(image_files)}"
     )

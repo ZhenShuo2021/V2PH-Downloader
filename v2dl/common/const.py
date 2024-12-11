@@ -44,12 +44,28 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
 
 # ============== System ==============
 BASE_URL = "https://www.v2ph.com"
-DEMO_URL_ALBUM = "https://www.v2ph.com/album/Weekly-Young-Jump-2015-No15"
-DEMO_URL_ALBUM_LIST = "https://www.v2ph.com/category/nogizaka46"
-WORKFLOW_URL_ACTOR = (
-    "https://www.v2ph.com/album/Weekly-Big-Comic-Spirits-2016-No22-23"  # only 1 page
-)
 AVAILABLE_LANGUAGES = ("zh-Hans", "ja", "zh-Hant", "en", "ko", "es", "fr", "ru", "de", "ar")
+VALID_EXTENSIONS = (
+    "jpg",
+    "jpeg",
+    "JPG",
+    "JPEG",
+    "png",
+    "PNG",
+    "gif",
+    "bmp",
+    "webp",
+    "webm",
+    "tiff",
+    "svg",
+    "mp4",
+    "mov",
+    "avi",
+    "mkv",
+    "wmv",
+    "flv",
+    "m4v",
+)
 IMAGE_PER_PAGE = 10
 
 # For selenium webdriver
