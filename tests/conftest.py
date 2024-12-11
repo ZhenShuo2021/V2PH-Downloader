@@ -60,6 +60,7 @@ def real_config(tmp_path, real_download_service, real_args, mock_logger) -> Conf
 
     # setup path_config
     config_manager.set("path_config", "download_log", str(tmp_path / "download.log"))
+    config_manager.set("path_config", "chrome_profile_path", str(tmp_path / "chrome_profile"))
     return config_manager.initialize_config()
 
 
