@@ -120,7 +120,7 @@ class ConfigManager(ConfigPathTool):
         args.max_scroll = max_s if args.max_scroll is None else max(args.max_scroll, max_s)
         args.min_scroll = min_s if args.min_scroll is None else max(args.min_scroll, min_s)
         if args.min_scroll > args.max_scroll:
-            args.max_scroll = args.min_scroll // 2
+            args.min_scroll = args.max_scroll // 2
         self.set(path, "min_scroll_length", args.min_scroll)
         self.set(path, "max_scroll_length", args.max_scroll)
 
