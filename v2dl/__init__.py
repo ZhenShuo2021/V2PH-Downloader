@@ -25,8 +25,9 @@ class V2DLApp:
         self.bot_registered: dict[str, Any] = {}
         self.default_config = default_config
 
-    def run(self) -> int:
-        config_instance = self.setup()
+    def run(self, args: Namespace | dict[Any, Any] | None = None) -> int:
+        args = self.__prepare_arguments(args)
+        config_instance = self.setup(args)
         web_bot_instance = self.get_bot(config_instance)
         scraper = core.ScrapeManager(config_instance, web_bot_instance)
         scraper.start_scraping()
@@ -36,8 +37,7 @@ class V2DLApp:
 
         return 0
 
-    def setup(self) -> config.Config:
-        args = self.parse_arguments()
+    def setup(self, args: Namespace) -> config.Config:
         if args.version:
             print(version.__version__)  # noqa: T201
             sys.exit(0)
@@ -71,9 +71,6 @@ class V2DLApp:
 
         return config_manager.initialize_config()
 
-    def parse_arguments(self) -> Namespace:
-        return cli.parse_arguments()
-
     def get_bot(self, config_instance: config.Config) -> Any:
         if self.bot_type in self.bot_registered:
             return self.bot_registered[self.bot_type](config_instance)
@@ -84,3 +81,20 @@ class V2DLApp:
 
     def register_bot(self, bot_type: str, factory: Any) -> None:
         self.bot_registered[bot_type] = factory
+
+    def parse_arguments(self) -> Namespace:
+        return cli.parse_arguments()
+
+    def __prepare_arguments(self, args: Namespace | dict[Any, Any] | None) -> Namespace:
+        """Process CLI input for Config setup
+
+        If input is None, it uses the argparse to parse inputs from command line. Otherwise, the
+        inputs will be cast into a Namespace variable. Note these variables has the highest priority
+        to the Config setup.
+        """
+        if isinstance(args, Namespace):
+            return args
+        elif isinstance(args, dict):
+            return Namespace(**args)
+        else:
+            return self.parse_arguments()
