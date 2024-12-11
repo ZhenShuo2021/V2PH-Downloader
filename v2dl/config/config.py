@@ -17,10 +17,11 @@ if TYPE_CHECKING:
 
 class ConfigPathTool:
     @staticmethod
-    def resolve_abs_path(path: str | Path, base_dir: str | Path) -> str | Path:
+    def resolve_abs_path(path: str | Path, base_dir: str | Path | None = None) -> Path:
         """Resolve '~', add path with base_dir if input is not absolute path."""
-        path = os.path.expanduser(path)
-        return os.path.join(base_dir, path) if not os.path.isabs(path) else path
+        base_dir = base_dir or ConfigPathTool.get_default_download_dir()
+        path = Path(path).expanduser()
+        return Path(base_dir) / path if not path.is_absolute() else path
 
     @staticmethod
     def get_system_config_dir() -> Path:
@@ -98,11 +99,11 @@ class ConfigManager(ConfigPathTool):
         # setup download dir
         self.set(path, "download_dir", ConfigPathTool.get_default_download_dir())
         if args.destination is not None:
-            self.set(path, "download_dir", args.destination)
+            self.set(path, "download_dir", ConfigPathTool.resolve_abs_path(args.destination))
         if args.directory is not None:
             dest = args.directory
             exact_dir = True
-            self.set(path, "download_dir", dest)
+            self.set(path, "download_dir", ConfigPathTool.resolve_abs_path(dest))
         else:
             exact_dir = False
         self.set(path, "exact_dir", exact_dir)
