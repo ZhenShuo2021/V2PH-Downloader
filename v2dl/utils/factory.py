@@ -1,3 +1,4 @@
+from argparse import Namespace as NamespaceT
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
@@ -12,6 +13,7 @@ from .download import (
     VideoDownloadAPI,
 )
 from .multitask import AsyncService, BaseTaskService, ThreadingService
+from ..common.const import HEADERS
 
 
 @dataclass
@@ -89,3 +91,32 @@ class DownloadAPIFactory:
             return VideoDownloadAPI(headers, rate_limit, force_download, cache)
 
         return api_class(headers, rate_limit, force_download, cache)
+
+
+def create_download_service(
+    args: NamespaceT,
+    max_worker: int,
+    rate_limit: int,
+    logger: Logger,
+    service_type: ServiceType = ServiceType.ASYNC,
+) -> tuple[BaseTaskService, Callable[..., Any]]:
+    """Create runtime configuration with integrated download service and function."""
+
+    download_service = TaskServiceFactory.create(
+        service_type=service_type,
+        logger=logger,
+        max_workers=max_worker,
+    )
+
+    download_api = DownloadAPIFactory.create(
+        service_type=service_type,
+        headers=HEADERS,
+        rate_limit=rate_limit,
+        force_download=args.force_download,
+        logger=logger,
+    )
+
+    download_function = (
+        download_api.download_async if service_type == ServiceType.ASYNC else download_api.download
+    )
+    return download_service, download_function

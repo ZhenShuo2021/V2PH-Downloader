@@ -8,7 +8,7 @@ from .download import (
     DownloadStatus,
     ImageDownloadAPI,
 )
-from .factory import DownloadAPIFactory, ServiceType, TaskServiceFactory
+from .factory import DownloadAPIFactory, ServiceType, TaskServiceFactory, create_download_service
 from .multitask import (
     AsyncService,
     BaseTaskService,
@@ -40,5 +40,6 @@ __all__ = [
     "ThreadingService",
     "check_module_installed",
     "count_files",
+    "create_download_service",
     "enum_to_string",
 ]

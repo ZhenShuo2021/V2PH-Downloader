@@ -74,7 +74,16 @@ def setup_logging(
     logging.root.setLevel(level)
     logger.setLevel(level)
 
+    # suppress httpx INFO level log
+    suppress_log(level)
+
     return logger
+
+
+def suppress_log(level: int) -> None:
+    level = logging.DEBUG if level == logging.DEBUG else logging.WARNING
+    logging.getLogger("httpx").setLevel(level)
+    logging.getLogger("httpcore").setLevel(level)
 
 
 if __name__ == "__main__":

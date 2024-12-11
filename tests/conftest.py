@@ -4,10 +4,9 @@ from unittest.mock import Mock
 
 import pytest
 
-from v2dl import create_download_service
 from v2dl.common.const import DEFAULT_CONFIG, SELENIUM_AGENT
 from v2dl.config import Config, ConfigManager
-from v2dl.utils.factory import ServiceType
+from v2dl.utils.factory import ServiceType, create_download_service
 
 
 @pytest.fixture
