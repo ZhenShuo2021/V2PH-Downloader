@@ -11,20 +11,23 @@
 </div>
 
 # V2PH Downloader
+
 V2PH Downloader
 
 ## Features
-📦 Plug-and-play: No extra dependencies required   
-🌐 Cross-platform: Supports all platforms   
-🔄 Dual engines: Supports both DrissionPage and Selenium automation options   
-🛠️ Convenient: Supports multiple accounts for auto-login and switching, supports cookies/password login   
-⚡️ Fast: High-efficiency download with asynchronous event loop   
-🧩 Customizable: Offers many configuration options   
-🔑 Secure: Uses PyNaCL as encryption backend.    
 
+📦 Plug-and-play: No extra dependencies required
+🌐 Cross-platform: Supports all platforms
+🔄 Dual engines: Supports both DrissionPage and Selenium automation options
+🛠️ Convenient: Supports multiple accounts for auto-login and switching, supports cookies/password login
+⚡️ Fast: High-efficiency download with asynchronous event loop
+🧩 Customizable: Offers many configuration options
+🔑 Secure: Uses PyNaCL as encryption backend.
 
 ## Installation
+
 Requirements:
+
 1. Chrome browser installed
 2. Python version > 3.10
 3. Install via pip
@@ -34,10 +37,12 @@ pip install v2dl
 ```
 
 ## Usage
+
 On first run, login to V2PH with one of the two methods:
 
 1. Account Management Interface
 Use `v2dl -a` to enter the account management interface.
+
 ```sh
 v2dl -a
 ```
@@ -46,6 +51,7 @@ v2dl -a
 Due to strict bot detection on login pages, you can trigger the login page by randomly downloading an album, then manually log in if errors occur.
 
 ### First Download Attempt
+
 v2dl supports various download methods, including downloading a single album, a list of albums, starting from a specific album, or reading all pages from a text file.
 
 ```sh
@@ -60,9 +66,11 @@ v2dl -i "/path/to/urls.txt"
 ```
 
 ## Configuration
+
 The program looks for a `config.yaml` file in the system configuration directory. Refer to the example in the root directory.
 
 You can modify settings like scroll length, scroll step, and rate limit:
+
 - download_dir: Set download location, defaults to system download folder.
 - download_log: Tracks downloaded album URLs, skipped if duplicated; defaults to system configuration directory.
 - system_log: Location for program logs; defaults to system configuration directory.
@@ -70,21 +78,24 @@ You can modify settings like scroll length, scroll step, and rate limit:
 - chrome/exec_path: Path to Chrome executable.
 
 System configuration directory locations:
+
 - Windows: `C:\Users\xxx\AppData\v2dl`
 - Linux, macOS: `/Users/xxx/.config/v2dl`
 
 ### Cookies
+
 Cookies login is often more successful than using username/password.
 
 Use an extension (e.g., [Cookie-Editor](https://chromewebstore.google.com/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm)) to export cookies in Netscape format, and input the exported cookie file path in the account manager tool.
 
-> [!NOTE]   
+> [!NOTE]
 > Exported cookies must include `frontend-rmt/frontend-rmu`.
 
-> [!NOTE]   
+> [!NOTE]
 > Cookies are sensitive information; use high-quality extensions and remove or restrict access after exporting.
 
 ### Parameters
+
 - url: URL of the target to download.
 - -i: URL list in a text file, one URL per line.
 - -a: Enter the account management tool.
@@ -113,53 +124,59 @@ Password storage uses PyNaCL, an encryption suite based on modern cryptography N
 
 The keys are stored in a secure folder with access control, and encryption materials are stored separately in a `.env` file.
 
-## Using in a Script
+## Extend V2DL
+
+You can also extend V2DL. An example code below demonstrates how to use custom default config and replace your own the web automation script.
 
 ```py
 import v2dl
 import logging
-from collections import namedtuple
 
-your_custom_config = {
-    "download": {
-        "min_scroll_length": 500,
-        "max_scroll_length": 1000,
-        "min_scroll_step": 150,
-        "max_scroll_step": 250,
-        "rate_limit": 400,
-        "download_dir": "v2dl",
-    },
-    "paths": {
-        "download_log": "downloaded_albums.txt",
-        "system_log": "v2dl.log",
-    },
-    "chrome": {
-        "profile_path": "v2dl_chrome_profile",
-        "exec_path": {
-            "Linux": "/usr/bin/google-chrome",
-            "Darwin": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-            "Windows": r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-        },
-    },
+custom_defaults = {
+    "static_config": {
+        "min_scroll_length": 1000,
+        "max_scroll_length": 2000,
+        # ...
+    }
 }
 
-your_named_tuple = namedtuple("url", "input_file", "bot_type", ...)
-args = your_named_tuple(url="http://v2ph.com/...", input_file="txt_file", bot_type="drission", ...)
 
-# Initialize
-log_level = logging.INFO
-logger = v2dl.common.setup_logging(logging.INFO, log_path=app_config.paths.system_log)
+class CustomBot:
+    def __init__(self, config_instance):
+        self.config = config_instance
 
-app_config = v2dl.common.BaseConfigManager(your_custom_config)
-runtime_config = create_runtime_config(args, app_config, logger, log_level)
+    def auto_page_scroll(self, full_url, page_sleep=0) -> str:
+        # this function should return the html content for each album page
+        print("Custom bot in action!")
+        return """
+<!doctype html>
+<html>
+<head>
+    <title>Example Domain</title>
 
-# Start scraping
-web_bot_ = v2dl.web_bot.get_bot(runtime_config, app_config)
-scraper = v2dl.core.ScrapeManager(runtime_config, app_config, web_bot_)
-scraper.start_scraping()
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+
+<body>
+<div>
+    <h1>Example Domain</h1>
+    <p>This domain is for use in illustrative examples in documents. You may use this
+    domain in literature without prior coordination or asking for permission.</p>
+    <p><a href="https://www.iana.org/domains/example">More information...</a></p>
+</div>
+</body>
+</html>
+"""
+
+app = v2dl.V2DLApp("custom_bot", custom_defaults)
+app.register_bot("custom_bot", lambda config: CustomBot(config))
+app.run()
 ```
 
 ## Additional Notes
+
 1. Rapid page switching or fast downloads may trigger blocks. Current settings balance speed and block prevention.
 2. Block likelihood depends on network environment. Avoid using VPN for safer downloads.
 3. Use cautiously to avoid overloading the website's resources.

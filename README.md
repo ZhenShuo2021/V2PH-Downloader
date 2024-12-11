@@ -13,20 +13,21 @@
 [English](https://github.com/ZhenShuo2021/V2PH-Downloader/blob/main/README.en.md)
 
 # V2PH Downloader
+
 微圖坊下載器
 
-
 ## 特色
-📦 開箱即用：不用下載額外依賴   
-🌐 跨平台：全平台支援    
-🔄 雙引擎：支援 DrissionPage 和 Selenium 兩種自動化選項   
-🛠️ 方便：支援多帳號自動登入自動切換，支援 cookies/帳號密碼登入兩種方式   
-⚡️ 快速：採用非同步事件迴圈的高效下載    
-🧩 自訂：提供多種自定義參數選項   
-🔑 安全：使用 PyNaCL 作為加密後端   
 
+📦 開箱即用：不用下載額外依賴
+🌐 跨平台：全平台支援
+🔄 雙引擎：支援 DrissionPage 和 Selenium 兩種自動化選項
+🛠️ 方便：支援多帳號自動登入自動切換，支援 cookies/帳號密碼登入兩種方式
+⚡️ 快速：採用非同步事件迴圈的高效下載
+🧩 自訂：提供多種自定義參數選項
+🔑 安全：使用 PyNaCL 作為加密後端
 
 ## 安裝
+
 基本需求為
 
 1. 電腦已安裝 Chrome 瀏覽器
@@ -38,10 +39,12 @@ pip install v2dl
 ```
 
 ## 使用方式
+
 首次執行時需要登入 V2PH 的帳號，有兩種方式
 
 1. 帳號管理介面
 使用 `v2dl -a` 進入帳號管理介面。
+
 ```sh
 v2dl -a
 ```
@@ -49,8 +52,8 @@ v2dl -a
 2. 手動登入
 帳號登入頁面的機器人偵測比較嚴格，可以隨機下載一個相簿啟動程式，遇到登入頁面程式報錯後手動登入。
 
-
 ### 嘗試第一次下載
+
 v2dl 支援多種下載方式，可以下載單一相簿，也可以下載相簿列表，也支援從相簿中間開始下載，以及讀取文字文件中的所有頁面。
 
 ```sh
@@ -65,6 +68,7 @@ v2dl -i "/path/to/urls.txt"
 ```
 
 ## 設定
+
 會尋找系統設定目錄中是否存在 `config.yaml`，格式請參照根目錄的範例。
 
 裡面可以修改捲動長度、捲動步長與速率限制等設定：
@@ -76,21 +80,24 @@ v2dl -i "/path/to/urls.txt"
 - chrome/exec_path: 系統的 Chrome 程式位置。
 
 系統設定目錄位置：
+
 - Windows: `C:\Users\xxx\AppData\v2dl`
 - Linux, macOS: `/Users/xxx/.config/v2dl`
 
 ### Cookies
+
 Cookies 登入比帳號密碼更容易成功。
 
 使用方式是用擴充套件（如 [Cookie-Editor](https://chromewebstore.google.com/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm)）導出 cookies，建議選擇 Netscape 格式，並且在帳號管理工具中輸入導出的 cookie 文件位置。
 
-> [!NOTE]   
+> [!NOTE]
 > 導出的 Cookies 必須包含 frontend-rmt/frontend-rmu 項目。
 
-> [!NOTE]   
-> Cookies 為機密資訊，請選擇選擇[下載數量高](https://news.cnyes.com/news/id/5584471)的擴充功能套件，並且導出完成後建議將套件移除或限制存取。   
+> [!NOTE]
+> Cookies 為機密資訊，請選擇選擇[下載數量高](https://news.cnyes.com/news/id/5584471)的擴充功能套件，並且導出完成後建議將套件移除或限制存取。
 
 ### 參數
+
 - url: 下載目標的網址。
 - -i: 下載目標的 URL 列表文字文件，每行一個 URL。
 - -a: 進入帳號管理工具。
@@ -119,53 +126,59 @@ Cookies 登入比帳號密碼更容易成功。
 
 最後將金鑰儲存在設有安全權限管理的資料夾，並將加密材料分開儲存於獨立的 .env 檔案中。
 
-## 在腳本中使用
+## 擴展
+
+你可以擴展 V2DL，以下是一個使用自訂預設值，並且替換網頁自動化套件的範例
 
 ```py
 import v2dl
 import logging
-from collections import namedtuple
 
-your_custom_config = {
-    "download": {
-        "min_scroll_length": 500,
-        "max_scroll_length": 1000,
-        "min_scroll_step": 150,
-        "max_scroll_step": 250,
-        "rate_limit": 400,
-        "download_dir": "v2dl",
-    },
-    "paths": {
-        "download_log": "downloaded_albums.txt",
-        "system_log": "v2dl.log",
-    },
-    "chrome": {
-        "profile_path": "v2dl_chrome_profile",
-        "exec_path": {
-            "Linux": "/usr/bin/google-chrome",
-            "Darwin": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-            "Windows": r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-        },
-    },
+custom_defaults = {
+    "static_config": {
+        "min_scroll_length": 1000,
+        "max_scroll_length": 2000,
+        # ...
+    }
 }
 
-your_named_tuple = namedtuple("url", "input_file", "bot_type", ...)
-args = your_named_tuple(url="http://v2ph.com/...", input_file="txt_file", bot_type="drission", ...)
 
-# Initialize
-log_level = logging.INFO
-logger = v2dl.common.setup_logging(logging.INFO, log_path=app_config.paths.system_log)
+class CustomBot:
+    def __init__(self, config_instance):
+        self.config = config_instance
 
-app_config = v2dl.common.BaseConfigManager(your_custom_config)
-runtime_config = create_runtime_config(args, app_config, logger, log_level)
+    def auto_page_scroll(self, full_url, page_sleep=0) -> str:
+        # this function should return the html content for each album page
+        print("Custom bot in action!")
+        return """
+<!doctype html>
+<html>
+<head>
+    <title>Example Domain</title>
 
-# Start scraping
-web_bot_ = v2dl.web_bot.get_bot(runtime_config, app_config)
-scraper = v2dl.core.ScrapeManager(runtime_config, app_config, web_bot_)
-scraper.start_scraping()
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+
+<body>
+<div>
+    <h1>Example Domain</h1>
+    <p>This domain is for use in illustrative examples in documents. You may use this
+    domain in literature without prior coordination or asking for permission.</p>
+    <p><a href="https://www.iana.org/domains/example">More information...</a></p>
+</div>
+</body>
+</html>
+"""
+
+app = v2dl.V2DLApp("custom_bot", custom_defaults)
+app.register_bot("custom_bot", lambda config: CustomBot(config))
+app.run()
 ```
 
 ## 補充
+
 1. 換頁或者下載速度太快都可能觸發封鎖，目前的設定已經均衡下載速度和避免封鎖了。
 2. 會不會被封鎖也有一部分取決於網路環境，不要開 VPN 下載比較安全。
 3. 謹慎使用，不要又把網站搞到關掉了，難得有資源收錄完整的。

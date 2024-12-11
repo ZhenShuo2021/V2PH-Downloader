@@ -1,23 +1,25 @@
-download:
-  min_scroll_length: 200
-  max_scroll_length: 1000
-  min_scroll_step: 30
-  max_scroll_step: 80
-  rate_limit: 400
-  download_dir: "download"
+static_config:
+  min_scroll_length: 500
+  max_scroll_length: 1500
+  max_worker: 4
+  rate_limit: 300
+  no_history: true
+  language: "fr"
+  exact_dir: true
+  download_dir: "~/Downloads/v2dl-yaml"
+  force_download: true
+  chrome_args:
+    - "--no-sandbox"
+  dry_run: false
+  terminate: true
 
-paths:
-  download_log: "downloaded_albums.txt"
-  system_log: "v2ph.log"
+path_config:
+  history_file: "~/Downloads/v2dl-yaml/yaml_history.log"
+  download_log: "~/Downloads/v2dl-yaml/yaml_download.log"
+  system_log: "~/Downloads/v2dl-yaml/yaml_system.log"
+  chrome_profile_path: "~/Downloads/v2dl-yaml/yaml_chrome_profile"
 
-chrome:
-  profile_path: "v2dl_chrome_profile"
-  exec_path:
-    Linux: "/usr/bin/google-chrome"
-    Darwin: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-    Windows: r"C:\Program Files\\Google\\Chrome\\Application\\chrome.exe"
-
-encryption:
+encryption_config:
   key_bytes: 32
   salt_bytes: 16 
   nonce_bytes: 24
