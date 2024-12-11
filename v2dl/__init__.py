@@ -49,6 +49,10 @@ def create_download_service(
 
 def main() -> int:
     args = cli.parse_arguments()
+    if args.version:
+        print(version.__version__)  # noqa: T201
+        sys.exit(0)
+
     if args.bot_type == "selenium":
         utils.check_module_installed()
 
