@@ -1,19 +1,14 @@
 {
     "recommendations": [
-        "ms-python.autopep8",
-        "aaron-bond.better-comments",
+        "ms-vscode-remote.remote-ssh",
         "streetsidesoftware.code-spell-checker",
+        "yzhang.markdown-all-in-one",
+        "davidanson.vscode-markdownlint",
         "mhutchie.git-graph",
         "donjayamanne.githistory",
-        "shd101wyy.markdown-preview-enhanced",
-        "pkief.material-icon-theme",
         "ms-python.vscode-pylance",
-        "ms-python.python",
-        "ms-python.debugpy",
         "donjayamanne.python-environment-manager",
-        "ms-vscode-remote.remote-ssh",
-        "ms-vscode-remote.remote-ssh-edit",
-        "ms-vscode.remote-explorer",
         "charliermarsh.ruff",
+        "njpwerner.autodocstring",
     ]
 }
