@@ -102,11 +102,8 @@ class ConfigManager(ConfigPathTool):
             self.set(path, "download_dir", ConfigPathTool.resolve_abs_path(args.destination))
         if args.directory is not None:
             dest = args.directory
-            exact_dir = True
             self.set(path, "download_dir", ConfigPathTool.resolve_abs_path(dest))
-        else:
-            exact_dir = False
-        self.set(path, "exact_dir", exact_dir)
+            self.set(path, "exact_dir", True)
 
         # setup download folder language
         self.set(path, "language", args.language)
@@ -131,8 +128,9 @@ class ConfigManager(ConfigPathTool):
         self.set(path, "terminate", args.terminate)
 
         # setup chrome_args
-        chrome_args = args.chrome_args.split("//") if args.chrome_args else []
-        self.set(path, "chrome_args", chrome_args)
+        if args.chrome_args:
+            chrome_args = args.chrome_args.split("//")
+            self.set(path, "chrome_args", chrome_args)
 
         # toggle default chrome profile
         self.set(path, "use_chrome_default_profile", args.use_default_chrome_profile)
