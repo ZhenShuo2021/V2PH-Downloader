@@ -122,12 +122,14 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--min-scroll",
         type=int,
+        dest="min_scroll",
         metavar="N",
         help=f"minimum scroll length of web bot (default: {DEFAULT_CONFIG['static_config']['min_scroll_length']})",
     )
     parser.add_argument(
         "--max-scroll",
         type=int,
+        dest="max_scroll",
         metavar="N",
         help=f"maximum scroll length of web bot (default: {DEFAULT_CONFIG['static_config']['max_scroll_length']})",
     )

@@ -121,7 +121,8 @@ class ConfigManager(ConfigPathTool):
         args.min_scroll = min_s if args.min_scroll is None else max(args.min_scroll, min_s)
         if args.min_scroll > args.max_scroll:
             args.max_scroll = args.min_scroll // 2
-        self.set(path, "min_scroll", args.min_scroll)
+        self.set(path, "min_scroll_length", args.min_scroll)
+        self.set(path, "max_scroll_length", args.max_scroll)
 
         # toggle dry run mode
         self.set(path, "dry_run", args.dry_run)
