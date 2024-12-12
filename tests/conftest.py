@@ -1,5 +1,5 @@
 import logging
-from types import SimpleNamespace
+from argparse import Namespace
 from unittest.mock import Mock
 
 import pytest
@@ -37,7 +37,7 @@ def real_config(tmp_path, real_download_service, real_args, mock_logger) -> Conf
     download_service, download_function = real_download_service(ServiceType.ASYNC)
     # prepare runtime_config
     download_service, download_function = create_download_service(
-        SimpleNamespace(force_download=True),  # type: ignore
+        Namespace(force_download=True),
         config_manager.get("static_config", "max_worker"),
         config_manager.get("static_config", "rate_limit"),
         mock_logger,
@@ -67,7 +67,7 @@ def real_config(tmp_path, real_download_service, real_args, mock_logger) -> Conf
 @pytest.fixture
 def real_args():
     expected_file_count = 12
-    return SimpleNamespace(
+    return Namespace(
         url="https://www.v2ph.com/album/Weekly-Young-Jump-2012-No29",
         input_file="",
         bot_type="drissionpage",
