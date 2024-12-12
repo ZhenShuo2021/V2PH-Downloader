@@ -32,7 +32,7 @@ class CustomHelpFormatter(argparse.RawTextHelpFormatter):
             return ", ".join(parts)
 
 
-def parse_arguments() -> argparse.Namespace:
+def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="V2PH scraper.",
         formatter_class=CustomHelpFormatter,
@@ -173,4 +173,4 @@ def parse_arguments() -> argparse.Namespace:
         help="Set log level (1~5)",
     )
 
-    return parser.parse_args()
+    return parser.parse_args(args)

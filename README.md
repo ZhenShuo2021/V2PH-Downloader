@@ -131,8 +131,7 @@ Cookies 登入比帳號密碼更容易成功。
 你可以擴展 V2DL，以下是一個使用自訂預設值，並且替換網頁自動化套件的範例
 
 ```py
-import v2dl
-import logging
+from v2dl import V2DLApp
 
 custom_defaults = {
     "static_config": {
@@ -172,9 +171,20 @@ class CustomBot:
 </html>
 """
 
-app = v2dl.V2DLApp("custom_bot", custom_defaults)
-app.register_bot("custom_bot", lambda config: CustomBot(config))
-app.run()
+class ExtendedV2DL(V2DLApp):
+    def _setup_runtime_config(self, config_manager, args):
+        super()._setup_runtime_config(config_manager, args)
+        config_manager.set("runtime_config", "user_agent", "my_custom_ua")
+        print("Custom config in action!")
+
+
+bot_name = "my awesome bot"
+command_line_args = {"url": "https://www.v2ph.com/album/foo", "force_download": True}
+
+app = ExtendedV2DL()
+app.register_bot(bot_name, CustomBot)
+app.set_bot(bot_name)
+app.run(command_line_args)
 ```
 
 ## 補充

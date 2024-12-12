@@ -13,7 +13,6 @@ from .download import (
     VideoDownloadAPI,
 )
 from .multitask import AsyncService, BaseTaskService, ThreadingService
-from ..common.const import HEADERS
 
 
 @dataclass
@@ -98,6 +97,7 @@ def create_download_service(
     max_worker: int,
     rate_limit: int,
     logger: Logger,
+    headers: dict[str, str],
     service_type: ServiceType = ServiceType.ASYNC,
 ) -> tuple[BaseTaskService, Callable[..., Any]]:
     """Create runtime configuration with integrated download service and function."""
@@ -110,7 +110,7 @@ def create_download_service(
 
     download_api = DownloadAPIFactory.create(
         service_type=service_type,
-        headers=HEADERS,
+        headers=headers,
         rate_limit=rate_limit,
         force_download=args.force_download,
         logger=logger,

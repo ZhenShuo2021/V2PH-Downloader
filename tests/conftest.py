@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from v2dl.common.const import DEFAULT_CONFIG, SELENIUM_AGENT
+from v2dl.common.const import DEFAULT_CONFIG, HEADERS, SELENIUM_AGENT
 from v2dl.config import Config, ConfigManager
 from v2dl.utils.factory import ServiceType, create_download_service
 
@@ -24,6 +24,7 @@ def real_download_service(real_args, mock_logger):
             max_worker=5,
             rate_limit=400,
             logger=mock_logger,
+            headers=HEADERS,
             service_type=service_type,
         )
 
@@ -41,6 +42,7 @@ def real_config(tmp_path, real_download_service, real_args, mock_logger) -> Conf
         config_manager.get("static_config", "max_worker"),
         config_manager.get("static_config", "rate_limit"),
         mock_logger,
+        HEADERS,
     )
 
     # setup static_config

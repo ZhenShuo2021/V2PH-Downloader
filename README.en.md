@@ -129,8 +129,7 @@ The keys are stored in a secure folder with access control, and encryption mater
 You can also extend V2DL. An example code below demonstrates how to use custom default config and replace your own the web automation script.
 
 ```py
-import v2dl
-import logging
+from v2dl import V2DLApp
 
 custom_defaults = {
     "static_config": {
@@ -170,9 +169,20 @@ class CustomBot:
 </html>
 """
 
-app = v2dl.V2DLApp("custom_bot", custom_defaults)
-app.register_bot("custom_bot", lambda config: CustomBot(config))
-app.run()
+class ExtendedV2DL(V2DLApp):
+    def _setup_runtime_config(self, config_manager, args):
+        super()._setup_runtime_config(config_manager, args)
+        config_manager.set("runtime_config", "user_agent", "my_custom_ua")
+        print("Custom config in action!")
+
+
+bot_name = "my awesome bot"
+command_line_args = {"url": "https://www.v2ph.com/album/foo", "force_download": True}
+
+app = ExtendedV2DL()
+app.register_bot(bot_name, CustomBot)
+app.set_bot(bot_name)
+app.run(command_line_args)
 ```
 
 ## Additional Notes

@@ -18,26 +18,110 @@ __all__ = ["cli", "common", "config", "core", "utils", "version", "web_bot"]
 class V2DLApp:
     def __init__(
         self,
-        bot_type: str = "drissionpage",
         default_config: dict[str, dict[str, Any]] = common.const.DEFAULT_CONFIG,
     ) -> None:
-        self.bot_type = bot_type
-        self.bot_registered: dict[str, Any] = {}
         self.default_config = default_config
+        self.default_cli_values = {"url": None, "url_file": None, "account": False}
+        self.registered_bot: dict[str, Any] = {}
 
-    def run(self, args: Namespace | dict[Any, Any] | None = None) -> int:
-        args = self.__prepare_arguments(args)
-        config_instance = self.setup(args)
-        web_bot_instance = self.get_bot(config_instance)
-        scraper = core.ScrapeManager(config_instance, web_bot_instance)
-        scraper.start_scraping()
-        if not config_instance.static_config.no_history:
-            scraper.final_process()
-        scraper.log_final_status()
+    def run(self, args: Namespace | dict[Any, Any] | list[Any] | None = None) -> int:
+        """The interface to run the full V2DL
 
-        return 0
+        Args:
+            args (Namespace | dict[Any, Any] | list[Any] | None, optional): The command line
+            input for setup method. Defaults to None.
+
+        Returns:
+            int: The runtime status
+        """
+        try:
+            args = self.parse_arguments_wrapper(args)
+            conf = self.setup(args)
+            bot = self.get_bot(conf)
+            scraper = core.ScrapeManager(conf, bot)
+            scraper.start_scraping()
+            if not conf.static_config.no_history:
+                scraper.final_process()
+            scraper.log_final_status()
+
+            return 0
+
+        except Exception as e:
+            raise RuntimeError(f"Runtime error of V2DL: {e}") from e
 
     def setup(self, args: Namespace) -> config.Config:
+        """Setup the Config dataclass with command line inputs
+
+        The args can be replace with a custom Namespace object for advance uses.
+
+        Args:
+            args (Namespace): The variable from the command line. Can be replaced with custom
+            Namespace argument. Please see the cli/option.py for the required field.
+
+        Returns:
+            config.Config: The Config dataclass.
+        """
+        self._check_cli_inputs(args)
+
+        config_manager = config.ConfigManager(self.default_config)
+        config_manager.load_all({"args": args})
+        self._setup_runtime_config(config_manager, args)
+        return config_manager.initialize_config()
+
+    def get_bot(self, conf: config.Config) -> Any:
+        """Get the web automation bot
+
+        If the bot_name attribute is not set or not in registered_bot, it returns default bot.
+        """
+        # use user custom bot
+        if hasattr(self, "bot_name") and self.bot_name in self.registered_bot:
+            return self.registered_bot[self.bot_name](conf)
+
+        # use default bot, configured in config
+        return web_bot.get_bot(conf)
+
+    def set_bot(self, bot_name: str) -> None:
+        """Set the name of the custom bot"""
+        self.bot_name = bot_name
+
+    def register_bot(self, bot_name: str, bot: Any) -> None:
+        """Register a custom bot
+
+        Args:
+            bot_type (str): The name of custom bot
+            bot (Any): Web automation bot to be used
+        """
+        self.registered_bot[bot_name] = bot
+
+    def parse_arguments_wrapper(
+        self, args: Namespace | dict[Any, Any] | list[Any] | None
+    ) -> Namespace:
+        """Process CLI input for Config setup
+
+        Convert input variable to namespace for parse_args. If input is Namespace, returns itself.
+        If input is a dict or list, convert the and pass it to the parse_args. Otherwise, calls the
+        default CLI interface.
+        """
+
+        def init_attr(args: dict[Any, Any]) -> Namespace:
+            """Initialize attribute with value None"""
+            mock_input = ["placeholder"]
+            default_args = vars(cli.parse_arguments(mock_input))
+            return Namespace(**{key: args.get(key) for key in default_args})
+
+        if isinstance(args, Namespace):
+            return args
+        elif isinstance(args, dict):
+            return init_attr(args)
+        elif isinstance(args, list):
+            return cli.parse_arguments(args)
+        elif args is None:
+            return cli.parse_arguments()
+        else:
+            raise ValueError(f"Unsupported CLI input type {type(args)}")
+
+    def _check_cli_inputs(self, args: Namespace) -> None:
+        """Check command line inputs in advance"""
         if args.version:
             print(version.__version__)  # noqa: T201
             sys.exit(0)
@@ -45,56 +129,30 @@ class V2DLApp:
         if args.bot_type == "selenium":
             utils.check_module_installed()
 
-        config_manager = config.ConfigManager(self.default_config)
-        config_manager.load_all({"args": args})
-
-        # prepare logger
+    def _setup_runtime_config(
+        self,
+        config_manager: config.ConfigManager,
+        args: Namespace,
+        headers: dict[str, str] = common.const.HEADERS,
+        user_agent: str = common.const.SELENIUM_AGENT,
+    ) -> None:
+        """Initialize instances and assign to runtime config"""
         logger = common.setup_logging(
             config_manager.get("runtime_config", "log_level"),
             log_path=config_manager.get("path", "system_log"),
             logger_name=version.__package_name__,
         )
 
-        # prepare runtime_config
         download_service, download_function = utils.create_download_service(
             args,
             config_manager.get("static_config", "max_worker"),
             config_manager.get("static_config", "rate_limit"),
             logger,
+            headers,
             utils.ServiceType.ASYNC,
         )
         config_manager.set("runtime_config", "url", args.url)
         config_manager.set("runtime_config", "download_service", download_service)
         config_manager.set("runtime_config", "download_function", download_function)
         config_manager.set("runtime_config", "logger", logger)
-        config_manager.set("runtime_config", "user_agent", common.const.SELENIUM_AGENT)
-
-        return config_manager.initialize_config()
-
-    def get_bot(self, config_instance: config.Config) -> Any:
-        if self.bot_type in self.bot_registered:
-            return self.bot_registered[self.bot_type](config_instance)
-        return web_bot.get_bot(config_instance)
-
-    def set_bot(self, bot: str) -> None:
-        self.bot_type = bot
-
-    def register_bot(self, bot_type: str, factory: Any) -> None:
-        self.bot_registered[bot_type] = factory
-
-    def parse_arguments(self) -> Namespace:
-        return cli.parse_arguments()
-
-    def __prepare_arguments(self, args: Namespace | dict[Any, Any] | None) -> Namespace:
-        """Process CLI input for Config setup
-
-        If input is None, it uses the argparse to parse inputs from command line. Otherwise, the
-        inputs will be cast into a Namespace variable. Note these variables has the highest priority
-        to the Config setup.
-        """
-        if isinstance(args, Namespace):
-            return args
-        elif isinstance(args, dict):
-            return Namespace(**args)
-        else:
-            return self.parse_arguments()
+        config_manager.set("runtime_config", "user_agent", user_agent)
