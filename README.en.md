@@ -1,12 +1,12 @@
 <div align="center">
 
 ![Python >= 3.10](https://img.shields.io/badge/python->=3.10-red.svg?style=for-the-badge)
-![PyPI - Version](https://img.shields.io/pypi/v/v2dl?style=for-the-badge)
+[![PyPI - Version](https://img.shields.io/pypi/v/v2dl?style=for-the-badge)](https://pypi.org/project/v2dl/)
 ![Pepy Total Downloads](https://img.shields.io/pepy/dt/v2dl?style=for-the-badge&color=027ec7)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/ZhenShuo2021/V2PH-Downloader?style=for-the-badge)  
-[![Test Status](https://img.shields.io/github/actions/workflow/status/ZhenShuo2021/V2PH-Downloader/python-publish.yml?label=Tests&style=for-the-badge)](https://github.com/yt-dlp/yt-dlp/actions)
-![Build Status](https://img.shields.io/github/actions/workflow/status/ZhenShuo2021/V2PH-Downloader/tests.yml?label=Build&style=for-the-badge)
-![GitHub last commit](https://img.shields.io/github/last-commit/ZhenShuo2021/V2PH-Downloader?labelColor=555555&style=for-the-badge&color=027ec7)
+[![Test Status](https://img.shields.io/github/actions/workflow/status/ZhenShuo2021/V2PH-Downloader/python-publish.yml?label=Tests&style=for-the-badge)](https://github.com/ZhenShuo2021/V2PH-Downloader/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/ZhenShuo2021/V2PH-Downloader/tests.yml?label=Build&style=for-the-badge)](https://github.com/ZhenShuo2021/V2PH-Downloader/actions)
+[![GitHub last commit](https://img.shields.io/github/last-commit/ZhenShuo2021/V2PH-Downloader?labelColor=555555&style=for-the-badge&color=027ec7)](https://github.com/ZhenShuo2021/V2PH-Downloader/commits/main/)
 
 </div>
 
@@ -16,13 +16,13 @@ V2PH Downloader
 
 ## Features
 
-📦 Plug-and-play: No extra dependencies required
-🌐 Cross-platform: Supports all platforms
-🔄 Dual engines: Supports both DrissionPage and Selenium automation options
-🛠️ Convenient: Supports multiple accounts for auto-login and switching, supports cookies/password login
-⚡️ Fast: High-efficiency download with asynchronous event loop
-🧩 Customizable: Offers many configuration options
-🔑 Secure: Uses PyNaCL as encryption backend.
+📦 Plug-and-play: No extra dependencies required  
+🌐 Cross-platform: Supports all platforms  
+🔄 Dual engines: Supports both DrissionPage and Selenium automation options  
+🛠️ Convenient: Supports multiple accounts for auto-login and switching, supports cookies/password login  
+⚡️ Fast: High-efficiency download with asynchronous event loop  
+🧩 Customizable: Offers many configuration options  
+🔑 Secure: Uses PyNaCL as encryption backend  
 
 ## Installation
 

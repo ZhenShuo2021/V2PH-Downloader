@@ -1,12 +1,12 @@
 <div align="center">
 
 ![Python >= 3.10](https://img.shields.io/badge/python->=3.10-red.svg?style=for-the-badge)
-![PyPI - Version](https://img.shields.io/pypi/v/v2dl?style=for-the-badge)
+[![PyPI - Version](https://img.shields.io/pypi/v/v2dl?style=for-the-badge)](https://pypi.org/project/v2dl/)
 ![Pepy Total Downloads](https://img.shields.io/pepy/dt/v2dl?style=for-the-badge&color=027ec7)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/ZhenShuo2021/V2PH-Downloader?style=for-the-badge)  
-[![Test Status](https://img.shields.io/github/actions/workflow/status/ZhenShuo2021/V2PH-Downloader/python-publish.yml?label=Tests&style=for-the-badge)](https://github.com/yt-dlp/yt-dlp/actions)
-![Build Status](https://img.shields.io/github/actions/workflow/status/ZhenShuo2021/V2PH-Downloader/tests.yml?label=Build&style=for-the-badge)
-![GitHub last commit](https://img.shields.io/github/last-commit/ZhenShuo2021/V2PH-Downloader?labelColor=555555&style=for-the-badge&color=027ec7)
+[![Test Status](https://img.shields.io/github/actions/workflow/status/ZhenShuo2021/V2PH-Downloader/python-publish.yml?label=Tests&style=for-the-badge)](https://github.com/ZhenShuo2021/V2PH-Downloader/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/ZhenShuo2021/V2PH-Downloader/tests.yml?label=Build&style=for-the-badge)](https://github.com/ZhenShuo2021/V2PH-Downloader/actions)
+[![GitHub last commit](https://img.shields.io/github/last-commit/ZhenShuo2021/V2PH-Downloader?labelColor=555555&style=for-the-badge&color=027ec7)](https://github.com/ZhenShuo2021/V2PH-Downloader/commits/main/)
 
 </div>
 
@@ -18,13 +18,13 @@
 
 ## 特色
 
-📦 開箱即用：不用下載額外依賴
-🌐 跨平台：全平台支援
-🔄 雙引擎：支援 DrissionPage 和 Selenium 兩種自動化選項
-🛠️ 方便：支援多帳號自動登入自動切換，支援 cookies/帳號密碼登入兩種方式
-⚡️ 快速：採用非同步事件迴圈的高效下載
-🧩 自訂：提供多種自定義參數選項
-🔑 安全：使用 PyNaCL 作為加密後端
+📦 開箱即用：不用下載額外依賴  
+🌐 跨平台：全平台支援  
+🔄 雙引擎：支援 DrissionPage 和 Selenium 兩種自動化選項  
+🛠️ 方便：支援多帳號自動登入自動切換，支援 cookies/帳號密碼登入兩種方式  
+⚡️ 快速：採用非同步事件迴圈的高效下載  
+🧩 自訂：提供多種自定義參數選項  
+🔑 安全：使用 PyNaCL 作為加密後端  
 
 ## 安裝
 
