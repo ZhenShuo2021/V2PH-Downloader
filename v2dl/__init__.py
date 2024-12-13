@@ -126,6 +126,13 @@ class V2DLApp:
             print(version.__version__)  # noqa: T201
             sys.exit(0)
 
+        if args.account:
+            config_manager = config.ConfigManager(self.default_config)
+            config_manager.load_from_defaults()
+            config_manager.load_from_yaml()
+            cli.cli(config_manager.create_encryption_config())
+            sys.exit(0)
+
         if args.bot_type == "selenium":
             utils.check_module_installed()
 

@@ -36,7 +36,7 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
         "key_bytes": 32,
         "salt_bytes": 16,
         "nonce_bytes": 24,
-        "kdf_ops_limit": 2**10,
+        "kdf_ops_limit": 2**4,
         "kdf_mem_limit": 2**13,
     },
 }

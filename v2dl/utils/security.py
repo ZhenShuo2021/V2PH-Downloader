@@ -221,7 +221,6 @@ class KeyManager(KeyIOHelper):
             self.logger.info("Key pair already exists")
             return None
 
-        self.check_folder()
         return self._generate_and_encrypt_keys()
 
     def _keys_exist(self) -> bool:
@@ -470,7 +469,9 @@ class SecureFileHandler:
     def read_env(key: str) -> str:
         value = os.getenv(key)
         if value is None:
-            raise SecurityError(f"Missing required environment variable: {key}")
+            raise SecurityError(
+                f"Missing required environment variable: {key}, please check your key files"
+            )
         return value
 
 
