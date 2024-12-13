@@ -86,7 +86,9 @@ class ScrapeManager:
             else:
                 self.logger.info(f"{url}: Download successful")
 
-    def final_process(self) -> None:
+    def write_metadata(self) -> None:
+        if self.config.static_config.no_history:
+            return
         download_status = self.get_download_status
 
         # count real files
@@ -101,7 +103,7 @@ class ScrapeManager:
         else:
             metadata_name = "metadata_" + str(datetime.now().strftime("%Y%m%d_%H%M%S")) + ".json"
             metadata_dest = Path(self.config.static_config.download_dir) / metadata_name
-        metadata_dest.parent.mkdir(exist_ok=True)
+        metadata_dest.parent.mkdir(parents=True, exist_ok=True)
         with metadata_dest.open("w", encoding="utf-8") as f:
             f.write(
                 json.dumps(

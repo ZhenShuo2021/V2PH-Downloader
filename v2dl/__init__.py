@@ -6,7 +6,7 @@ if sys.version_info < (3, 10):
     raise ImportError(
         "You are using an unsupported version of Python. Only Python versions 3.10 and above are supported by v2dl",
     )
-
+import atexit
 from argparse import Namespace
 from typing import Any
 
@@ -39,9 +39,9 @@ class V2DLApp:
             conf = self.setup(args)
             bot = self.get_bot(conf)
             scraper = core.ScrapeManager(conf, bot)
+            atexit.register(scraper.write_metadata)  # ensure write metadata
             scraper.start_scraping()
-            if not conf.static_config.no_history:
-                scraper.final_process()
+            scraper.write_metadata()
             scraper.log_final_status()
 
             return 0
