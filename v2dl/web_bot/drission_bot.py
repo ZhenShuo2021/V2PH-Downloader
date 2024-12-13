@@ -230,6 +230,7 @@ class DrissionBot(BaseBot):
                 'x://ul[@class="nav justify-content-end"]//a[contains(@href, "/user/logout")]'
             ).click()
             now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+            self.account_manager.update_runtime_state(self.email, "exceed_quota", True)
             self.account_manager.update_account(self.email, "exceed_quota", True)
             self.account_manager.update_account(self.email, "exceed_time", now)
             self.email, self.password = self.account_manager.random_pick(self.private_key)

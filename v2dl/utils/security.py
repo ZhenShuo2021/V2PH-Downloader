@@ -365,7 +365,12 @@ class AccountManager:
             return False
 
     def check(self) -> None:
-        """檢查所有帳號的 exceed_time 是否超過 12 小時，若超過則清除 exceed_time 並將重置 exceed_quota."""
+        """檢查所有帳號的 exceed_time 是否超過 12 小時，若超過則清除 exceed_time 並將重置 exceed_quota.
+
+        Note: yaml 存檔中的 exceed_time/exceed_quota 即將被廢棄，因為 v2ph 並不明確指出冷卻時間，以及用戶
+        可能需要重複下載卻會被 exceed_quota 阻擋，現在他只會紀錄而不會被真正用於判斷，判斷改成每次運行時紀錄帳號
+        額度避免重複挑選。
+        """
         now = datetime.now()
         update = False
 
@@ -381,30 +386,21 @@ class AccountManager:
             self._save_yaml()
 
     def random_pick(self, private_key: PrivateKey) -> tuple[str, str]:
-        eligible_accounts = {k: v for k, v in self.accounts.items() if not v["exceed_quota"]}
-
-        if not eligible_accounts:
-            self.logger.info("All accounts have exhausted their reading quota. Existing.")
-            sys.exit(1)
-
-        # filter invalid account during runtime based on cookies and password
-        eligible_accounts = {
-            k: v
-            for k, v in eligible_accounts.items()
-            # Allow any types of login methods
-            if self.runtime_state[k].get("cookies_valid", True)
-            or self.runtime_state[k].get("password_valid", True)
-        }
-
-        if not eligible_accounts:
+        accounts = {k: v for k, v in self.accounts.items() if self.is_valid_account(k)}
+        if not accounts:
             self.logger.info("No eligible accounts available for login. Existing.")
-            sys.exit(1)
+            sys.exit(0)
 
-        username, account = random.choice(list(eligible_accounts.items()))
+        username, account = random.choice(list(accounts.items()))
         enc_pw = account["encrypted_password"]
         dec_pw = self.key_manager.decrypt_password(enc_pw, private_key)
 
         return username, dec_pw
+
+    def is_valid_account(self, account: str) -> bool:
+        """filter invalid account during runtime based on cookies, password and quota"""
+        state = self.runtime_state[account]
+        return (state["cookies_valid"] or state["password_valid"]) and not state["exceed_quota"]
 
     def _save_yaml(self) -> None:
         with self.lock:
@@ -424,11 +420,12 @@ class AccountManager:
     def _login_state(self, accounts: dict[str, Any]) -> dict[str, Any]:
         """Store login status. Use an individual variable for not storing back to file"""
         return {
-            email: {
+            account: {
                 "cookies_valid": True,
                 "password_valid": True,
+                "exceed_quota": False,
             }
-            for email in accounts  # email is the key of each account
+            for account in accounts
         }
 
 
