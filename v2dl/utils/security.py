@@ -314,44 +314,46 @@ class AccountManager:
             else:
                 self.logger.error("Account not found.")
 
-    def update_account(self, username: str, field: str, value: Any) -> None:
+    def update_account(self, account: str, field: str, value: Any) -> None:
         """Update account status of accounts.yaml
 
         Args:
-            username (str): The user to update
+            account (str): The account to update
             field (str): The field to update
             value (Any): The new value of the field
         """
         with self.lock:
-            account = self.accounts.get(username)
-            if account:
-                if field in account:
-                    account[field] = value
-                    self.logger.info("Updated %s for account %s.", field, username)
+            account_info = self.accounts.get(account)
+            if account_info:
+                if field in account_info:
+                    account_info[field] = value
+                    self.logger.debug("Updated yaml %s for account %s.", field, account)
                     self._save_yaml()
                 else:
-                    self.logger.error("Field '%s' does not exist in account '%s'.", field, account)
+                    self.logger.error(
+                        "Field '%s' does not exist in account '%s'.", field, account_info
+                    )
             else:
-                self.logger.error("Account %s not found.", username)
+                self.logger.error("Account %s not found.", account)
 
-    def update_runtime_state(self, username: str, field: str, value: Any) -> None:
-        account = self.runtime_state.get(username)
-        if account:
-            if field in account:
-                account[field] = value
-                self.logger.info("Updated %s for account %s.", field, username)
+    def update_runtime_state(self, account: str, field: str, value: Any) -> None:
+        account_info = self.runtime_state.get(account)
+        if account_info:
+            if field in account_info:
+                account_info[field] = value
+                self.logger.debug("Updated runtime status %s for account %s.", field, account)
             else:
                 self.logger.error("Field '%s' does not exist in the account.", field)
         else:
-            self.logger.error("Account %s not found.", username)
+            self.logger.error("Account %s not found.", account)
 
-    def verify_password(self, username: str, password: str, private_key: PrivateKey) -> bool:
-        account = self.accounts.get(username)
-        if not account:
+    def verify_password(self, account: str, password: str, private_key: PrivateKey) -> bool:
+        account_info = self.accounts.get(account)
+        if not account_info:
             self.logger.error("Account does not exist.")
             return False
 
-        encrypted_password = account.get("encrypted_password")
+        encrypted_password = account_info.get("encrypted_password")
         decrypted_password = self.key_manager.decrypt_password(encrypted_password, private_key)
         if decrypted_password == password:
             print("*----------------*")
@@ -385,17 +387,19 @@ class AccountManager:
         if update:
             self._save_yaml()
 
-    def random_pick(self, private_key: PrivateKey) -> tuple[str, str]:
+    def random_pick(self) -> str:
         accounts = {k: v for k, v in self.accounts.items() if self.is_valid_account(k)}
         if not accounts:
             self.logger.info("No eligible accounts available for login. Existing.")
             sys.exit(0)
 
-        username, account = random.choice(list(accounts.items()))
-        enc_pw = account["encrypted_password"]
-        dec_pw = self.key_manager.decrypt_password(enc_pw, private_key)
+        account, _ = random.choice(list(accounts.items()))
+        return account
 
-        return username, dec_pw
+    def get_pw(self, account: str, private_key: PrivateKey) -> str:
+        account_info = self.accounts[account]
+        enc_pw = account_info["encrypted_password"]
+        return self.key_manager.decrypt_password(enc_pw, private_key)
 
     def is_valid_account(self, account: str) -> bool:
         """filter invalid account during runtime based on cookies, password and quota"""

@@ -19,6 +19,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from .base import BaseBehavior, BaseBot, BaseScroll
 from .cookies import load_cookies
+from ..common import BotError
 
 if TYPE_CHECKING:
     from ..config import Config
@@ -146,7 +147,7 @@ class SeleniumBot(BaseBot):
 
         return self.driver.current_url == url
 
-    def handle_login(self) -> None:
+    def handle_login(self) -> bool:
         success = False
         if self.driver.find_elements(
             By.XPATH,
@@ -155,23 +156,26 @@ class SeleniumBot(BaseBot):
             self.logger.info("Login page detected - Starting login process")
             try:
                 for _ in self.account_manager.accounts:
-                    # this will update self.email and cookies_valid
-                    # if no accounts available, `AccountManager.random_pick` will execute sys.exit
-                    if self.cookies_login():
-                        return
+                    # if no any available account, `AccountManager.random_pick` will execute sys.exit
+                    self.account = self.account_manager.random_pick()
 
-                    self.email, self.password = self.account_manager.random_pick(self.private_key)
+                    # this will update cookies_valid
+                    if self.cookies_login():
+                        return True
+
                     email_field = self.driver.find_element(By.ID, "email")
                     password_field = self.driver.find_element(By.ID, "password")
                     BaseBehavior.random_sleep(0.5, 1)
 
-                    password_field.send_keys(Keys.SHIFT, Keys.TAB)
+                    password_field.send_keys(Keys.SHIFT, Keys.TAB)  # replace alt+A
                     BaseBehavior.random_sleep(0.5, 1)
-                    SelBehavior.human_like_type(email_field, self.email)
+                    SelBehavior.human_like_type(email_field, self.account)
                     SelBehavior.random_sleep(0.01, 0.3)
 
                     email_field.send_keys(Keys.TAB)
-                    SelBehavior.human_like_type(password_field, self.password)
+                    SelBehavior.human_like_type(
+                        password_field, self.account_manager.get_pw(self.account, self.private_key)
+                    )
                     SelBehavior.random_sleep(0.01, 0.5)
 
                     try:
@@ -190,16 +194,18 @@ class SeleniumBot(BaseBot):
                         By.XPATH,
                         "//h1[@class='h4 text-secondary mb-4 login-box-msg']",
                     ):
-                        self.logger.info("Login successful")
                         success = True
+                        self.logger.info("Login successful")
+                        return success
                     else:
                         self.logger.info("Login failed - Checking for error messages")
                         self.account_manager.update_runtime_state(
-                            self.email,
+                            self.account,
                             "password_valid",
                             False,
                         )
                         self.check_login_errors()
+                        return success
 
             except NoSuchElementException as e:
                 self.logger.error("Login form element not found: %s", e)
@@ -211,18 +217,18 @@ class SeleniumBot(BaseBot):
                 self.logger.error("Unexpected error during login: %s", e)
                 raise
         else:
-            success = True
+            return True
         if not success:
             self.logger.info("Automated login failed. Please login yourself.")
             sys.exit("Automated login failed.")
+        return False
 
     def cookies_login(self) -> bool:
-        self.email, self.password = self.account_manager.random_pick(self.private_key)
-        account = self.account_manager.read(self.email)
-        if account is None:
-            return False
+        account_info = self.account_manager.read(self.account)
+        if account_info is None:
+            raise BotError("Unexpected error while reading account '%s'", account_info)
 
-        cookies_path = account.get("cookies")
+        cookies_path = account_info.get("cookies")
         if cookies_path:
             cookies = load_cookies(cookies_path)
             self.driver.delete_all_cookies()
@@ -231,12 +237,12 @@ class SeleniumBot(BaseBot):
             self.driver.refresh()
 
         if not self.driver.find_element('//a[@href="/site/recovery-password"]'):
-            self.logger.info("Account %s login successful with cookies", self.email)
+            self.logger.info("Account %s login successful with cookies", self.account)
             return True
 
         now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-        self.account_manager.update_runtime_state(self.email, "cookies_valid", False)
-        self.account_manager.update_account(self.email, "exceed_time", now)
+        self.account_manager.update_runtime_state(self.account, "cookies_valid", False)
+        self.account_manager.update_account(self.account, "exceed_time", now)
         return False
 
     def check_login_errors(self) -> None:
@@ -257,10 +263,10 @@ class SeleniumBot(BaseBot):
             )
             logout_button.click()
             now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-            self.account_manager.update_runtime_state(self.email, "exceed_quota", True)
-            self.account_manager.update_account(self.email, "exceed_quota", True)
-            self.account_manager.update_account(self.email, "exceed_time", now)
-            self.email, self.password = self.account_manager.random_pick(self.private_key)
+            self.account_manager.update_runtime_state(self.account, "exceed_quota", True)
+            self.account_manager.update_account(self.account, "exceed_quota", True)
+            self.account_manager.update_account(self.account, "exceed_time", now)
+            self.account = self.account_manager.random_pick()
 
     def check_read_limit(self) -> bool:
         return "https://www.v2ph.com/user/upgrade" in self.driver.current_url

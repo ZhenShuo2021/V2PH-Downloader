@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 from DrissionPage import ChromiumOptions, ChromiumPage
 from DrissionPage.common import wait_until
-from DrissionPage.errors import ElementNotFoundError, WaitTimeoutError
+from DrissionPage.errors import ContextLostError, ElementNotFoundError, WaitTimeoutError
 
 from .base import BaseBehavior, BaseBot, BaseScroll
 from .cookies import load_cookies
@@ -87,8 +87,11 @@ class DrissionBot(BaseBot):
 
                 # Sleep to avoid Cloudflare blocking
                 self.logger.debug("Scrolling finished, pausing to avoid blocking")
-                DriBehavior.random_sleep(page_sleep, page_sleep + 5)
+                # DriBehavior.random_sleep(page_sleep, page_sleep + 5)
                 break
+
+            except ContextLostError:
+                self.handle_login()
 
             except Exception as e:
                 self.logger.exception(
@@ -98,7 +101,7 @@ class DrissionBot(BaseBot):
                     max_retry,
                     e,
                 )
-                DriBehavior.random_sleep(page_sleep, page_sleep + 5)
+                # DriBehavior.random_sleep(page_sleep, page_sleep + 5)
 
         if not self.page.html:
             error_template = "Failed to retrieve URL after {} attempts: '{}'"
@@ -133,16 +136,20 @@ class DrissionBot(BaseBot):
 
         return self.page.url == url and self.page.states.is_alive
 
-    def handle_login(self) -> None:
+    def handle_login(self) -> bool:
+        """handle login and return the bool represents if login success or not"""
         success = False
         if self.page("x://h1[@class='h4 text-secondary mb-4 login-box-msg']"):
             self.logger.info("Login page detected - Starting login process")
             try:
                 for _ in self.account_manager.accounts:
-                    # this will update self.email and cookies_valid
-                    # if no accounts available, `AccountManager.random_pick` will execute sys.exit
+                    # if no any available account, `AccountManager.random_pick` will execute sys.exit
+                    self.account = self.account_manager.random_pick()
+
+                    # this will update cookies_valid
                     if self.cookies_login():
-                        return
+                        return True
+
                     email_field = self.page("#email")
                     password_field = self.page("#password")
 
@@ -150,9 +157,11 @@ class DrissionBot(BaseBot):
                     email_field.clear(True)
                     password_field.clear(True)
 
-                    DriBehavior.human_like_type(email_field, self.email)
+                    DriBehavior.human_like_type(email_field, self.account)
                     DriBehavior.random_sleep(0.01, 0.3)
-                    DriBehavior.human_like_type(password_field, self.password)
+                    DriBehavior.human_like_type(
+                        password_field, self.account_manager.get_pw(self.account, self.private_key)
+                    )
                     DriBehavior.random_sleep(0.01, 0.5)
 
                     login_button = self.page(
@@ -160,21 +169,22 @@ class DrissionBot(BaseBot):
                     )
                     login_button.click()
 
-                    if not self.page('x://a[@href="/site/recovery-password"]'):
-                        self.logger.info("Account %s login successful with password", self.email)
+                    if not self.page('x://a[@href="/site/recovery-password"]', timeout=0.5):
                         success = True
+                        self.logger.info("Account %s login successful with password", self.account)
+                        return success
                     else:
                         self.logger.info(
-                            "Account %s login failed. Checking error messages",
-                            self.email,
+                            "Account %s Login failed. Checking error messages",
+                            self.account,
                         )
                         self.account_manager.update_runtime_state(
-                            self.email,
+                            self.account,
                             "password_valid",
                             False,
                         )
                         self.check_login_errors()
-                        return
+                        return success
 
             except ElementNotFoundError as e:
                 self.logger.error("Login form element not found: %s", e)
@@ -187,19 +197,19 @@ class DrissionBot(BaseBot):
                 raise
 
         else:
-            success = True
+            return True
 
         if not success:
             self.logger.info("Automated login failed. Please login yourself.")
             sys.exit("Automated login failed.")
+        return False
 
     def cookies_login(self) -> bool:
-        self.email, self.password = self.account_manager.random_pick(self.private_key)
-        account = self.account_manager.read(self.email)
-        if account is None:
-            raise BotError("Unexpected error while reading account '%s'", self.email)
+        account_info = self.account_manager.read(self.account)
+        if account_info is None:
+            raise BotError("Unexpected error while reading account '%s'", account_info)
 
-        cookies_path = account.get("cookies")
+        cookies_path = account_info.get("cookies")
         if cookies_path:
             cookies = load_cookies(cookies_path)
             self.page.set.cookies.clear()
@@ -207,12 +217,12 @@ class DrissionBot(BaseBot):
             self.page.refresh()
 
         if not self.page('x://a[@href="/site/recovery-password"]'):
-            self.logger.info("Account %s login successful with cookies", self.email)
+            self.logger.info("Account %s login successful with cookies", self.account)
             return True
 
         now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-        self.account_manager.update_runtime_state(self.email, "cookies_valid", False)
-        self.account_manager.update_account(self.email, "exceed_time", now)
+        self.account_manager.update_runtime_state(self.account, "cookies_valid", False)
+        self.account_manager.update_account(self.account, "exceed_time", now)
         return False
 
     def check_login_errors(self) -> None:
@@ -230,10 +240,10 @@ class DrissionBot(BaseBot):
                 'x://ul[@class="nav justify-content-end"]//a[contains(@href, "/user/logout")]'
             ).click()
             now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-            self.account_manager.update_runtime_state(self.email, "exceed_quota", True)
-            self.account_manager.update_account(self.email, "exceed_quota", True)
-            self.account_manager.update_account(self.email, "exceed_time", now)
-            self.email, self.password = self.account_manager.random_pick(self.private_key)
+            self.account_manager.update_runtime_state(self.account, "exceed_quota", True)
+            self.account_manager.update_account(self.account, "exceed_quota", True)
+            self.account_manager.update_account(self.account, "exceed_time", now)
+            self.account = self.account_manager.random_pick()
 
     def check_read_limit(self) -> bool:
         return "https://www.v2ph.com/user/upgrade" in self.page.url

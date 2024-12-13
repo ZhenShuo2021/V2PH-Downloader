@@ -73,7 +73,7 @@ class BaseBot(ABC):
         """
         raise NotImplementedError("Subclasses must implement automated retry logic.")
 
-    def handle_login(self) -> None:
+    def handle_login(self) -> bool:
         """Login logic, implemented by subclasses."""
         raise NotImplementedError("Subclasses must implement login logic.")
 
