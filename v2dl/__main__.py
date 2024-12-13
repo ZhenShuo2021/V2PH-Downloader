@@ -1,5 +1,4 @@
-from v2dl import V2DLApp
+from v2dl import main
 
 if __name__ == "__main__":
-    app = V2DLApp()
-    raise SystemExit(app.run())
+    raise SystemExit(main())

@@ -156,3 +156,8 @@ class V2DLApp:
         config_manager.set("runtime_config", "download_function", download_function)
         config_manager.set("runtime_config", "logger", logger)
         config_manager.set("runtime_config", "user_agent", user_agent)
+
+
+def main(args: Namespace | dict[Any, Any] | list[Any] | None = None) -> int:
+    app = V2DLApp()
+    return app.run(args)

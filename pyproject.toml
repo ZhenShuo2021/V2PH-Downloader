@@ -81,7 +81,7 @@ all = [
 ]
 
 [project.scripts]
-v2dl = "v2dl.__main__:main"
+v2dl = "v2dl:main"
 
 [tool.mypy]
 ignore_missing_imports = true
