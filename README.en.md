@@ -99,6 +99,7 @@ Use an extension (e.g., [Cookie-Editor](https://chromewebstore.google.com/detail
 - url: URL of the target to download.
 - -i: URL list in a text file, one URL per line.
 - -a: Enter the account management tool.
+- -c: Specify the cookies file to be used for this execution. If the provided path is a folder, it will automatically search for all .txt files containing "cookies" in their names within that folder. This is especially useful for users who prefer not to use account management.
 - -d: Configure the base download directory.
 - -D: Configure the exact download directory.
 - --no-skip: Force download without skipping.
