@@ -73,6 +73,7 @@ def real_args():
         url="https://www.v2ph.com/album/Weekly-Young-Jump-2012-No29",
         input_file="",
         bot_type="drissionpage",
+        cookies_path="",
         chrome_args=[],
         user_agent=None,
         terminate=True,

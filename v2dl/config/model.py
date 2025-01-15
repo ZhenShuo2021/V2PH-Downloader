@@ -21,6 +21,7 @@ class StaticConfig:
     rate_limit: int
     no_history: bool
     language: str
+    cookies_path: str
     exact_dir: bool
     download_dir: str
     force_download: bool

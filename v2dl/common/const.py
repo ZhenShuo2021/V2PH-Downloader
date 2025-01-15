@@ -9,6 +9,7 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
         "min_scroll_step": 300,
         "max_scroll_step": 500,
         "max_worker": 5,
+        "cookies_path": "",
         "rate_limit": 400,
         "language": "ja",
         "no_history": False,

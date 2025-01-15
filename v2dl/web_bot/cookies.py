@@ -73,3 +73,13 @@ def validate_file(file_path: str) -> bool:
         logger.error(f"Not a valid file: {file_path}")
         return False
     return True
+
+
+def find_cookies_files(folder_path: str) -> list[Any]:
+    """Find all files matches *cookies*.txt"""
+    result = []
+    for root, _, files in os.walk(folder_path):
+        for file in files:
+            if "cookies" in file and file.endswith(".txt"):
+                result.append(os.path.join(root, file))
+    return result

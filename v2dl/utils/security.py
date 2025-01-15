@@ -251,6 +251,11 @@ class KeyManager(KeyIOHelper):
 
 class AccountManager:
     MAX_QUOTA = 16
+    DEFAULT_RUNTIME_STATUS = {
+        "cookies_valid": True,
+        "password_valid": True,
+        "exceed_quota": False,
+    }
 
     def __init__(self, logger: Logger, key_manager: KeyManager, yaml_path: str = ""):
         self.logger = logger
@@ -266,6 +271,7 @@ class AccountManager:
         atexit.register(self._save_yaml)
 
     def create(self, username: str, password: str, cookies: str, public_key: PublicKey) -> None:
+        """Create persistent account in yaml file"""
         with self.lock:
             encrypted_password = self.key_manager.encrypt_password(password, public_key)
             self.accounts[username] = {
@@ -279,6 +285,7 @@ class AccountManager:
         self._save_yaml()
 
     def delete(self, username: str) -> None:
+        """Delete persistent account in yaml file"""
         with self.lock:
             if username in self.accounts:
                 del self.accounts[username]
@@ -288,6 +295,7 @@ class AccountManager:
             self._save_yaml()
 
     def read(self, username: str) -> dict[str, Any] | None:
+        """Read persistent account in yaml file"""
         return self.accounts.get(username)
 
     def edit(
@@ -298,6 +306,7 @@ class AccountManager:
         new_password: str | None,
         new_cookies: str | None,
     ) -> None:
+        """Edit persistent account name/password in yaml file"""
         with self.lock:
             if old_username in self.accounts:
                 if new_username:
@@ -314,7 +323,7 @@ class AccountManager:
                 self.logger.error("Account not found.")
 
     def update_account(self, account: str, field: str, value: Any) -> None:
-        """Update account status of accounts.yaml
+        """Update persistent account status in yaml file
 
         Args:
             account (str): The account to update
@@ -334,17 +343,6 @@ class AccountManager:
                     )
             else:
                 self.logger.error("Account %s not found.", account)
-
-    def update_runtime_state(self, account: str, field: str, value: Any) -> None:
-        account_info = self.runtime_state.get(account)
-        if account_info:
-            if field in account_info:
-                account_info[field] = value
-                self.logger.debug("Updated runtime status %s for account %s.", field, account)
-            else:
-                self.logger.error("Field '%s' does not exist in the account.", field)
-        else:
-            self.logger.error("Account %s not found.", account)
 
     def verify_password(self, account: str, password: str, private_key: PrivateKey) -> bool:
         account_info = self.accounts.get(account)
@@ -386,6 +384,22 @@ class AccountManager:
         if update:
             self._save_yaml()
 
+    def update_runtime_state(self, account: str, field: str, value: Any) -> None:
+        """Update the runtime status for each account"""
+        account_info = self.runtime_state.get(account)
+        if account_info:
+            if field in account_info:
+                account_info[field] = value
+                self.logger.debug("Updated runtime status %s for account %s.", field, account)
+            else:
+                self.logger.error("Field '%s' does not exist in the account.", field)
+        else:
+            self.logger.error("Account %s not found.", account)
+
+    def add_runtime_account(self, account: str, password: str, cookies: str) -> None:
+        self.accounts.update({account: {"password": password, "cookies": cookies}})
+        self.runtime_state.update({account: self.DEFAULT_RUNTIME_STATUS})
+
     def random_pick(self) -> str:
         accounts = {k: v for k, v in self.accounts.items() if self.is_valid_account(k)}
         if not accounts:
@@ -422,14 +436,7 @@ class AccountManager:
 
     def _login_state(self, accounts: dict[str, Any]) -> dict[str, Any]:
         """Store login status. Use an individual variable for not storing back to file"""
-        return {
-            account: {
-                "cookies_valid": True,
-                "password_valid": True,
-                "exceed_quota": False,
-            }
-            for account in accounts
-        }
+        return {account: self.DEFAULT_RUNTIME_STATUS for account in accounts}
 
 
 class SecureFileHandler:

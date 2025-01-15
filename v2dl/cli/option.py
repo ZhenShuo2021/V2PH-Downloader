@@ -55,6 +55,27 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "-b",
+        "--bot",
+        dest="bot_type",
+        type=str,
+        choices=["selenium", "drissionpage"],
+        required=False,
+        help="Type of bot to use (default: drissionpage)",
+    )
+
+    parser.add_argument(
+        "-c",
+        "--cookies-path",
+        dest="cookies_path",
+        type=str,
+        metavar="PATH",
+        required=False,
+        help="Specify the cookies path, can be a path to a file or a folder. All files\n"
+        "matches the pattern `*cookies*.txt` will be added to candidate accounts.",
+    )
+
+    parser.add_argument(
         "-d",
         "--destination",
         dest="destination",
@@ -73,14 +94,6 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
     )
 
     parser.add_argument(
-        "-l",
-        "--language",
-        dest="language",
-        metavar="LANG",
-        help="Preferred language, used for naming the download directory (default: ja)",
-    )
-
-    parser.add_argument(
         "-f",
         "--force",
         dest="force_download",
@@ -89,13 +102,11 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
     )
 
     parser.add_argument(
-        "-b",
-        "--bot",
-        dest="bot_type",
-        type=str,
-        choices=["selenium", "drissionpage"],
-        required=False,
-        help="Type of bot to use (default: drissionpage)",
+        "-l",
+        "--language",
+        dest="language",
+        metavar="LANG",
+        help="Preferred language, used for naming the download directory (default: ja)",
     )
 
     parser.add_argument(

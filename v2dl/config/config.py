@@ -93,6 +93,10 @@ class ConfigManager(ConfigPathTool):
         # =====setup static config=====
         path = "static_config"
 
+        # set custom cookies path
+        if args.cookies_path is not None:
+            self.set(path, "cookies_path", args.cookies_path)
+
         # toggle log download history
         self.set(path, "no_history", args.no_history)
 
@@ -236,6 +240,7 @@ class ConfigManager(ConfigPathTool):
             rate_limit=self.config[key]["rate_limit"],
             no_history=self.config[key]["no_history"],
             language=self.config[key].get("language", "ja"),
+            cookies_path=self.config[key]["cookies_path"],
             exact_dir=self.config[key].get("exact_dir", False),
             download_dir=self.config[key].get("download_dir", ""),
             force_download=self.config[key].get("force_download", False),
