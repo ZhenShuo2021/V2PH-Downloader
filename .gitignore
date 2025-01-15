@@ -1,7 +1,6 @@
 # Custom
 .DS_Store
 html/*
-*temp*
 v2dl_chrome_profile*
 chromedriver
 profile
