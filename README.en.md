@@ -40,14 +40,22 @@ pip install v2dl
 
 On first run, login to V2PH with one of the two methods:
 
-1. Account Management Interface
+1. Account Management Interface  
 Use `v2dl -a` to enter the account management interface.
 
 ```sh
 v2dl -a
 ```
 
-2. Manual Login
+2. Cookies Login  
+
+Logs in using cookies by specifying a cookies file. If the path is a directory, it will search for all `.txt` files containing "cookies" in their filename. This method adds the account to the login candidate list.  
+
+```sh
+v2dl -c /PATH/to/cookies
+```
+
+3. Manual Login  
 Due to strict bot detection on login pages, you can trigger the login page by randomly downloading an album, then manually log in if errors occur.
 
 ### First Download Attempt
