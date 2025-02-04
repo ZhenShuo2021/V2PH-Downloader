@@ -103,6 +103,7 @@ Use an extension (e.g., [Cookie-Editor](https://chromewebstore.google.com/detail
 - -d: Configure the base download directory.
 - -D: Configure the exact download directory.
 - --no-skip: Force download without skipping.
+- --range: Specifies the download range, following the same usage as `--range` in gallery-dl.
 - --bot: Select automation tool; Drission is less likely to be blocked by bots.
 - --dry-run: Simulate the download without actual file download.
 - --chrome-args: Override Chrome startup arguments, useful for bot-blocked scenarios.
