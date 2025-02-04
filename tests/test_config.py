@@ -20,7 +20,7 @@ def default_config():
             "page_range": None,
             "cookies_path": "",
             "rate_limit": 2,
-            "no_history": False,
+            "no_metadata": False,
             "language": "en",
             "exact_dir": False,
             "download_dir": "/tests/tmp",
@@ -72,7 +72,7 @@ def args():
         language="en",
         destination="/tests/tmp/downloads",
         directory=None,
-        no_history=False,
+        no_metadata=False,
         history_file="/tests/tmp/new_history.log",
         force_download=True,
         min_scroll=1500,
@@ -118,7 +118,7 @@ def test_load_from_args(default_config, args):
     static_config = config_manager.create_static_config()
     assert static_config.min_scroll_length == 1500
     assert static_config.max_scroll_length == 2500
-    assert static_config.no_history is False
+    assert static_config.no_metadata is False
     assert static_config.download_dir == Path("/tests/tmp/downloads")
     assert static_config.force_download is True
     assert static_config.dry_run is True
@@ -144,7 +144,7 @@ static_config:
   max_scroll_step: 6
   max_worker: 8
   rate_limit: 3
-  no_history: true
+  no_metadata: true
   language: "fr"
   exact_dir: true
   download_dir: "/tests/tmp/yaml_download"
@@ -194,7 +194,7 @@ def test_load_from_yaml(default_config, yaml_config_content):
     assert static_config.max_scroll_step == 6
     assert static_config.max_worker == 8
     assert static_config.rate_limit == 3
-    assert static_config.no_history is True
+    assert static_config.no_metadata is True
     assert static_config.language == "fr"
     assert static_config.exact_dir is True
     assert static_config.download_dir == "/tests/tmp/yaml_download"

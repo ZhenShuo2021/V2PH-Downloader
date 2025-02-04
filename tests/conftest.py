@@ -82,7 +82,7 @@ def real_args():
         dry_run=False,
         concurrency=3,
         history_file="",
-        no_history=False,
+        no_metadata=False,
         force_download=True,
         use_default_chrome_profile=False,
         directory=None,

@@ -101,7 +101,7 @@ class ConfigManager(ConfigPathTool):
         self.set(path, "page_range", args.page_range)
 
         # toggle log download history
-        self.set(path, "no_history", args.no_history)
+        self.set(path, "no_metadata", args.no_metadata)
 
         # setup download dir
         self.set(path, "download_dir", ConfigPathTool.get_default_download_dir())
@@ -242,7 +242,7 @@ class ConfigManager(ConfigPathTool):
             max_worker=self.config[key]["max_worker"],
             page_range=self.config[key].get("page_range"),
             rate_limit=self.config[key]["rate_limit"],
-            no_history=self.config[key]["no_history"],
+            no_metadata=self.config[key]["no_metadata"],
             language=self.config[key].get("language", "ja"),
             cookies_path=self.config[key]["cookies_path"],
             exact_dir=self.config[key].get("exact_dir", False),

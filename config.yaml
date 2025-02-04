@@ -3,7 +3,7 @@ static_config:
   max_scroll_length: 1500
   max_worker: 4
   rate_limit: 300
-  no_history: true
+  no_metadata: true
   language: "fr"
   exact_dir: true
   download_dir: "~/Downloads/v2dl-yaml"

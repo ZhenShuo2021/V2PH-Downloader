@@ -117,10 +117,10 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
     )
 
     parser.add_argument(
-        "--no-history",
-        dest="no_history",
+        "--no-metadata",
+        dest="no_metadata",
         action="store_true",
-        help="Disable writing json download metadata history",
+        help="Disable writing json download metadata",
     )
 
     parser.add_argument(

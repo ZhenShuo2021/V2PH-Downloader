@@ -86,7 +86,7 @@ class ScrapeManager:
                 self.logger.info(f"{url}: Download successful")
 
     def write_metadata(self) -> None:
-        if self.config.static_config.no_history:
+        if self.config.static_config.no_metadata:
             return
         download_status = self.get_download_status
 

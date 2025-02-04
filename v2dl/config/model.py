@@ -20,7 +20,7 @@ class StaticConfig:
     max_worker: int
     rate_limit: int
     page_range: str | None
-    no_history: bool
+    no_metadata: bool
     language: str
     cookies_path: str
     exact_dir: bool

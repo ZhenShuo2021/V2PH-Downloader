@@ -12,7 +12,7 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
         "cookies_path": "",
         "rate_limit": 400,
         "language": "ja",
-        "no_history": False,
+        "no_metadata": False,
         "exact_dir": False,
         "force_download": False,
         "use_chrome_default_profile": False,
