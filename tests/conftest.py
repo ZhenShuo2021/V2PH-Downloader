@@ -59,6 +59,7 @@ def real_config(tmp_path, real_download_service, real_args, mock_logger) -> Conf
     config_manager.set("static_config", "rate_limit", 10000)
     config_manager.set("static_config", "min_scroll_length", 2000)
     config_manager.set("static_config", "max_scroll_length", 4000)
+    config_manager.set("static_config", "page_range", None)
 
     # setup path_config
     config_manager.set("path_config", "download_log", str(tmp_path / "download.log"))
@@ -75,6 +76,7 @@ def real_args():
         bot_type="drissionpage",
         cookies_path="",
         chrome_args=[],
+        page_range=None,
         user_agent=None,
         terminate=True,
         dry_run=False,
@@ -85,4 +87,11 @@ def real_args():
         use_default_chrome_profile=False,
         directory=None,
         language="ja",
+        url_file="urls.txt",
+        destination="/tests/tmp/downloads",
+        min_scroll=1500,
+        max_scroll=2500,
+        quiet=False,
+        verbose=True,
+        log_level=None,
     ), expected_file_count

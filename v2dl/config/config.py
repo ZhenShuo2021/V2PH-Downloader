@@ -97,6 +97,9 @@ class ConfigManager(ConfigPathTool):
         if args.cookies_path is not None:
             self.set(path, "cookies_path", args.cookies_path)
 
+        # set download range
+        self.set(path, "page_range", args.page_range)
+
         # toggle log download history
         self.set(path, "no_history", args.no_history)
 
@@ -237,6 +240,7 @@ class ConfigManager(ConfigPathTool):
             min_scroll_step=self.config[key]["min_scroll_step"],
             max_scroll_step=self.config[key]["max_scroll_step"],
             max_worker=self.config[key]["max_worker"],
+            page_range=self.config[key].get("page_range"),
             rate_limit=self.config[key]["rate_limit"],
             no_history=self.config[key]["no_history"],
             language=self.config[key].get("language", "ja"),

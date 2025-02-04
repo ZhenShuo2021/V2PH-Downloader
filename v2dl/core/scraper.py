@@ -1,6 +1,5 @@
 import re
 import json
-import time
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
@@ -184,17 +183,21 @@ class ScrapeHandler:
         """Main entry point for scraping operations."""
         if (scrape_type := self._get_scrape_type()) is None:
             return
-        _, start_page = LinkParser.parse_input_url(self.runtime_config.url)
+
+        target_page: int | list[int]
+        _, target_page = LinkParser.parse_input_url(self.runtime_config.url)
+        if self.config.static_config.page_range is not None:
+            target_page = parse_page_range(self.config.static_config.page_range)
 
         if scrape_type == "album_list":
-            self.scrape_album_list(url, start_page, dry_run)
+            self.scrape_album_list(url, target_page, dry_run)
         else:
-            self.scrape_album(url, start_page, dry_run)
+            self.scrape_album(url, target_page, dry_run)
 
-    def scrape_album_list(self, url: str, start_page: int, dry_run: bool) -> None:
+    def scrape_album_list(self, url: str, target_page: int | list[int], dry_run: bool) -> None:
         """Handle scraping of album lists."""
-        album_links = self._real_scrape(url, start_page, "album_list")
-        self.logger.info("Found %d albums", len(album_links))
+        album_links = self._real_scrape(url, target_page, "album_list")
+        self.logger.info("A total of %d albums found for %s", len(album_links), url)
 
         for album_url in album_links:
             if dry_run:
@@ -203,7 +206,7 @@ class ScrapeHandler:
             else:
                 self.scrape_album(album_url, 1, dry_run)
 
-    def scrape_album(self, album_url: str, start_page: int, dry_run: bool) -> None:
+    def scrape_album(self, album_url: str, target_page: int | list[int], dry_run: bool) -> None:
         """Handle scraping of a single album page."""
         if (
             self.album_tracker.is_downloaded(LinkParser.remove_query_params(album_url))
@@ -212,7 +215,7 @@ class ScrapeHandler:
             self.logger.info("Album %s already downloaded, skipping.", album_url)
             return
 
-        image_links = self._real_scrape(album_url, start_page, "album_image")
+        image_links = self._real_scrape(album_url, target_page, "album_image")
         self.album_tracker.update_download_log(
             self.runtime_config.url,
             {LogKey.expect_num: len(image_links)},
@@ -237,7 +240,7 @@ class ScrapeHandler:
     def _real_scrape(
         self,
         url: str,
-        start_page: int,
+        target_page: int | list[int],
         scrape_type: ScrapeType,
         **kwargs: dict[Any, Any],
     ) -> list[Any]:
@@ -245,7 +248,8 @@ class ScrapeHandler:
 
         Args:
             url (str): The URL to scrape.
-            start_page (int): The starting page number for the scraping process.
+            target_page (int | list[int]): The starting page number for the scraping process. If the
+                target_page is a list, it only scrapes the given target page.
             scrape_type (ScrapeType): The type of content to scrape, either "album" or "album_list".
             **kwargs (dict[Any, Any]): Additional keyword arguments for custom behavior.
 
@@ -263,7 +267,8 @@ class ScrapeHandler:
         )
 
         all_results: list[Any] = []
-        page = start_page
+        page: int | list[int] | None
+        page, scrape_one_page = self._handle_first_page(target_page)
 
         while True:
             page_results, should_continue = self._scrape_single_page(
@@ -273,11 +278,9 @@ class ScrapeHandler:
                 scrape_type,
             )
             all_results.extend(page_results)
-
-            if not should_continue:
+            page = self._handle_pagination(page, target_page)
+            if not should_continue or scrape_one_page or page is None:
                 break
-
-            page = self._handle_pagination(page)
 
         return all_results
 
@@ -336,16 +339,43 @@ class ScrapeHandler:
 
         return page_result, should_continue
 
+    def _handle_first_page(self, target_page: int | list[int]) -> tuple[int, bool]:
+        scrape_one_page = False
+        if isinstance(target_page, list):
+            if len(target_page) == 0:
+                # '5'
+                page = target_page[0]
+                scrape_one_page = True
+            else:
+                # '5-10' or '5:10:20'
+                page = target_page[0]
+        else:
+            page = target_page
+        return page, scrape_one_page
+
     def _handle_pagination(
         self,
         current_page: int,
-        max_consecutive_page: int = 3,
-        consecutive_sleep: int = 15,
-    ) -> int:
+        target_page: int | list[int],
+    ) -> int | None:
         """Handle pagination logic including sleep for consecutive pages."""
-        next_page = current_page + 1
-        if next_page % max_consecutive_page == 0:
-            time.sleep(consecutive_sleep)
+        if isinstance(target_page, list):
+            if len(target_page) == 1:
+                # '5'
+                next_page = None
+            elif len(target_page) == 2:
+                # '5-10'
+                next_page = current_page + 1
+                if next_page > target_page[-1]:
+                    next_page = None
+            elif len(target_page) == 3:
+                # '5:10:20'
+                next_page = current_page + target_page[1]
+                if next_page > target_page[2]:
+                    next_page = None
+        else:
+            next_page = current_page + 1
+
         return next_page
 
     def _get_scrape_type(self) -> ScrapeType | None:
@@ -516,3 +546,17 @@ def extract_album_name(alts: list[str]) -> str:
     if not album_name:
         album_name = BASE_URL.rstrip("/").split("/")[-1]
     return album_name
+
+
+def parse_page_range(page_range: str) -> list[int]:
+    pattern = r"^(\d+|\d+-\d+|\d+:\d+:\d+)$"
+    if not re.match(pattern, page_range):
+        raise ValueError("Invalid format. Must be '5', '8-20', or '1:24:3'")
+
+    if "-" in page_range:
+        start, end = map(int, page_range.split("-"))
+        return [start, end]
+    elif ":" in page_range:
+        return list(map(int, page_range.split(":")))
+    else:
+        return [int(page_range)]

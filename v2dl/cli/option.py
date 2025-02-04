@@ -110,6 +110,13 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--range",
+        dest="page_range",
+        metavar="RANGE",
+        help="Range of pages to download. (e.g. '5', '8-20', or '1:24:3')",
+    )
+
+    parser.add_argument(
         "--no-history",
         dest="no_history",
         action="store_true",
@@ -130,6 +137,7 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
         metavar="N",
         help="maximum download concurrency",
     )
+
     parser.add_argument(
         "--min-scroll",
         type=int,
@@ -137,6 +145,7 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
         metavar="N",
         help=f"minimum scroll length of web bot (default: {DEFAULT_CONFIG['static_config']['min_scroll_length']})",
     )
+
     parser.add_argument(
         "--max-scroll",
         type=int,
