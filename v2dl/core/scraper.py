@@ -151,6 +151,7 @@ class ScrapeHandler:
         "company": "album_list",
         "category": "album_list",
         "country": "album_list",
+        "search": "album_list",
     }
 
     def __init__(
