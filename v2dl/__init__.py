@@ -41,7 +41,6 @@ class V2DLApp:
             scraper = core.ScrapeManager(conf, bot)
             atexit.register(scraper.write_metadata)  # ensure write metadata
             scraper.start_scraping()
-            scraper.write_metadata()
             scraper.log_final_status()
 
             return 0
