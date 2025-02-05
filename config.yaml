@@ -14,7 +14,7 @@ static_config:
   terminate: true
 
 path_config:
-  history_file: "~/Downloads/v2dl-yaml/yaml_history.log"
+  metadata_path: "~/Downloads/v2dl-yaml/yaml_history.log"
   download_log: "~/Downloads/v2dl-yaml/yaml_download.log"
   system_log: "~/Downloads/v2dl-yaml/yaml_system.log"
   chrome_profile_path: "~/Downloads/v2dl-yaml/yaml_chrome_profile"

@@ -51,7 +51,7 @@ class RuntimeConfig:
 
 @dataclass
 class PathConfig:
-    history_file: str
+    metadata_path: str
     download_log: str
     system_log: str
     chrome_exec_path: str

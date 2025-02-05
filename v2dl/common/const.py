@@ -23,7 +23,7 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
         "url_file": None,
     },
     "path_config": {
-        "history_file": "",
+        "metadata_path": "",
         "download_log": "downloaded_albums.txt",
         "system_log": "v2dl.log",
         "chrome_profile_path": "v2dl_chrome_profile",

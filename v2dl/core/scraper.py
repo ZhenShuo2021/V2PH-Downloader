@@ -97,8 +97,8 @@ class ScrapeManager:
             self.scrape_handler.album_tracker.update_download_log(url, {LogKey.real_num: real_num})
 
         # write metadata
-        if self.config.path_config.history_file:
-            metadata_dest = Path(self.config.path_config.history_file)
+        if self.config.path_config.metadata_path:
+            metadata_dest = Path(self.config.path_config.metadata_path)
         else:
             metadata_name = "metadata_" + str(datetime.now().strftime("%Y%m%d_%H%M%S")) + ".json"
             metadata_dest = Path(self.config.static_config.download_dir) / metadata_name

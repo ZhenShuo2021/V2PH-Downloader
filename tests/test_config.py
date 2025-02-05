@@ -41,7 +41,7 @@ def default_config():
             "user_agent": "test-agent",
         },
         "path_config": {
-            "history_file": "/tests/tmp/history.log",
+            "metadata_path": "/tests/tmp/history.log",
             "download_log": "/tests/tmp/download.log",
             "system_log": "/tests/tmp/system.log",
             "chrome_exec_path": {
@@ -73,7 +73,7 @@ def args():
         destination="/tests/tmp/downloads",
         directory=None,
         no_metadata=False,
-        history_file="/tests/tmp/new_history.log",
+        metadata_path="/tests/tmp/new_history.log",
         force_download=True,
         min_scroll=1500,
         max_scroll=2500,
@@ -102,7 +102,7 @@ def test_initialize_config(default_config):
     assert config.runtime_config.url == "http://example.com"
 
     assert isinstance(config.path_config, PathConfig)
-    assert config.path_config.history_file == "/tests/tmp/history.log"
+    assert config.path_config.metadata_path == "/tests/tmp/history.log"
 
     assert isinstance(config.encryption_config, EncryptionConfig)
     assert config.encryption_config.key_bytes == 32
@@ -131,7 +131,7 @@ def test_load_from_args(default_config, args):
     assert runtime_config.bot_type == "custom"
 
     path_config = config_manager.create_path_config()
-    assert path_config.history_file == "/tests/tmp/new_history.log"
+    assert path_config.metadata_path == "/tests/tmp/new_history.log"
 
 
 @pytest.fixture
@@ -164,7 +164,7 @@ runtime_config:
   user_agent: "yaml-agent"
 
 path_config:
-  history_file: "/tests/tmp/yaml_history.log"
+  metadata_path: "/tests/tmp/yaml_history.log"
   download_log: "/tests/tmp/yaml_download.log"
   system_log: "/tests/tmp/yaml_system.log"
   chrome_exec_path: "/usr/local/bin/yaml-chrome"
@@ -212,7 +212,7 @@ def test_load_from_yaml(default_config, yaml_config_content):
     assert runtime_config.user_agent == "yaml-agent"
 
     path_config = config_manager.create_path_config()
-    assert path_config.history_file == "/tests/tmp/yaml_history.log"
+    assert path_config.metadata_path == "/tests/tmp/yaml_history.log"
     assert path_config.download_log == "/tests/tmp/yaml_download.log"
     assert path_config.system_log == "/tests/tmp/yaml_system.log"
     assert path_config.chrome_exec_path == "/usr/local/bin/yaml-chrome"

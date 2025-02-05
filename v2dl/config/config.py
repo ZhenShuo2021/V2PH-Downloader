@@ -175,7 +175,7 @@ class ConfigManager(ConfigPathTool):
         # =====setup path config=====
         path = "path_config"
         # setup history file path
-        self.set(path, "history_file", args.history_file)
+        self.set(path, "metadata_path", args.metadata_path)
 
         # setup chrome_exec_path
         self.set(
@@ -274,7 +274,7 @@ class ConfigManager(ConfigPathTool):
     def create_path_config(self) -> PathConfig:
         key = "path_config"
         # return PathConfig(
-        #     history_file=self.config[key]["history_file"],
+        #     metadata_path=self.config[key]["metadata_path"],
         #     download_log=self.config[key]["download_log"],
         #     system_log=self.config[key]["system_log"],
         #     chrome_exec_path=self.config[key]["chrome_exec_path"],

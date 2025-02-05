@@ -81,7 +81,7 @@ def real_args():
         terminate=True,
         dry_run=False,
         concurrency=3,
-        history_file="",
+        metadata_path="",
         no_metadata=False,
         force_download=True,
         use_default_chrome_profile=False,
