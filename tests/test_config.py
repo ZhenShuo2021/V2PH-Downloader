@@ -26,7 +26,7 @@ def default_config():
             "download_dir": "/tests/tmp",
             "force_download": False,
             "chrome_args": [],
-            "use_chrome_default_profile": False,
+            "use_default_chrome_profile": False,
             "dry_run": False,
             "terminate": False,
         },
@@ -42,8 +42,8 @@ def default_config():
         },
         "path_config": {
             "metadata_path": "/tests/tmp/history.log",
-            "download_log": "/tests/tmp/download.log",
-            "system_log": "/tests/tmp/system.log",
+            "download_log_path": "/tests/tmp/download.log",
+            "system_log_path": "/tests/tmp/system.log",
             "chrome_exec_path": {
                 "Linux": "/tests/tmp/linux/chrome",
                 "Darwin": "/tests/tmp/macos/chrome.app",
@@ -152,7 +152,7 @@ static_config:
   chrome_args:
     - "--no-sandbox"
     - "--disable-dev-shm-usage"
-  use_chrome_default_profile: true
+  use_default_chrome_profile: true
   dry_run: false
   terminate: true
 
@@ -165,8 +165,8 @@ runtime_config:
 
 path_config:
   metadata_path: "/tests/tmp/yaml_history.log"
-  download_log: "/tests/tmp/yaml_download.log"
-  system_log: "/tests/tmp/yaml_system.log"
+  download_log_path: "/tests/tmp/yaml_download.log"
+  system_log_path: "/tests/tmp/yaml_system.log"
   chrome_exec_path: "/usr/local/bin/yaml-chrome"
   chrome_profile_path: "/tests/tmp/yaml_chrome_profile"
 
@@ -200,7 +200,7 @@ def test_load_from_yaml(default_config, yaml_config_content):
     assert static_config.download_dir == "/tests/tmp/yaml_download"
     assert static_config.force_download is True
     assert static_config.chrome_args == ["--no-sandbox", "--disable-dev-shm-usage"]
-    assert static_config.use_chrome_default_profile is True
+    assert static_config.use_default_chrome_profile is True
     assert static_config.dry_run is False
     assert static_config.terminate is True
 
@@ -213,8 +213,8 @@ def test_load_from_yaml(default_config, yaml_config_content):
 
     path_config = config_manager.create_path_config()
     assert path_config.metadata_path == "/tests/tmp/yaml_history.log"
-    assert path_config.download_log == "/tests/tmp/yaml_download.log"
-    assert path_config.system_log == "/tests/tmp/yaml_system.log"
+    assert path_config.download_log_path == "/tests/tmp/yaml_download.log"
+    assert path_config.system_log_path == "/tests/tmp/yaml_system.log"
     assert path_config.chrome_exec_path == "/usr/local/bin/yaml-chrome"
     assert path_config.chrome_profile_path == "/tests/tmp/yaml_chrome_profile"
 

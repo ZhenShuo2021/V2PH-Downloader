@@ -43,7 +43,7 @@ class BaseBot(ABC):
         """Close the browser and handle cleanup."""
 
     def prepare_chrome_profile(self) -> str:
-        user_data_dir = self.config.path_config.chrome_profile_path
+        user_data_dir = self.config.static_config.chrome_profile_path
 
         if not os.path.exists(user_data_dir):
             os.makedirs(user_data_dir)
@@ -148,12 +148,12 @@ def get_chrome_version() -> str:
 
     if system == "Darwin":  # macOS
         return get_chrome_version_unix(
-            const.DEFAULT_CONFIG["path_config"]["chrome_exec_path"]["Darwin"]
+            const.DEFAULT_CONFIG["static_config"]["chrome_exec_path"]["Darwin"]
         )
 
     if system == "Linux":
         return get_chrome_version_unix(
-            const.DEFAULT_CONFIG["path_config"]["chrome_exec_path"]["Linux"]
+            const.DEFAULT_CONFIG["static_config"]["chrome_exec_path"]["Linux"]
         )
 
     return const.DEFAULT_VERSION

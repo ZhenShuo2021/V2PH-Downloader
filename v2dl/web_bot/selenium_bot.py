@@ -51,12 +51,12 @@ class SeleniumBot(BaseBot):
         self.driver: WebDriver
         options = Options()
         options.add_argument("--no-exit")
-        chrome_path = [self.config.path_config.chrome_exec_path]
+        chrome_path = [self.config.static_config.chrome_exec_path]
 
         # commands for running subprocess
         subprocess_cmd = chrome_path + (self.config.static_config.chrome_args or DEFAULT_BOT_OPT)
 
-        if not self.config.static_config.use_chrome_default_profile:
+        if not self.config.static_config.use_default_chrome_profile:
             user_data_dir = self.prepare_chrome_profile()
             subprocess_cmd.append(f"--user-data-dir={user_data_dir}")
 

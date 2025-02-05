@@ -342,8 +342,8 @@ class DownloadLogKeys:
 class AlbumTracker:
     """Download log in units of albums."""
 
-    def __init__(self, download_log: str):
-        self.album_log_path = download_log
+    def __init__(self, download_log_path: str):
+        self.album_log_path = download_log_path
         self.download_status: dict[str, dict[str, Any]] = {}
         self.keys = DownloadLogKeys()
 

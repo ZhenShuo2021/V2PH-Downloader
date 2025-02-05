@@ -97,8 +97,8 @@ class ScrapeManager:
             self.scrape_handler.album_tracker.update_download_log(url, {LogKey.real_num: real_num})
 
         # write metadata
-        if self.config.path_config.metadata_path:
-            metadata_dest = Path(self.config.path_config.metadata_path)
+        if self.config.static_config.metadata_path:
+            metadata_dest = Path(self.config.static_config.metadata_path)
         else:
             metadata_name = "metadata_" + str(datetime.now().strftime("%Y%m%d_%H%M%S")) + ".json"
             metadata_dest = Path(self.config.static_config.download_dir) / metadata_name
@@ -163,7 +163,7 @@ class ScrapeHandler:
         self.logger = config.runtime_config.logger
         self.web_bot = web_bot
 
-        self.album_tracker = AlbumTracker(config.path_config.download_log)
+        self.album_tracker = AlbumTracker(config.static_config.download_log_path)
         self.strategies: dict[ScrapeType, BaseScraper[Any]] = {
             "album_list": AlbumScraper(
                 config,

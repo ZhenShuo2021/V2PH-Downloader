@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from ..utils import BaseTaskService
 
 PathType = str | Path
+AnyDict = dict[str, Any]
 
 
 @dataclass
@@ -21,15 +22,21 @@ class StaticConfig:
     rate_limit: int
     page_range: str | None
     no_metadata: bool
-    language: str
-    cookies_path: str
-    exact_dir: bool
-    download_dir: str
     force_download: bool
-    chrome_args: list[str] | None
-    use_chrome_default_profile: bool
     dry_run: bool
     terminate: bool
+    language: str
+    chrome_args: list[str] | None
+    use_default_chrome_profile: bool
+    exact_dir: bool
+
+    cookies_path: str
+    download_dir: str
+    download_log_path: str
+    metadata_path: str
+    system_log_path: str
+    chrome_exec_path: str
+    chrome_profile_path: str
 
 
 @dataclass
@@ -49,15 +56,6 @@ class RuntimeConfig:
         self.download_function = function
 
 
-@dataclass
-class PathConfig:
-    metadata_path: str
-    download_log: str
-    system_log: str
-    chrome_exec_path: str
-    chrome_profile_path: str
-
-
 @dataclass(frozen=True)
 class EncryptionConfig:
     key_bytes: int
@@ -70,6 +68,14 @@ class EncryptionConfig:
 @dataclass
 class Config:
     static_config: StaticConfig
-    runtime_config: RuntimeConfig
-    path_config: PathConfig
     encryption_config: EncryptionConfig
+    _runtime_config: RuntimeConfig = field(default=None, init=False)  # type: ignore
+
+    def bind_runtime_config(self, runtime_config: RuntimeConfig) -> None:
+        self._runtime_config = runtime_config
+
+    @property
+    def runtime_config(self) -> RuntimeConfig:
+        if self._runtime_config is None:
+            raise ValueError("RuntimeConfig has not been bound")
+        return self._runtime_config

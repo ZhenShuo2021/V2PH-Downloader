@@ -29,11 +29,11 @@ def setup_test_env(tmp_path, real_config):
         yield setup_env
     finally:
         download_dir = tmp_path / "Downloads"
-        download_log = tmp_path / "download.log"
+        download_log_path = tmp_path / "download.log"
         if download_dir.exists():
             shutil.rmtree(download_dir)
-        if download_log.exists():
-            download_log.unlink()
+        if download_log_path.exists():
+            download_log_path.unlink()
 
 
 @pytest.fixture
@@ -54,7 +54,7 @@ def mock_runtime_config():
 @pytest.fixture
 def mock_config(tmp_path):
     config = MagicMock()
-    config.paths.download_log = tmp_path / "mock_log_path"
+    config.paths.download_log_path = tmp_path / "mock_log_path"
     return config
 
 

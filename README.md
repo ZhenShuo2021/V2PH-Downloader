@@ -81,8 +81,8 @@ v2dl -i "/path/to/urls.txt"
 裡面可以修改捲動長度、捲動步長與速率限制等設定：
 
 - download_dir: 設定下載位置，預設系統下載資料夾。
-- download_log: 紀錄已下載的 album 頁面網址，重複的會跳過，該文件預設位於系統設定目錄。
-- system_log: 設定程式執行日誌的位置，該文件預設位於系統設定目錄。
+- download_log_path: 紀錄已下載的 album 頁面網址，重複的會跳過，該文件預設位於系統設定目錄。
+- system_log_path: 設定程式執行日誌的位置，該文件預設位於系統設定目錄。
 - rate_limit: 下載速度限制，預設 400 夠用也不會被封鎖。
 - chrome/exec_path: 系統的 Chrome 程式位置。
 

@@ -13,10 +13,10 @@ static_config:
   dry_run: false
   terminate: true
 
-path_config:
+static_config:
   metadata_path: "~/Downloads/v2dl-yaml/yaml_history.log"
-  download_log: "~/Downloads/v2dl-yaml/yaml_download.log"
-  system_log: "~/Downloads/v2dl-yaml/yaml_system.log"
+  download_log_path: "~/Downloads/v2dl-yaml/yaml_download.log"
+  system_log_path: "~/Downloads/v2dl-yaml/yaml_system.log"
   chrome_profile_path: "~/Downloads/v2dl-yaml/yaml_chrome_profile"
 
 encryption_config:
