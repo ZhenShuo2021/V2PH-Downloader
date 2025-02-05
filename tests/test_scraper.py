@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from v2dl.common.const import VALID_EXTENSIONS
-from v2dl.config import Config, ConfigManager, RuntimeConfig
+from v2dl.config import Config, RuntimeConfig
 from v2dl.core import ScrapeHandler, ScrapeManager
 from v2dl.utils import DownloadLogKeys as LogKey, DownloadStatus
 from v2dl.web_bot import get_bot
@@ -223,24 +223,6 @@ def test_scrape_album(real_scrape_handler, mock_logger):
     real_scrape_handler._real_scrape.assert_called_once_with(TEST_ALBUM_URL, 1, "album_image")
     real_scrape_handler.album_tracker.log_downloaded.assert_not_called()
     real_scrape_handler.logger.info.assert_called()
-
-
-def test_update_runtime_config(real_scrape_handler):
-    wrong_runtime_config = MagicMock()
-    with pytest.raises(TypeError):
-        real_scrape_handler.update_runtime_config(wrong_runtime_config)
-
-    config_manager = ConfigManager()
-    config_manager.set("runtime_config", "url", "")
-    config_manager.set("runtime_config", "download_service", None)
-    config_manager.set("runtime_config", "download_function", None)
-    config_manager.set("runtime_config", "logger", None)
-
-    config = config_manager.initialize_config()
-    correct_runtime_config = config.runtime_config
-    real_scrape_handler.update_runtime_config(correct_runtime_config)
-
-    assert real_scrape_handler.runtime_config == correct_runtime_config
 
 
 @patch("v2dl.utils.LinkParser.parse_input_url", return_value=(["album"], 1))

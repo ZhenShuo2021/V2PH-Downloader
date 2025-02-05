@@ -192,7 +192,9 @@ class KeyIOHelper(Encryptor):
             self.logger.info("Secure folder created at %s", self.static_config["key_folder"])
         elif not self.check_permission(self.static_config["key_folder"]):
             os.chmod(self.static_config["key_folder"], 0o700)
-            self.logger.info("Permissions updated for folder at %s", self.static_config["key_folder"])
+            self.logger.info(
+                "Permissions updated for folder at %s", self.static_config["key_folder"]
+            )
 
     def check_permission(self, folder_path: str) -> bool:
         folder_permission = 0o700
