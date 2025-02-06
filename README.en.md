@@ -80,8 +80,8 @@ The program looks for a `config.yaml` file in the system configuration directory
 You can modify settings like scroll length, scroll step, and rate limit:
 
 - download_dir: Set download location, defaults to system download folder.
-- download_log: Tracks downloaded album URLs, skipped if duplicated; defaults to system configuration directory.
-- system_log: Location for program logs; defaults to system configuration directory.
+- download_log_path: Tracks downloaded album URLs, skipped if duplicated; defaults to system configuration directory.
+- system_log_path: Location for program logs; defaults to system configuration directory.
 - rate_limit: Download speed limit, default is 400 (sufficient and prevents blocking).
 - chrome/exec_path: Path to Chrome executable.
 

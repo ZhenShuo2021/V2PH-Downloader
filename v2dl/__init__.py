@@ -36,7 +36,7 @@ class V2DLApp:
         """
         try:
             args = self.parse_arguments_wrapper(args)
-            conf = self.setup(args)
+            conf = self.setup_config(args)
             bot = self.get_bot(conf)
             scraper = core.ScrapeManager(conf, bot)
             atexit.register(scraper.write_metadata)  # ensure write metadata
@@ -48,7 +48,7 @@ class V2DLApp:
         except Exception as e:
             raise RuntimeError(f"Runtime error of V2DL: {e}") from e
 
-    def setup(self, args: Namespace) -> config.Config:
+    def setup_config(self, args: Namespace) -> config.Config:
         """Setup the Config dataclass with command line inputs
 
         The args can be replace with a custom Namespace object for advance uses.
@@ -63,9 +63,39 @@ class V2DLApp:
         self._check_cli_inputs(args)
 
         config_manager = config.ConfigManager(self.default_config)
-        config_manager.load_all({"args": args})
-        self._setup_runtime_config(config_manager, args)
-        return config_manager.initialize_config()
+        config_instance = config_manager.initialize_config(args)
+        runtime_config = self.setup_runtime_config(config_manager, args)
+        config_instance.bind_runtime_config(runtime_config)
+        return config_instance
+
+    def setup_runtime_config(
+        self,
+        config_manager: config.ConfigManager,
+        args: Namespace,
+        headers: dict[str, str] = common.const.HEADERS,
+        user_agent: str = common.const.SELENIUM_AGENT,
+    ) -> config.RuntimeConfig:
+        """Initialize instances and assign to runtime config"""
+        logger = common.setup_logging(
+            config_manager.get("runtime_config", "log_level"),
+            log_path=config_manager.get("static_config", "system_log_path"),
+            logger_name=version.__package_name__,
+        )
+
+        download_service, download_function = utils.create_download_service(
+            args,
+            config_manager.get("static_config", "max_worker"),
+            config_manager.get("static_config", "rate_limit"),
+            logger,
+            headers,
+            utils.ServiceType.ASYNC,
+        )
+        config_manager.set("runtime_config", "url", args.url)
+        config_manager.set("runtime_config", "download_service", download_service)
+        config_manager.set("runtime_config", "download_function", download_function)
+        config_manager.set("runtime_config", "logger", logger)
+        config_manager.set("runtime_config", "user_agent", user_agent)
+        return config_manager.create_runtime_config()
 
     def get_bot(self, conf: config.Config) -> Any:
         """Get the web automation bot
@@ -127,41 +157,12 @@ class V2DLApp:
 
         if args.account:
             config_manager = config.ConfigManager(self.default_config)
-            config_manager.load_from_defaults()
             config_manager.load_from_yaml()
             cli.cli(config_manager.create_encryption_config())
             sys.exit(0)
 
         if args.bot_type == "selenium":
             utils.check_module_installed()
-
-    def _setup_runtime_config(
-        self,
-        config_manager: config.ConfigManager,
-        args: Namespace,
-        headers: dict[str, str] = common.const.HEADERS,
-        user_agent: str = common.const.SELENIUM_AGENT,
-    ) -> None:
-        """Initialize instances and assign to runtime config"""
-        logger = common.setup_logging(
-            config_manager.get("runtime_config", "log_level"),
-            log_path=config_manager.get("path", "system_log"),
-            logger_name=version.__package_name__,
-        )
-
-        download_service, download_function = utils.create_download_service(
-            args,
-            config_manager.get("static_config", "max_worker"),
-            config_manager.get("static_config", "rate_limit"),
-            logger,
-            headers,
-            utils.ServiceType.ASYNC,
-        )
-        config_manager.set("runtime_config", "url", args.url)
-        config_manager.set("runtime_config", "download_service", download_service)
-        config_manager.set("runtime_config", "download_function", download_function)
-        config_manager.set("runtime_config", "logger", logger)
-        config_manager.set("runtime_config", "user_agent", user_agent)
 
 
 def main(args: Namespace | dict[Any, Any] | list[Any] | None = None) -> int:

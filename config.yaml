@@ -1,27 +1,40 @@
 static_config:
-  min_scroll_length: 500
-  max_scroll_length: 1500
-  max_worker: 4
-  rate_limit: 300
-  no_metadata: true
-  language: "fr"
-  exact_dir: true
-  download_dir: "~/Downloads/v2dl-yaml"
-  force_download: true
-  chrome_args:
-    - "--no-sandbox"
+  min_scroll_length: 1000
+  max_scroll_length: 2000
+  min_scroll_step: 300
+  max_scroll_step: 500
+  max_worker: 5
+  rate_limit: 400
+  page_range: null
+  no_metadata: false
+  force_download: false
   dry_run: false
-  terminate: true
+  terminate: false
+  language: "ja"
+  chrome_args: null
+  use_default_chrome_profile: false
+  exact_dir: false
+  # path relative configurations
+  cookies_path: ""
+  download_dir: ""
+  download_log_path: ""
+  metadata_path: ""
+  system_log_path: ""
+  chrome_exec_path:
+    Linux: "/usr/bin/google-chrome"
+    Darwin: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    Windows: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+  chrome_profile_path: ""
 
-path_config:
-  history_file: "~/Downloads/v2dl-yaml/yaml_history.log"
-  download_log: "~/Downloads/v2dl-yaml/yaml_download.log"
-  system_log: "~/Downloads/v2dl-yaml/yaml_system.log"
-  chrome_profile_path: "~/Downloads/v2dl-yaml/yaml_chrome_profile"
+runtime_config:
+  url: ""
+  url_file: ""
+  bot_type: "drissionpage"
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.109 Safari/537.36"
 
 encryption_config:
   key_bytes: 32
-  salt_bytes: 16 
+  salt_bytes: 16
   nonce_bytes: 24
-  kdf_ops_limit: 1024
+  kdf_ops_limit: 16
   kdf_mem_limit: 8192

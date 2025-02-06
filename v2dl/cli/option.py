@@ -124,10 +124,10 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
     )
 
     parser.add_argument(
-        "--history-file",
-        dest="history_file",
+        "--metadata-path",
+        dest="metadata_path",
         metavar="PATH",
-        help="Path to json file for download metadata history",
+        help="Path to json file for the download metadata",
     )
 
     parser.add_argument(

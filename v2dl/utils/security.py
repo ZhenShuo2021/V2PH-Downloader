@@ -123,15 +123,15 @@ class KeyIOHelper(Encryptor):
     def __init__(
         self,
         logger: Logger,
-        path_config: dict[str, str] | None,
+        static_config: dict[str, str] | None,
         encrypt_config: EncryptionConfig,
     ) -> None:
         super().__init__(logger, encrypt_config)
         self.logger = logger
-        self.path_config = self.init_conf(path_config)
+        self.static_config = self.init_conf(static_config)
 
-    def init_conf(self, path_config: dict[str, str] | None) -> dict[str, str]:
-        if path_config is None:
+    def init_conf(self, static_config: dict[str, str] | None) -> dict[str, str]:
+        if static_config is None:
             base_dir = ConfigManager.get_system_config_dir()
             self.logger.debug("Initializing config with base directory: %s", base_dir)
             return {
@@ -142,7 +142,7 @@ class KeyIOHelper(Encryptor):
                 "public_key_file": os.path.join(base_dir, ".keys", "public_key.pem"),
             }
         else:
-            return path_config
+            return static_config
 
     def load_keys(self) -> KeyPair:
         self.logger.debug("Loading and validating keys")
@@ -164,35 +164,37 @@ class KeyIOHelper(Encryptor):
         return salt_base64, encryption_key_base64
 
     def load_master_key(self, path: str | None = None) -> bytes:
-        _path = self.path_config["master_key_file"] if path is None else path
+        _path = self.static_config["master_key_file"] if path is None else path
         encrypted_master_key = SecureFileHandler.read_file(_path, False)
-        salt, encryption_key = self.load_secret(self.path_config["env_path"])
+        salt, encryption_key = self.load_secret(self.static_config["env_path"])
         return self.decrypt_master_key(encrypted_master_key, salt, encryption_key)
 
     def load_public_key(self, path: str | None = None) -> PublicKey:
-        _path = self.path_config["public_key_file"] if path is None else path
+        _path = self.static_config["public_key_file"] if path is None else path
         public_key_bytes = SecureFileHandler.read_file(_path, False)
         return PublicKey(public_key_bytes)
 
     def load_private_key(self, master_key: bytes, path: str | None = None) -> PrivateKey:
-        _path = self.path_config["private_key_file"] if path is None else path
+        _path = self.static_config["private_key_file"] if path is None else path
         encrypted_private_key = SecureFileHandler.read_file(_path, False)
         return self.decrypt_private_key(encrypted_private_key, master_key)
 
     def save_keys(self, keys: tuple[bytes, bytes, PublicKey, bytes, bytes]) -> None:
-        SecureFileHandler.write_file(self.path_config["master_key_file"], keys[0])
-        SecureFileHandler.write_file(self.path_config["private_key_file"], keys[1])
-        SecureFileHandler.write_file(self.path_config["public_key_file"], keys[2].encode(), 0o644)
-        SecureFileHandler.write_env(self.path_config["env_path"], "SALT", keys[3])
-        SecureFileHandler.write_env(self.path_config["env_path"], "ENCRYPTION_KEY", keys[4])
+        SecureFileHandler.write_file(self.static_config["master_key_file"], keys[0])
+        SecureFileHandler.write_file(self.static_config["private_key_file"], keys[1])
+        SecureFileHandler.write_file(self.static_config["public_key_file"], keys[2].encode(), 0o644)
+        SecureFileHandler.write_env(self.static_config["env_path"], "SALT", keys[3])
+        SecureFileHandler.write_env(self.static_config["env_path"], "ENCRYPTION_KEY", keys[4])
 
     def check_folder(self) -> None:
-        if not os.path.exists(self.path_config["key_folder"]):
-            os.makedirs(self.path_config["key_folder"], mode=0o700)
-            self.logger.info("Secure folder created at %s", self.path_config["key_folder"])
-        elif not self.check_permission(self.path_config["key_folder"]):
-            os.chmod(self.path_config["key_folder"], 0o700)
-            self.logger.info("Permissions updated for folder at %s", self.path_config["key_folder"])
+        if not os.path.exists(self.static_config["key_folder"]):
+            os.makedirs(self.static_config["key_folder"], mode=0o700)
+            self.logger.info("Secure folder created at %s", self.static_config["key_folder"])
+        elif not self.check_permission(self.static_config["key_folder"]):
+            os.chmod(self.static_config["key_folder"], 0o700)
+            self.logger.info(
+                "Permissions updated for folder at %s", self.static_config["key_folder"]
+            )
 
     def check_permission(self, folder_path: str) -> bool:
         folder_permission = 0o700
@@ -224,8 +226,8 @@ class KeyManager(KeyIOHelper):
         return self._generate_and_encrypt_keys()
 
     def _keys_exist(self) -> bool:
-        return os.path.exists(self.path_config["private_key_file"]) and os.path.exists(
-            self.path_config["public_key_file"],
+        return os.path.exists(self.static_config["private_key_file"]) and os.path.exists(
+            self.static_config["public_key_file"],
         )
 
     def _generate_and_encrypt_keys(self) -> tuple[bytes, bytes, PublicKey, bytes, bytes]:
