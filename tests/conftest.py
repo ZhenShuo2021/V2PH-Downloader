@@ -4,8 +4,8 @@ from unittest.mock import Mock
 
 import pytest
 
+from v2dl.common import Config, ConfigManager
 from v2dl.common.const import DEFAULT_CONFIG, HEADERS, SELENIUM_AGENT
-from v2dl.config import Config, ConfigManager
 from v2dl.utils.factory import ServiceType, create_download_service
 
 

@@ -3,7 +3,7 @@ import importlib
 from typing import Any
 
 from .drission_bot import DrissionBot
-from ..config import Config
+from ..common import Config
 from ..utils import AccountManager, KeyManager
 
 

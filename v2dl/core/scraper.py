@@ -7,9 +7,8 @@ from typing import Any, ClassVar, Generic, Literal, TypeAlias, TypeVar
 
 from lxml import html
 
-from ..common import ScrapeError
+from ..common import Config, RuntimeConfig, ScrapeError
 from ..common.const import BASE_URL, IMAGE_PER_PAGE
-from ..config import Config, RuntimeConfig
 from ..utils import (
     AlbumTracker,
     DownloadLogKeys as LogKey,

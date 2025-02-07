@@ -10,9 +10,9 @@ import atexit
 from argparse import Namespace
 from typing import Any
 
-from . import cli, common, config, core, utils, version, web_bot
+from . import cli, common, core, utils, version, web_bot
 
-__all__ = ["cli", "common", "config", "core", "utils", "version", "web_bot"]
+__all__ = ["cli", "common", "core", "utils", "version", "web_bot"]
 
 
 class V2DLApp:
@@ -48,7 +48,7 @@ class V2DLApp:
         except Exception as e:
             raise RuntimeError(f"Runtime error of V2DL: {e}") from e
 
-    def setup_config(self, args: Namespace) -> config.Config:
+    def setup_config(self, args: Namespace) -> common.Config:
         """Setup the Config dataclass with command line inputs
 
         The args can be replace with a custom Namespace object for advance uses.
@@ -62,7 +62,7 @@ class V2DLApp:
         """
         self._check_cli_inputs(args)
 
-        config_manager = config.ConfigManager(self.default_config)
+        config_manager = common.ConfigManager(self.default_config)
         config_instance = config_manager.initialize_config(args)
         runtime_config = self.setup_runtime_config(config_manager, args)
         config_instance.bind_runtime_config(runtime_config)
@@ -70,11 +70,11 @@ class V2DLApp:
 
     def setup_runtime_config(
         self,
-        config_manager: config.ConfigManager,
+        config_manager: common.ConfigManager,
         args: Namespace,
         headers: dict[str, str] = common.const.HEADERS,
         user_agent: str = common.const.SELENIUM_AGENT,
-    ) -> config.RuntimeConfig:
+    ) -> common.RuntimeConfig:
         """Initialize instances and assign to runtime config"""
         logger = common.setup_logging(
             config_manager.get("runtime_config", "log_level"),
@@ -97,7 +97,7 @@ class V2DLApp:
         config_manager.set("runtime_config", "user_agent", user_agent)
         return config_manager.create_runtime_config()
 
-    def get_bot(self, conf: config.Config) -> Any:
+    def get_bot(self, conf: common.Config) -> Any:
         """Get the web automation bot
 
         If the bot_name attribute is not set or not in registered_bot, it returns default bot.
@@ -156,7 +156,7 @@ class V2DLApp:
             sys.exit(0)
 
         if args.account:
-            config_manager = config.ConfigManager(self.default_config)
+            config_manager = common.ConfigManager(self.default_config)
             config_manager.load_from_yaml()
             cli.cli(config_manager.create_encryption_config())
             sys.exit(0)

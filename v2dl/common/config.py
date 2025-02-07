@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, Any
 
 import yaml
 
+from .const import AVAILABLE_LANGUAGES, DEFAULT_CONFIG
 from .model import AnyDict, Config, EncryptionConfig, RuntimeConfig, StaticConfig
-from ..common.const import AVAILABLE_LANGUAGES, DEFAULT_CONFIG
 
 if TYPE_CHECKING:
     from argparse import Namespace

@@ -11,7 +11,7 @@ from typing import Any
 
 import questionary
 
-from ..config import EncryptionConfig
+from ..common import EncryptionConfig
 from ..utils import AccountManager, KeyManager
 from ..version import __package_name__
 

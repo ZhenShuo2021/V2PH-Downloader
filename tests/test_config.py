@@ -3,8 +3,8 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
-from v2dl.config.config import ConfigManager
-from v2dl.config.model import EncryptionConfig, RuntimeConfig, StaticConfig
+from v2dl.common.config import ConfigManager
+from v2dl.common.model import EncryptionConfig, RuntimeConfig, StaticConfig
 
 
 @pytest.fixture

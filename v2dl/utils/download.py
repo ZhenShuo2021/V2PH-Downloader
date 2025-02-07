@@ -18,7 +18,7 @@ from pathvalidate import sanitize_filename
 
 from .parser import LinkParser
 from ..common.const import VALID_EXTENSIONS
-from ..config.model import PathType
+from ..common.model import PathType
 
 logger = logging.getLogger()
 
