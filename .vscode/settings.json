@@ -1,35 +1,13 @@
 {
-  // "python.defaultInterpreterPath": "/venv/bin/python3",
-  // "window.zoomLevel": 1,
-  "cSpell.words": [
-    "aiter",
-    "automator",
-    "Drission",
-    "httpcore",
-    "httpx",
-    "isort",
-    "lxml",
-    "memlimit",
-    "Mqny",
-    "opslimit",
-    "pathvalidate",
-    "Psono",
-    "pwhash",
-    "pyautogui",
-    "pyproject",
-    "pytest",
-    "pyupgrade",
-    "urandom"
-  ],
   "editor.fontSize": 14,
   "editor.lineHeight": 20,
   "extensions.ignoreRecommendations": true,
   "files.encoding": "utf8",
-  "python.envFile": "", // DO NOT REMOVE
-  "python.analysis.typeCheckingMode": "basic",
   // "python.analysis.extraPaths": [
   //   "/Users/leo/Documents/projects/V2PH-Downloader/.venv/lib/python3.12/site-packages"
   // ],
+  "python.envFile": "", // DO NOT REMOVE
+  "python.analysis.typeCheckingMode": "basic",
   "python.analysis.autoImportCompletions": true,
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
@@ -41,16 +19,5 @@
   },
   "ruff.lineLength": null,
   "ruff.organizeImports": true,
-  "ruff.lint.run": "onType",
-  "cSpell.ignorePaths": [
-    "package-lock.json",
-    "node_modules",
-    "vscode-extension",
-    ".git/{info,lfs,logs,refs,objects}/**",
-    ".git/{index,*refs,*HEAD}",
-    ".vscode",
-    ".vscode-insiders",
-    "pyproject.toml",
-    "uv.lock"
-  ]
+  // "ruff.lint.run": "onType",
 }

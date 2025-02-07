@@ -5,6 +5,7 @@ v2dl_chrome_profile*
 chromedriver
 profile
 safe_house
+!.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
