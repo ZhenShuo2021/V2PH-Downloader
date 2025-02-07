@@ -1,7 +1,13 @@
+import os
 import argparse
 from typing import Any
 
 from ..common.const import DEFAULT_CONFIG
+
+
+class ResolvePathAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):  # type: ignore
+        setattr(namespace, self.dest, os.path.abspath(os.path.expanduser(values)))  # type: ignore
 
 
 class CustomHelpFormatter(argparse.RawTextHelpFormatter):
@@ -62,6 +68,7 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
         "--input-file",
         metavar="PATH",
         dest="url_file",
+        action=ResolvePathAction,
         help="Path to file containing a list of URLs",
     )
     input_group.add_argument(
@@ -87,6 +94,7 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
         dest="cookies_path",
         type=str,
         metavar="PATH",
+        action=ResolvePathAction,
         required=False,
         help="Specify the cookies path, can be a path to a file or a folder. All files\n"
         "matches the pattern `*cookies*.txt` will be added to candidate accounts.",
@@ -98,6 +106,7 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
         dest="destination",
         type=str,
         metavar="PATH",
+        action=ResolvePathAction,
         help="Base directory location for file downloads",
     )
 
@@ -107,6 +116,7 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
         dest="directory",
         type=str,
         metavar="PATH",
+        action=ResolvePathAction,
         help="Exact location for file downloads",
     )
 
@@ -144,6 +154,7 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
         "--metadata-path",
         dest="metadata_path",
         metavar="PATH",
+        action=ResolvePathAction,
         help="Path to json file for the download metadata",
     )
 
