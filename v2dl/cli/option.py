@@ -1,13 +1,14 @@
 import argparse
+from typing import Any
 
 from ..common.const import DEFAULT_CONFIG
 
 
 class CustomHelpFormatter(argparse.RawTextHelpFormatter):
-    def __init__(self, prog) -> None:  # type: ignore
+    def __init__(self, prog: Any) -> None:
         super().__init__(prog, max_help_position=36)
 
-    def _format_action_invocation(self, action):  # type: ignore
+    def _format_action_invocation(self, action: Any) -> str:
         if not action.option_strings:
             (metavar,) = self._metavar_formatter(action, action.dest)(1)
             return metavar
@@ -32,7 +33,17 @@ class CustomHelpFormatter(argparse.RawTextHelpFormatter):
             return ", ".join(parts)
 
 
-def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
+def parse_arguments(args: Any | None = None) -> argparse.Namespace:
+    """CLI 輸入的參數選項
+
+    每次新增選項必須修改以下幾個地方:
+        1. parse_arguments 本身
+        2. common/model.py 設定存放的 dataclass
+        3. common/config.py 設定 dataclass 映射表
+        4. common/config.py/validate 驗證參數 (如果需要)
+        5. common/const.py 新增預設值 (如果可設定為 yaml 預設值)
+        6. config.yaml 更新使用範例 (如果需要修改 const.py)
+    """
     parser = argparse.ArgumentParser(
         description="V2PH scraper.",
         formatter_class=CustomHelpFormatter,

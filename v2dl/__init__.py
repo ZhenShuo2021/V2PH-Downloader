@@ -36,12 +36,12 @@ class V2DLApp:
         """
         try:
             args = self.parse_arguments_wrapper(args)
-            conf = self.setup_config(args)
-            bot = self.get_bot(conf)
-            scraper = core.ScrapeManager(conf, bot)
-            atexit.register(scraper.write_metadata)  # ensure write metadata
-            scraper.start_scraping()
-            scraper.log_final_status()
+            self.config = self.setup_config(args)
+            self.bot = self.get_bot(self.config)
+            self.scraper = core.ScrapeManager(self.config, self.bot)
+            atexit.register(self.scraper.write_metadata)  # ensure write metadata
+            self.scraper.start_scraping()
+            self.scraper.log_final_status()
 
             return 0
 
@@ -63,10 +63,10 @@ class V2DLApp:
         self._check_cli_inputs(args)
 
         config_manager = common.ConfigManager(self.default_config)
-        config_instance = config_manager.initialize_config(args)
+        self.config = config_manager.initialize_config(args)
         runtime_config = self.setup_runtime_config(config_manager, args)
-        config_instance.bind_runtime_config(runtime_config)
-        return config_instance
+        self.config.bind_runtime_config(runtime_config)
+        return self.config
 
     def setup_runtime_config(
         self,

@@ -4,6 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 
+from v2dl.cli.option import parse_arguments
 from v2dl.common import Config, ConfigManager
 from v2dl.common.const import DEFAULT_CONFIG, HEADERS, SELENIUM_AGENT
 from v2dl.utils.factory import ServiceType, create_download_service
@@ -22,14 +23,6 @@ def real_config(tmp_path, real_download_service, real_args, mock_logger) -> Conf
         mock_logger,
         HEADERS,
     )
-    # setup static_config
-    config_manager.set("static_config", "download_dir", str(tmp_path / "Downloads"))
-    config_manager.set("static_config", "rate_limit", 10000)
-    config_manager.set("static_config", "min_scroll_length", 2000)
-    config_manager.set("static_config", "max_scroll_length", 4000)
-    config_manager.set("static_config", "page_range", None)
-    config_manager.set("static_config", "download_log_path", str(tmp_path / "download.log"))
-    config_manager.set("static_config", "chrome_profile_path", str(tmp_path / "chrome_profile"))
     config_manager.initialize_config(real_args[0])
 
     # setup runtime_config
@@ -47,32 +40,19 @@ def real_config(tmp_path, real_download_service, real_args, mock_logger) -> Conf
 
 @pytest.fixture
 def real_args(tmp_path):
+    """提供最低需求的命令行參數作整合測試"""
     expected_file_count = 12
-    return Namespace(
-        url="https://www.v2ph.com/album/Weekly-Young-Jump-2012-No29",
-        input_file="",
-        bot_type="drissionpage",
-        cookies_path="",
-        chrome_args=[],
-        page_range=None,
-        user_agent=None,
-        terminate=True,
-        dry_run=False,
-        concurrency=3,
-        metadata_path="",
-        no_metadata=False,
-        force_download=True,
-        use_default_chrome_profile=False,
-        directory=None,
-        language="ja",
-        url_file="urls.txt",
-        destination=tmp_path,
-        min_scroll=1500,
-        max_scroll=2500,
-        quiet=False,
-        verbose=True,
-        log_level=None,
-    ), expected_file_count
+    args = [
+        "https://www.v2ph.com/album/Weekly-Young-Jump-2012-No29",
+        "--min-scroll",
+        "5000",
+        "--max-scroll",
+        "5001",
+        "-f",
+        "-d",
+        str(tmp_path),
+    ]
+    return parse_arguments(args), expected_file_count
 
 
 @pytest.fixture
