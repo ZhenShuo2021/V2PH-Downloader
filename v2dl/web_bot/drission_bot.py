@@ -14,7 +14,7 @@ from .cookies import load_cookies
 from ..common.error import BotError
 
 if TYPE_CHECKING:
-    from ..config import Config
+    from ..common import Config
     from ..utils import AccountManager, KeyManager
 
 
@@ -63,6 +63,7 @@ class DrissionBot(BaseBot):
         fast_scroll: bool = False,
     ) -> str:
         scroll_down = self.page.scroll.to_bottom if fast_scroll else self.scroller.scroll_to_bottom
+        self.url = url
 
         for attempt in range(max_retry):
             try:
@@ -169,7 +170,9 @@ class DrissionBot(BaseBot):
                     )
                     login_button.click()
 
-                    if not self.page('x://a[@href="/site/recovery-password"]', timeout=0.5):
+                    if not self.page(
+                        'x://div[contains(@class, "alert-danger") and @role="alert"]', timeout=0.5
+                    ):
                         success = True
                         self.logger.info("Account %s login successful with password", self.account)
                         return success
@@ -214,9 +217,14 @@ class DrissionBot(BaseBot):
             cookies = load_cookies(cookies_path)
             self.page.set.cookies.clear()
             self.page.set.cookies(cookies)
+            DriBehavior.random_sleep(0, 3)
             self.page.refresh()
+            DriBehavior.random_sleep(0, 3)
+            self.page.get(self.url)
 
-        if not self.page('x://a[@href="/site/recovery-password"]'):
+        if not self.page(
+            'x://div[contains(@class, "alert-danger") and @role="alert"]', timeout=0.5
+        ):
             self.logger.info("Account %s login successful with cookies", self.account)
             return True
 

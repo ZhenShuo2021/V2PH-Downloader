@@ -22,7 +22,7 @@ from .cookies import load_cookies
 from ..common import BotError
 
 if TYPE_CHECKING:
-    from ..config import Config
+    from ..common import Config
     from ..utils import AccountManager, KeyManager
 
 DEFAULT_BOT_OPT = [
@@ -84,6 +84,8 @@ class SeleniumBot(BaseBot):
         fast_scroll: bool = False,
     ) -> str:
         response: str = ""
+        self.url = url
+
         for attempt in range(max_retry):
             try:
                 self.driver.get(url)
@@ -234,7 +236,10 @@ class SeleniumBot(BaseBot):
             self.driver.delete_all_cookies()
             for k, v in cookies.items():
                 self.driver.add_cookie({"name": k, "value": v})
+            SelBehavior.random_sleep(0, 3)
             self.driver.refresh()
+            SelBehavior.random_sleep(0, 3)
+            self.driver.get(self.url)
 
         if not self.driver.find_element('//a[@href="/site/recovery-password"]'):
             self.logger.info("Account %s login successful with cookies", self.account)
