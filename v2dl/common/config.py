@@ -133,8 +133,8 @@ class ConfigManager(ConfigPathTool):
             else:
                 args.log_level = logging.INFO
 
-            # setup download dir
             path = "static_config"
+            # setup download dir
             self.set(path, "download_dir", self.get_default_download_dir())
             self.set(path, "exact_dir", False)
             if args.destination is not None:
@@ -151,6 +151,13 @@ class ConfigManager(ConfigPathTool):
         for arg_name, value in specified_args.items():
             config_section, config_key = self.ARG_MAPPING[arg_name]
             self.set(config_section, config_key, value)
+
+        path = "static_config"
+        # Manually setup force_download to prevent yaml config from getting covered
+        if args.force_download:  # if set (store_true)
+            self.set(path, "force_download", True)
+        else:
+            self.set(path, "force_download", False)
 
     def validate_config(self) -> None:
         config_dir = self.get_system_config_dir()

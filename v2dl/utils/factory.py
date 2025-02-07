@@ -1,4 +1,3 @@
-from argparse import Namespace as NamespaceT
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
@@ -13,6 +12,7 @@ from .download import (
     VideoDownloadAPI,
 )
 from .multitask import AsyncService, BaseTaskService, ThreadingService
+from ..common.config import ConfigManager
 
 
 @dataclass
@@ -93,10 +93,7 @@ class DownloadAPIFactory:
 
 
 def create_download_service(
-    args: NamespaceT,
-    max_worker: int,
-    rate_limit: int,
-    logger: Logger,
+    config_manager: ConfigManager,
     headers: dict[str, str],
     service_type: ServiceType = ServiceType.ASYNC,
 ) -> tuple[BaseTaskService, Callable[..., Any]]:
@@ -104,16 +101,16 @@ def create_download_service(
 
     download_service = TaskServiceFactory.create(
         service_type=service_type,
-        logger=logger,
-        max_workers=max_worker,
+        logger=config_manager.get("static_config", "logger"),
+        max_workers=config_manager.get("static_config", "max_worker"),
     )
 
     download_api = DownloadAPIFactory.create(
         service_type=service_type,
         headers=headers,
-        rate_limit=rate_limit,
-        force_download=args.force_download,
-        logger=logger,
+        rate_limit=config_manager.get("static_config", "rate_limit"),
+        force_download=config_manager.get("static_config", "force_download"),
+        logger=config_manager.get("static_config", "logger"),
     )
 
     download_function = (

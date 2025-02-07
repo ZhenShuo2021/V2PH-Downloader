@@ -79,20 +79,17 @@ class V2DLApp:
             log_path=config_manager.get("static_config", "system_log_path"),
             logger_name=version.__package_name__,
         )
+        config_manager.set("runtime_config", "logger", logger)
+        config_manager.set("runtime_config", "url", args.url)
+        config_manager.set("runtime_config", "user_agent", user_agent)
 
         download_service, download_function = utils.create_download_service(
-            args,
-            config_manager.get("static_config", "max_worker"),
-            config_manager.get("static_config", "rate_limit"),
-            logger,
+            config_manager,
             headers,
             utils.ServiceType.ASYNC,
         )
-        config_manager.set("runtime_config", "url", args.url)
         config_manager.set("runtime_config", "download_service", download_service)
         config_manager.set("runtime_config", "download_function", download_function)
-        config_manager.set("runtime_config", "logger", logger)
-        config_manager.set("runtime_config", "user_agent", user_agent)
         return config_manager.create_runtime_config()
 
     def get_bot(self, conf: common.Config) -> Any:

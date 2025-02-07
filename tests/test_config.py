@@ -81,6 +81,7 @@ def test_initialize_config_order(default_config, yaml_config_content):
                 destination=None,
                 directory=None,
                 chrome_args=None,
+                force_download=True,
             )
             config_manager = ConfigManager(default_config=default_config)
             config = config_manager.initialize_config(cli_args)
