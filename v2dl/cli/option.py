@@ -33,8 +33,14 @@ class CustomHelpFormatter(argparse.RawTextHelpFormatter):
             return ", ".join(parts)
 
 
-def parse_arguments(args: Any | None = None) -> argparse.Namespace:
-    """CLI 輸入的參數選項
+def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
+    """CLI 輸入的參數選項，接受以 list of string 形式接受輸入不需從 argv 輸入方便調用
+
+    Example:
+    ```
+    args = ["https://www.v2ph.com/album/Weekly-Young-Jump-2012-No29", "-f", "-d", "path/to/dest"]
+    parse_arguments(args)
+    ```
 
     每次新增選項必須修改以下幾個地方:
         1. parse_arguments 本身

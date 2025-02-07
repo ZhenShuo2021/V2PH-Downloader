@@ -36,9 +36,7 @@ class V2DLApp:
         """
         try:
             args = self.parse_arguments_wrapper(args)
-            self.config = self.setup_config(args)
-            self.bot = self.get_bot(self.config)
-            self.scraper = core.ScrapeManager(self.config, self.bot)
+            self.initialize(args)
             atexit.register(self.scraper.write_metadata)  # ensure write metadata
             self.scraper.start_scraping()
             self.scraper.log_final_status()
@@ -48,17 +46,15 @@ class V2DLApp:
         except Exception as e:
             raise RuntimeError(f"Runtime error of V2DL: {e}") from e
 
-    def setup_config(self, args: Namespace) -> common.Config:
-        """Setup the Config dataclass with command line inputs
+    def initialize(self, args: Namespace) -> None:
+        """Initialize the application with the provided command line arguments.
 
-        The args can be replace with a custom Namespace object for advance uses.
+        This method sets up the configuration, initializes the bot, and prepares
+        the scraper for execution.
 
         Args:
-            args (Namespace): The variable from the command line. Can be replaced with custom
-            Namespace argument. Please see the cli/option.py for the required field.
-
-        Returns:
-            config.Config: The Config dataclass.
+            args (Namespace): The variable from the command line. Can be replaced with a custom
+            Namespace argument. Please see cli/option.py for the required fields.
         """
         self._check_cli_inputs(args)
 
@@ -66,7 +62,9 @@ class V2DLApp:
         self.config = config_manager.initialize_config(args)
         runtime_config = self.setup_runtime_config(config_manager, args)
         self.config.bind_runtime_config(runtime_config)
-        return self.config
+
+        self.bot = self.get_bot(self.config)
+        self.scraper = core.ScrapeManager(self.config, self.bot)
 
     def setup_runtime_config(
         self,
@@ -125,11 +123,13 @@ class V2DLApp:
     def parse_arguments_wrapper(
         self, args: Namespace | dict[Any, Any] | list[Any] | None
     ) -> Namespace:
-        """Process CLI input for Config setup
+        """Process CLI input for configuration setup.
 
-        Convert input variable to namespace for parse_args. If input is Namespace, returns itself.
-        If input is a dict or list, convert the and pass it to the parse_args. Otherwise, calls the
-        default CLI interface.
+        If args is
+            - Namespace, it is returned as is.
+            - dict, it is converted to a `Namespace` and parsed.
+            - list, it is passed to the argument parser.
+            - None, the default CLI interface is invoked.
         """
 
         def init_attr(args: dict[Any, Any]) -> Namespace:
@@ -150,7 +150,7 @@ class V2DLApp:
             raise ValueError(f"Unsupported CLI input type {type(args)}")
 
     def _check_cli_inputs(self, args: Namespace) -> None:
-        """Check command line inputs in advance"""
+        """Check command line inputs for quick return"""
         if args.version:
             print(version.__version__)  # noqa: T201
             sys.exit(0)
