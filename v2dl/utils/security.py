@@ -186,14 +186,15 @@ class KeyIOHelper(Encryptor):
         SecureFileHandler.write_env(self.static_config["env_path"], "ENCRYPTION_KEY", keys[4])
 
     def check_folder(self) -> None:
-        if not os.path.exists(self.static_config["key_folder"]):
-            os.makedirs(self.static_config["key_folder"], mode=0o700)
-            self.logger.info("Secure folder created at %s", self.static_config["key_folder"])
-        elif not self.check_permission(self.static_config["key_folder"]):
-            os.chmod(self.static_config["key_folder"], 0o700)
-            self.logger.info(
-                "Permissions updated for folder at %s", self.static_config["key_folder"]
-            )
+        folder_path = self.static_config["key_folder"]
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path, mode=0o700)
+            self.logger.info("Secure folder created at %s", folder_path)
+        else:
+            current_permissions = os.stat(folder_path).st_mode & 0o777
+            if current_permissions != 0o700:
+                os.chmod(folder_path, 0o700)
+                self.logger.info("Permissions updated for folder at %s", folder_path)
 
     def check_permission(self, folder_path: str) -> bool:
         folder_permission = 0o700
