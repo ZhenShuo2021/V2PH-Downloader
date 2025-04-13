@@ -110,7 +110,7 @@ Use an extension (e.g., [Cookie-Editor](https://chromewebstore.google.com/detail
 - -c: Specify the cookies file to be used for this execution. If the provided path is a folder, it will automatically search for all .txt files containing "cookies" in their names within that folder. This is especially useful for users who prefer not to use account management.
 - -d: Configure the base download directory.
 - -D: Configure the exact download directory.
-- --no-skip: Force download without skipping.
+- --force: Force download without skipping.
 - --range: Specifies the download range, following the same usage as `--range` in gallery-dl.
 - --bot: Select automation tool; Drission is less likely to be blocked by bots.
 - --dry-run: Simulate the download without actual file download.
