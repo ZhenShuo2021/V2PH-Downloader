@@ -15,7 +15,7 @@ Provide a detailed description of the issue, including:
 
 - Steps to reproduce the issue.  
 - Relevant logs, screenshots, or error messages.  
-- Environment details (e.g., OS, browser, version, configuration).  
+- V2DL version (use `v2dl --version`) and other environment details (e.g., OS, browser, version, configuration).  
 - Any related links (e.g., PRs, commits, external references).
 
 **Expected vs. Actual**  
