@@ -151,10 +151,7 @@ class SeleniumBot(BaseBot):
 
     def handle_login(self) -> bool:
         success = False
-        if self.driver.find_elements(
-            By.XPATH,
-            "//h1[@class='h4 text-secondary mb-4 login-box-msg']",
-        ):
+        if self.driver.find_elements(By.XPATH, "//h1[contains(@class, 'login-box-msg')]"):
             self.logger.info("Login page detected - Starting login process")
             try:
                 for _ in self.account_manager.accounts:

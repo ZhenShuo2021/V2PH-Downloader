@@ -140,7 +140,7 @@ class DrissionBot(BaseBot):
     def handle_login(self) -> bool:
         """handle login and return the bool represents if login success or not"""
         success = False
-        if self.page("x://h1[@class='h4 text-secondary mb-4 login-box-msg']"):
+        if self.page("xpath=//h1[contains(@class, 'login-box-msg')]"):
             self.logger.info("Login page detected - Starting login process")
             try:
                 for _ in self.account_manager.accounts:
@@ -166,12 +166,13 @@ class DrissionBot(BaseBot):
                     DriBehavior.random_sleep(0.01, 0.5)
 
                     login_button = self.page(
-                        'x://button[@type="submit" and @class="btn btn-primary"]',
+                        'xpath=//button[@type="submit" and @class="btn btn-primary"]',
                     )
                     login_button.click()
 
                     if not self.page(
-                        'x://div[contains(@class, "alert-danger") and @role="alert"]', timeout=0.5
+                        'xpath=//div[contains(@class, "alert-danger") and @role="alert"]',
+                        timeout=0.5,
                     ):
                         success = True
                         self.logger.info("Account %s login successful with password", self.account)
@@ -223,7 +224,7 @@ class DrissionBot(BaseBot):
             self.page.get(self.url)
 
         if not self.page(
-            'x://div[contains(@class, "alert-danger") and @role="alert"]', timeout=0.5
+            'xpath=//div[contains(@class, "alert-danger") and @role="alert"]', timeout=0.5
         ):
             self.logger.info("Account %s login successful with cookies", self.account)
             return True
@@ -234,7 +235,7 @@ class DrissionBot(BaseBot):
         return False
 
     def check_login_errors(self) -> None:
-        error_message = self.page('x://div[@class="errorMessage"]')
+        error_message = self.page('xpath=//div[@class="errorMessage"]')
         if error_message:
             self.logger.error("Login error: %s", error_message.text)
         else:
@@ -245,7 +246,7 @@ class DrissionBot(BaseBot):
         if self.check_read_limit():
             # click logout
             self.page(
-                'x://ul[@class="nav justify-content-end"]//a[contains(@href, "/user/logout")]'
+                'xpath=//ul[@class="nav justify-content-end"]//a[contains(@href, "/user/logout")]'
             ).click()
             now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
             self.account_manager.update_runtime_state(self.account, "exceed_quota", True)

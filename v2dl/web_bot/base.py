@@ -27,6 +27,7 @@ class BaseBot(ABC):
 
         self.key_manager = key_manager
         self.account_manager = account_manager
+        self.account = account_manager.random_pick()
         key_pair = self.key_manager.load_keys()
         self.private_key, self.public_key = key_pair.private_key, key_pair.public_key
         self.add_runtime_account()
