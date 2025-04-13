@@ -117,7 +117,9 @@ class Downloader:
         timeout = httpx.Timeout(10.0, read=5.0)
         with httpx.Client(timeout=timeout) as client:
             with client.stream("GET", url, headers=headers) as response:
-                response.raise_for_status()
+                if not (200 <= response.status_code < 400):
+                    raise RuntimeError(f"Received failed HTTP status code {response.status_code}")
+
                 ext = "." + DownloadPathTool.get_ext(response)
                 save_path = save_path.with_suffix(ext)
 
@@ -148,7 +150,9 @@ class Downloader:
         timeout = httpx.Timeout(10.0, read=30.0)
         async with httpx.AsyncClient(timeout=timeout) as client:
             async with client.stream("GET", url, headers=headers) as response:
-                response.raise_for_status()
+                if not (200 <= response.status_code < 400):
+                    raise RuntimeError(f"Received failed HTTP status code {response.status_code}")
+
                 ext = "." + DownloadPathTool.get_ext(response)
                 save_path = save_path.with_suffix(ext)
 
