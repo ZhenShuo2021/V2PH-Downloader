@@ -10,9 +10,9 @@ import atexit
 from argparse import Namespace
 from typing import Any
 
-from . import cli, common, core, utils, version, web_bot
+from v2dl import cli, common, scraper, utils, version, web_bot
 
-__all__ = ["cli", "common", "core", "utils", "version", "web_bot"]
+__all__ = ["cli", "common", "scraper", "utils", "version", "web_bot"]
 
 
 class V2DLApp:
@@ -33,7 +33,7 @@ class V2DLApp:
         Returns:
             int: The runtime status
         """
-        self.scraper: core.ScrapeManager
+        self.scraper: scraper.ScrapeManager
         try:
             args = self.parse_arguments_wrapper(args)
             self.init(args)
@@ -102,7 +102,7 @@ class V2DLApp:
         self._initialize_config(args)
 
         self.bot = self.get_bot(self.config)
-        self.scraper = core.ScrapeManager(self.config, self.bot)
+        self.scraper = scraper.ScrapeManager(self.config, self.bot)
 
     def _check_cli_inputs(self, args: Namespace) -> None:
         """Check command line inputs for quick return"""

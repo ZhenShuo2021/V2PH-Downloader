@@ -68,6 +68,7 @@ dev = [
     "pre-commit>=4.0.0",
     "isort>=5.13.2",
     "ipykernel>=6.29.5",
+    "types-pyyaml>=6.0.12.20250402",
 ]
 test = [
     "pytest>=8.3.3",

@@ -3,7 +3,7 @@ import logging
 import argparse
 from typing import Any
 
-from ..common.const import DEFAULT_CONFIG
+from v2dl.common.const import DEFAULT_CONFIG
 
 
 class ResolvePathAction(argparse.Action):

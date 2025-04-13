@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from logging import Logger
 
-    from ..utils import BaseTaskService
+    from v2dl.utils import BaseTaskService
 
 PathType = str | Path
 AnyDict = dict[str, Any]

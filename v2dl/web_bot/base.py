@@ -6,9 +6,9 @@ from logging import Logger
 from subprocess import run
 from typing import Any
 
-from .cookies import find_cookies_files
-from ..common import Config, const
-from ..utils import AccountManager, KeyManager
+from v2dl.common import Config, const
+from v2dl.utils import AccountManager, KeyManager
+from v2dl.web_bot.cookies import find_cookies_files
 
 
 class BaseBot(ABC):

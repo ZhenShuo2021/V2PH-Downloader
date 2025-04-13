@@ -17,13 +17,13 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from .base import BaseBehavior, BaseBot, BaseScroll
-from .cookies import load_cookies
-from ..common import BotError
+from v2dl.common import BotError
+from v2dl.web_bot.base import BaseBehavior, BaseBot, BaseScroll
+from v2dl.web_bot.cookies import load_cookies
 
 if TYPE_CHECKING:
-    from ..common import Config
-    from ..utils import AccountManager, KeyManager
+    from v2dl.common import Config
+    from v2dl.utils import AccountManager, KeyManager
 
 DEFAULT_BOT_OPT = [
     "--remote-debugging-port=9222",

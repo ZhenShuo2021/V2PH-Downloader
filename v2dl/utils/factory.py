@@ -4,15 +4,15 @@ from enum import Enum
 from logging import Logger
 from typing import Any
 
-from .download import (
+from v2dl.common.config import ConfigManager
+from v2dl.utils.download import (
     ActorDownloadAPI,
     BaseDownloadAPI,
     DirectoryCache,
     ImageDownloadAPI,
     VideoDownloadAPI,
 )
-from .multitask import AsyncService, BaseTaskService, ThreadingService
-from ..common.config import ConfigManager
+from v2dl.utils.multitask import AsyncService, BaseTaskService, ThreadingService
 
 
 @dataclass

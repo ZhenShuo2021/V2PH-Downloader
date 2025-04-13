@@ -2,9 +2,9 @@ import time
 import importlib
 from typing import Any
 
-from .drission_bot import DrissionBot
-from ..common import Config
-from ..utils import AccountManager, KeyManager
+from v2dl.common import Config
+from v2dl.utils import AccountManager, KeyManager
+from v2dl.web_bot.drission_bot import DrissionBot
 
 
 def get_bot(config: Config) -> Any:

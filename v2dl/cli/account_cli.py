@@ -11,9 +11,9 @@ from typing import Any
 
 import questionary
 
-from ..common import EncryptionConfig
-from ..utils import AccountManager, KeyManager
-from ..version import __package_name__
+from v2dl.common import EncryptionConfig
+from v2dl.utils import AccountManager, KeyManager
+from v2dl.version import __package_name__
 
 
 class MenuAction(Enum):

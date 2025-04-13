@@ -9,13 +9,13 @@ from DrissionPage import ChromiumOptions, ChromiumPage
 from DrissionPage.common import wait_until
 from DrissionPage.errors import ContextLostError, ElementNotFoundError, WaitTimeoutError
 
-from .base import BaseBehavior, BaseBot, BaseScroll
-from .cookies import load_cookies
-from ..common.error import BotError
+from v2dl.common.error import BotError
+from v2dl.web_bot.base import BaseBehavior, BaseBot, BaseScroll
+from v2dl.web_bot.cookies import load_cookies
 
 if TYPE_CHECKING:
-    from ..common import Config
-    from ..utils import AccountManager, KeyManager
+    from v2dl.common import Config
+    from v2dl.utils import AccountManager, KeyManager
 
 
 class DrissionBot(BaseBot):

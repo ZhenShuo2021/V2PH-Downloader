@@ -7,8 +7,8 @@ from typing import Any
 
 import yaml
 
-from .const import DEFAULT_CONFIG
-from .model import AnyDict, EncryptionConfig, RuntimeConfig, StaticConfig
+from v2dl.common.const import DEFAULT_CONFIG
+from v2dl.common.model import AnyDict, EncryptionConfig, RuntimeConfig, StaticConfig
 
 
 class ConfigPathTool:
