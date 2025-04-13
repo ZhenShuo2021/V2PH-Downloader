@@ -27,7 +27,7 @@ class ConfigPathTool:
     def get_system_config_dir() -> Path:
         """Return the config directory."""
         if platform.system() == "Windows":
-            base = os.getenv("APPDATA", "")
+            base = os.getenv("APPDATA", Path.home() / "AppData" / "Roaming")
         else:
             base = os.path.expanduser("~/.config")
         return Path(base) / "v2dl"

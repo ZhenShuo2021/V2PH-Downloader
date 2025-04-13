@@ -87,7 +87,7 @@ You can modify settings like scroll length, scroll step, and rate limit:
 
 System configuration directory locations:
 
-- Windows: `C:\Users\xxx\AppData\v2dl`
+- Windows: `C:\Users\xxx\AppData\Roaming\v2dl`
 - Linux, macOS: `/Users/xxx/.config/v2dl`
 
 ### Cookies

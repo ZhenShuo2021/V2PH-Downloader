@@ -88,7 +88,7 @@ v2dl -i "/path/to/urls.txt"
 
 系統設定目錄位置：
 
-- Windows: `C:\Users\xxx\AppData\v2dl`
+- Windows: `C:\Users\xxx\AppData\Roaming\v2dl`
 - Linux, macOS: `/Users/xxx/.config/v2dl`
 
 ### Cookies
