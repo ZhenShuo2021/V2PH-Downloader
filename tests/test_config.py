@@ -22,7 +22,7 @@ def default_config():
             "dry_run": False,
             "terminate": False,
             "language": "en",
-            "chrome_args": [],
+            "chrome_args": "",
             "use_default_chrome_profile": False,
             "exact_dir": False,
             # path relative configurations
@@ -80,7 +80,7 @@ def test_initialize_config_order(default_config, yaml_config_content):
                 quiet=True,
                 destination=None,
                 directory=None,
-                chrome_args=None,
+                chrome_args="",
                 force_download=True,
             )
             config_manager = ConfigManager(default_config=default_config)

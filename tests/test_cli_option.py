@@ -35,7 +35,7 @@ def test_parse_arguments(mock_parse_args):
         verbose=False,
         max_scroll=100,
         min_scroll=50,
-        chrome_args=[],
+        chrome_args="",
         input_file=None,
         destination=None,
         directory=None,

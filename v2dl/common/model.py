@@ -26,7 +26,7 @@ class StaticConfig:
     dry_run: bool
     terminate: bool
     language: str
-    chrome_args: list[str] | None
+    chrome_args: str
     use_default_chrome_profile: bool
     exact_dir: bool
 

@@ -179,8 +179,7 @@ class ConfigManager(ConfigPathTool):
 
         # parse chrome args
         if sub_dict["chrome_args"]:
-            chrome_args = sub_dict["chrome_args"].split("//")
-            self.set(section, "chrome_args", chrome_args)
+            self.set(section, "chrome_args", sub_dict["chrome_args"])
 
         # setup chrome_exec_path if not specified
         if isinstance(sub_dict["chrome_exec_path"], dict):

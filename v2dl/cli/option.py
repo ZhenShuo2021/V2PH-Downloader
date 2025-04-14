@@ -185,6 +185,8 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--chrome-args",
         type=str,
+        default="",
+        dest="chrome_args",
         metavar="'--arg1//--arg2'",
         help="Override Chrome arguments",
     )
@@ -192,6 +194,8 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--user-agent",
         type=str,
+        default="",
+        dest="user_agent",
         metavar="'Mozilla/5.0 (Windows NT 10.0; Win64; x64)...'",
         help="Override user-agent",
     )

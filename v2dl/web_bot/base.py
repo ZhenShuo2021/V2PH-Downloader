@@ -93,12 +93,27 @@ class BaseBot(ABC):
         """Simulate human-like scrolling behavior."""
         raise NotImplementedError("Subclasses must implement scroll behavior.")
 
+    def parse_chrome_args(self) -> list[tuple[str, ...]]:
+        chrome_args = self.config.static_config.chrome_args
+        final_options: list[tuple[str, ...]] = []
+
+        if chrome_args is None or not chrome_args.strip():
+            return final_options
+
+        args_list = ["--" + arg.strip() for arg in chrome_args.split("//") if arg.strip()]
+
+        for option in args_list:
+            final = option.split("=", 1)
+            final_options.append(tuple(final))
+
+        return final_options
+
 
 class BaseBehavior:
     pause_time = (0.1, 0.3)
 
     @staticmethod
-    def random_sleep(min_time: float = 1.0, max_time: float = 5.0) -> None:
+    def random_sleep(min_time: float = 1.0, max_time: float = 3.0) -> None:
         time.sleep(random.uniform(min_time, max_time))
 
 

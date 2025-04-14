@@ -32,9 +32,11 @@ class DrissionBot(BaseBot):
 
     def init_driver(self) -> None:
         co = ChromiumOptions()
-        if self.config.static_config.chrome_args is not None:
-            for conf in self.config.static_config.chrome_args:
-                co.set_argument(conf)
+        args = self.parse_chrome_args()
+        if len(args) > 0:
+            for arg in args:
+                co.set_argument(*arg)
+                self.logger.info(f"Apply chrome args: {arg}")
 
         # Do not use user_agent on drissionpage
         # if self.runtime_config.user_agent is not None:
@@ -141,6 +143,7 @@ class DrissionBot(BaseBot):
         """handle login and return the bool represents if login success or not"""
         success = False
         if self.page("xpath=//h1[contains(@class, 'login-box-msg')]"):
+            DriBehavior.random_sleep()
             self.logger.info("Login page detected - Starting login process")
             try:
                 for _ in self.account_manager.accounts:
