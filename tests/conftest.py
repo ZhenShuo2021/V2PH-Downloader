@@ -23,7 +23,7 @@ def real_config(tmp_path, real_download_service, real_args, mock_logger) -> Conf
         mock_logger,
         HEADERS,
     )
-    config_manager.initialize_config(real_args[0])
+    config_manager.initialize(real_args[0])
 
     # setup runtime_config
     config_manager.set("runtime_config", "url", real_arg.url)
@@ -33,7 +33,7 @@ def real_config(tmp_path, real_download_service, real_args, mock_logger) -> Conf
     config_manager.set("runtime_config", "custom_user_agent", DEFAULT_USER_AGENT)
 
     runtime_config = config_manager.create_runtime_config()
-    config_instance = config_manager.initialize_config(real_arg)
+    config_instance = config_manager.initialize(real_arg)
     config_instance.bind_runtime_config(runtime_config)
     return config_instance
 

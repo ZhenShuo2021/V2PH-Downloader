@@ -501,10 +501,7 @@ class ImageScraper(BaseScraper[ImageLinkAndALT]):
             page_link_ctr += 1
 
             filename = f"{(idx + i):03d}"
-            if self.config.static_config.exact_dir:
-                dest = DownloadPathTool.get_file_dest(dir_, "", filename)
-            else:
-                dest = DownloadPathTool.get_file_dest(dir_, album_name, filename)
+            dest = DownloadPathTool.get_file_dest(dir_, album_name, filename)
 
             if not self.config.static_config.dry_run:
                 task = Task(

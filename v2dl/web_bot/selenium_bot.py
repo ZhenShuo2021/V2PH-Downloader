@@ -406,8 +406,8 @@ class SelScroll(BaseScroll):
         attempts = 0
         last_position = -123459
         scroll_length = lambda: random.randint(
-            self.config.static_config.min_scroll_length,
-            self.config.static_config.max_scroll_length,
+            self.config.static_config.min_scroll_distance,
+            self.config.static_config.max_scroll_distance,
         )
 
         while attempts < max_attempts:
@@ -432,8 +432,8 @@ class SelScroll(BaseScroll):
 
         scroll_pos_init = self.driver.execute_script("return window.pageYOffset;")
         step_scroll = lambda: random.randint(
-            self.config.static_config.min_scroll_length,
-            self.config.static_config.max_scroll_length,
+            self.config.static_config.min_scroll_distance,
+            self.config.static_config.max_scroll_distance,
         )
 
         while scroll_attempts < max_attempts:
@@ -450,8 +450,8 @@ class SelScroll(BaseScroll):
             scroll_pos_init = scroll_pos_end
 
             step_scroll = lambda: random.randint(
-                self.config.static_config.min_scroll_length,
-                self.config.static_config.max_scroll_length,
+                self.config.static_config.min_scroll_distance,
+                self.config.static_config.max_scroll_distance,
             )
 
             self.wait_for_content_load()
@@ -486,8 +486,8 @@ class SelScroll(BaseScroll):
 
         if action == "scroll_down":
             scroll_length = random.randint(
-                self.config.static_config.min_scroll_length,
-                self.config.static_config.max_scroll_length,
+                self.config.static_config.min_scroll_distance,
+                self.config.static_config.max_scroll_distance,
             )
             target_position = current_position + scroll_length
             self.logger.debug("Trying to scroll down %d pixels", scroll_length)
@@ -496,8 +496,8 @@ class SelScroll(BaseScroll):
             time.sleep(random.uniform(*BaseBehavior.pause_time))
         elif action == "scroll_up":
             scroll_length = random.randint(
-                self.config.static_config.min_scroll_length,
-                self.config.static_config.max_scroll_length,
+                self.config.static_config.min_scroll_distance,
+                self.config.static_config.max_scroll_distance,
             )
             target_position = max(0, current_position - scroll_length)
             self.logger.debug("Trying to scroll up %d pixels", scroll_length)

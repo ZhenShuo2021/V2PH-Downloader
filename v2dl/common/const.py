@@ -43,31 +43,33 @@ HEADERS = {
 
 
 # ============== Default User Preference ==============
+# The order should be same as model.py
 DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
     "static_config": {
-        "min_scroll_length": 1000,
-        "max_scroll_length": 2000,
-        "min_scroll_step": 300,
-        "max_scroll_step": 500,
-        "max_worker": 5,
-        "rate_limit": 400,
-        "page_range": None,
+        "bot_type": "drissionpage",
+        "custom_user_agent": "",
+        "language": "ja",
+        "chrome_args": None,
         "no_metadata": False,
         "force_download": False,
         "dry_run": False,
         "terminate": False,
-        "language": "ja",
-        "chrome_args": None,
         "use_default_chrome_profile": False,
-        "exact_dir": False,
+        "log_level": -1,
+        "min_scroll_distance": 1000,
+        "max_scroll_distance": 2000,
+        "min_scroll_step": 300,
+        "max_scroll_step": 500,
+        "max_worker": 5,
+        "rate_limit": 400,
+        "page_range": "",
         # path relative configurations
         "cookies_path": "",
         "download_dir": "",
-        "download_log_path": "",
         "metadata_path": "",
+        "download_log_path": "",
         "system_log_path": "",
         # Do NOT pass default user-agent to config, it corrupts drissionpage's fingerprint
-        "custom_user_agent": "",
         "chrome_exec_path": {
             "Linux": "/usr/bin/google-chrome",
             "Darwin": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",

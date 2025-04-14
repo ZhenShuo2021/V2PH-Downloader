@@ -109,8 +109,7 @@ Cookies 登入比帳號密碼更容易成功。
 - -i: 下載目標的 URL 列表文字文件，每行一個 URL。
 - -a: 進入帳號管理工具。
 - -c: 指定此次執行所使用的 cookies 檔案。如果提供的路徑為資料夾，會自動搜尋該資料夾中所有檔名包含 "cookies" 的 .txt 檔案。這對不希望使用帳號管理功能的用戶特別有用。
-- -d: 設定下載根目錄，在分類檔案時特別有用。
-- -D: 設定檔案實際下載位置。
+- -d: 設定下載根目錄。
 - --force: 強制下載不跳過。
 - --range: 設定下載範圍，使用方式和 gallery-dl 的 `--range` 完全相同。
 - --bot: 選擇自動化工具，drission 比較不會被機器人檢測封鎖。
@@ -144,8 +143,8 @@ from v2dl import V2DLApp
 
 custom_defaults = {
     "static_config": {
-        "min_scroll_length": 1000,
-        "max_scroll_length": 2000,
+        "min_scroll_distance": 1000,
+        "max_scroll_distance": 2000,
         # ...
     }
 }

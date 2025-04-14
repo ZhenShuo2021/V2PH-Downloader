@@ -371,8 +371,8 @@ class DriScroll(BaseScroll):
         wait_time = (1, 2)
         last_position = -123459
         scroll_length = lambda: random.randint(
-            self.config.static_config.min_scroll_length,
-            self.config.static_config.max_scroll_length,
+            self.config.static_config.min_scroll_distance,
+            self.config.static_config.max_scroll_distance,
         )
 
         while attempts < max_attempts:
