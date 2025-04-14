@@ -54,7 +54,7 @@ class SeleniumBot(BaseBot):
         chrome_path = [self.config.static_config.chrome_exec_path]
 
         # commands for running subprocess
-        subprocess_cmd = chrome_path + (self.config.static_config.chrome_args or DEFAULT_BOT_OPT)
+        subprocess_cmd = chrome_path + (DEFAULT_BOT_OPT)
 
         if not self.config.static_config.use_default_chrome_profile:
             user_data_dir = self.prepare_chrome_profile()

@@ -29,13 +29,13 @@ IMAGE_PER_PAGE = 10
 
 # For selenium webdriver
 USER_OS = platform.system()
-DEFAULT_VERSION = "131.0.6778.109"
-SELENIUM_AGENT = f"user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{DEFAULT_VERSION} Safari/537.36"
+DEFAULT_CHROME_VERSION = "135.0.0.0"
+DEFAULT_USER_AGENT = f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{DEFAULT_CHROME_VERSION} Safari/537.36"
 
 
 # For requests to download from the v2ph cdn, somehow the fake_useragent is not working.
 HEADERS = {
-    "User-Agent": f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{DEFAULT_VERSION} Safari/537.36",
+    "User-Agent": DEFAULT_USER_AGENT,
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
     "Accept-Language": "ja;q=0.9,en-US,en;q=0.8",
     "Referer": "https://www.v2ph.com/",
@@ -77,7 +77,7 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
         "url": "",
         "url_file": "",
         "bot_type": "drissionpage",
-        "user_agent": SELENIUM_AGENT,
+        "user_agent": "",
     },
     "encryption_config": {
         "key_bytes": 32,

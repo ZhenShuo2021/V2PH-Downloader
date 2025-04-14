@@ -1,13 +1,13 @@
 # v2dl/common/__init__.py
 from .config import ConfigManager
-from .const import DEFAULT_CONFIG, SELENIUM_AGENT
+from .const import DEFAULT_CONFIG, DEFAULT_USER_AGENT
 from .error import BotError, DownloadError, FileProcessingError, ScrapeError, SecurityError
 from .logger import setup_logging
 from .model import Config, EncryptionConfig, RuntimeConfig, StaticConfig
 
 __all__ = [
     "DEFAULT_CONFIG",
-    "SELENIUM_AGENT",
+    "DEFAULT_USER_AGENT",
     "BotError",
     "Config",
     "ConfigManager",

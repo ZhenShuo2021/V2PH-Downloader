@@ -48,7 +48,7 @@ class RuntimeConfig:
     download_function: Callable[..., Any]
     logger: "Logger"
     log_level: int
-    user_agent: str | None
+    user_agent: str
 
     def update_service(self, service: "BaseTaskService", function: Callable[..., Any]) -> None:
         """Update the download service and function dynamically."""

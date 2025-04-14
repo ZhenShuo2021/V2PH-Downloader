@@ -196,7 +196,7 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
         type=str,
         default="",
         dest="user_agent",
-        metavar="'Mozilla/5.0 (Windows NT 10.0; Win64; x64)...'",
+        metavar="'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'",
         help="Override user-agent",
     )
 

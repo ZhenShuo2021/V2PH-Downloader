@@ -36,11 +36,12 @@ class DrissionBot(BaseBot):
         if len(args) > 0:
             for arg in args:
                 co.set_argument(*arg)
-                self.logger.info(f"Apply chrome args: {arg}")
+                self.logger.info(f"Apply custom chrome args: {arg}")
 
         # Do not use user_agent on drissionpage
-        # if self.runtime_config.user_agent is not None:
-        #     co.set_user_agent(user_agent=self.runtime_config.user_agent)
+        if self.runtime_config.user_agent:
+            self.logger.info(f"Apply custom user agent: {self.runtime_config.user_agent}")
+            co.set_user_agent(user_agent=self.runtime_config.user_agent)
 
         if not self.config.static_config.use_default_chrome_profile:
             user_data_dir = self.prepare_chrome_profile()

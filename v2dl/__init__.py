@@ -60,7 +60,7 @@ class V2DLApp:
 
         config_manager = common.ConfigManager(self.default_config)
         self.config = config_manager.initialize_config(args)
-        runtime_config = self.setup_runtime_config(config_manager, args)
+        runtime_config = self.setup_runtime_config(config_manager, args, user_agent=args.user_agent)
         self.config.bind_runtime_config(runtime_config)
 
         self.bot = self.get_bot(self.config)
@@ -71,7 +71,7 @@ class V2DLApp:
         config_manager: common.ConfigManager,
         args: Namespace,
         headers: dict[str, str] = common.const.HEADERS,
-        user_agent: str = common.const.SELENIUM_AGENT,
+        user_agent: str = "",
     ) -> common.RuntimeConfig:
         """Initialize instances and assign to runtime config"""
         logger = common.setup_logging(
@@ -79,6 +79,8 @@ class V2DLApp:
             log_path=config_manager.get("static_config", "system_log_path"),
             logger_name=version.__package_name__,
         )
+        user_agent = user_agent or common.const.DEFAULT_USER_AGENT
+        headers["User-Agent"] = user_agent
         config_manager.set("runtime_config", "logger", logger)
         config_manager.set("runtime_config", "url", args.url)
         config_manager.set("runtime_config", "user_agent", user_agent)

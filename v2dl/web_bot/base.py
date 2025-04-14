@@ -134,7 +134,7 @@ def get_chrome_version_unix(chrome_path: str) -> str:
             return result.stdout.strip().split()[-1]
     except Exception:
         pass
-    return const.DEFAULT_VERSION
+    return const.DEFAULT_CHROME_VERSION
 
 
 def get_chrome_version() -> str:
@@ -156,10 +156,10 @@ def get_chrome_version() -> str:
                 version = [
                     line.split("=")[1] for line in file_info.splitlines() if "Version=" in line
                 ]
-                return version[0] if version else const.DEFAULT_VERSION
+                return version[0] if version else const.DEFAULT_CHROME_VERSION
         except Exception:
             pass
-        return const.DEFAULT_VERSION
+        return const.DEFAULT_CHROME_VERSION
 
     if system == "Darwin":  # macOS
         return get_chrome_version_unix(
@@ -171,4 +171,4 @@ def get_chrome_version() -> str:
             const.DEFAULT_CONFIG["static_config"]["chrome_exec_path"]["Linux"]
         )
 
-    return const.DEFAULT_VERSION
+    return const.DEFAULT_CHROME_VERSION
