@@ -66,6 +66,8 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
         "download_log_path": "",
         "metadata_path": "",
         "system_log_path": "",
+        # Do NOT pass default user-agent to config, it corrupts drissionpage's fingerprint
+        "custom_user_agent": "",
         "chrome_exec_path": {
             "Linux": "/usr/bin/google-chrome",
             "Darwin": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -77,7 +79,6 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
         "url": "",
         "url_file": "",
         "bot_type": "drissionpage",
-        "custom_user_agent": "",
     },
     "encryption_config": {
         "key_bytes": 32,

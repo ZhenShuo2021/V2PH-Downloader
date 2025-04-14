@@ -77,7 +77,7 @@ class ConfigManager(ConfigPathTool):
         "min_scroll": ("static_config", "min_scroll_length"),
         "max_scroll": ("static_config", "max_scroll_length"),
         "chrome_args": ("static_config", "chrome_args"),
-        "custom_user_agent": ("runtime_config", "custom_user_agent"),
+        "custom_user_agent": ("static_config", "custom_user_agent"),
         "dry_run": ("static_config", "dry_run"),
         "terminate": ("static_config", "terminate"),
         "use_default_chrome_profile": ("static_config", "use_default_chrome_profile"),
@@ -221,7 +221,6 @@ class ConfigManager(ConfigPathTool):
             download_function=sub_dict["download_function"],
             logger=sub_dict["logger"],
             log_level=sub_dict["log_level"],
-            custom_user_agent=sub_dict["custom_user_agent"],
         )
 
     def get(self, path: str, key: str, default: Any = None) -> Any:

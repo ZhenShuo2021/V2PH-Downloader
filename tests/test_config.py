@@ -31,6 +31,7 @@ def default_config():
             "download_log_path": "/tests/tmp/download.log",
             "metadata_path": "/tests/tmp/history.log",
             "system_log_path": "/tests/tmp/system.log",
+            "custom_user_agent": "test-agent",
             "chrome_exec_path": {
                 "Linux": "/tests/tmp/linux/chrome",
                 "Darwin": "/tests/tmp/macos/chrome.app",
@@ -46,7 +47,6 @@ def default_config():
             "download_function": None,
             "logger": MagicMock(),
             "log_level": 20,
-            "custom_user_agent": "test-agent",
         },
         "encryption_config": {
             "key_bytes": 32,

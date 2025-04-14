@@ -37,6 +37,7 @@ class StaticConfig:
     system_log_path: str
     chrome_exec_path: str
     chrome_profile_path: str
+    custom_user_agent: str
 
 
 @dataclass
@@ -48,7 +49,6 @@ class RuntimeConfig:
     download_function: Callable[..., Any]
     logger: "Logger"
     log_level: int
-    custom_user_agent: str
 
     def update_service(self, service: "BaseTaskService", function: Callable[..., Any]) -> None:
         """Update the download service and function dynamically."""

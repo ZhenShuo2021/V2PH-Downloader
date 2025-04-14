@@ -188,7 +188,7 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
         default="",
         dest="chrome_args",
         metavar="'arg1//arg2=val'",
-        help="Override Chrome arguments",
+        help="Overwrite Chrome arguments",
     )
 
     parser.add_argument(
@@ -197,7 +197,7 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
         default="",
         dest="custom_user_agent",
         metavar="'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'",
-        help="Override user-agent",
+        help="Overwrite user-agent",
     )
 
     parser.add_argument("--dry-run", action="store_true", help="Dry run without downloading")

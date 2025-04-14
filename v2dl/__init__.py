@@ -84,9 +84,6 @@ class V2DLApp:
         config_manager.set("runtime_config", "logger", logger)
         config_manager.set("runtime_config", "url", args.url)
 
-        # Do NOT pass default user-agent to config, it corrupts drissionpage's fingerprint
-        # config_manager.set("runtime_config", "custom_user_agent", custom_user_agent)
-
         headers_httpx["User-Agent"] = (
             custom_user_agent if custom_user_agent else common.const.DEFAULT_USER_AGENT
         )
