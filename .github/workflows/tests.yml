@@ -1,5 +1,16 @@
 name: Test
-on: [push, pull_request]
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      refToBuild:
+        description: 'Branch, tag or commit SHA1 to build'
+        required: false
+        type: string
+        default: ''
+
 permissions:
   contents: read
 
@@ -13,8 +24,22 @@ jobs:
         python-version: ['3.10', '3.13']
 
     steps:
-      - name: Checkout repository
+      - name: Resolve ref
+        id: ref
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ inputs.refToBuild }}" ]]; then
+            echo "ref=${{ inputs.refToBuild }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "ref=${{ github.head_ref }}" >> $GITHUB_OUTPUT
+          else
+            echo "ref=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.ref.outputs.ref }}
+          fetch-depth: 100
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
