@@ -77,7 +77,7 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
         "url": "",
         "url_file": "",
         "bot_type": "drissionpage",
-        "user_agent": "",
+        "custom_user_agent": "",
     },
     "encryption_config": {
         "key_bytes": 32,

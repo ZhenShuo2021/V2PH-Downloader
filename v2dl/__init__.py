@@ -60,7 +60,9 @@ class V2DLApp:
 
         config_manager = common.ConfigManager(self.default_config)
         self.config = config_manager.initialize_config(args)
-        runtime_config = self.setup_runtime_config(config_manager, args, user_agent=args.user_agent)
+        runtime_config = self.setup_runtime_config(
+            config_manager, args, custom_user_agent=args.custom_user_agent
+        )
         self.config.bind_runtime_config(runtime_config)
 
         self.bot = self.get_bot(self.config)
@@ -70,8 +72,8 @@ class V2DLApp:
         self,
         config_manager: common.ConfigManager,
         args: Namespace,
-        headers: dict[str, str] = common.const.HEADERS,
-        user_agent: str = "",
+        headers_httpx: dict[str, str] = common.const.HEADERS,
+        custom_user_agent: str = "",
     ) -> common.RuntimeConfig:
         """Initialize instances and assign to runtime config"""
         logger = common.setup_logging(
@@ -79,15 +81,18 @@ class V2DLApp:
             log_path=config_manager.get("static_config", "system_log_path"),
             logger_name=version.__package_name__,
         )
-        user_agent = user_agent or common.const.DEFAULT_USER_AGENT
-        headers["User-Agent"] = user_agent
         config_manager.set("runtime_config", "logger", logger)
         config_manager.set("runtime_config", "url", args.url)
-        config_manager.set("runtime_config", "user_agent", user_agent)
 
+        # Do NOT pass default user-agent to config, it corrupts drissionpage's fingerprint
+        # config_manager.set("runtime_config", "custom_user_agent", custom_user_agent)
+
+        headers_httpx["User-Agent"] = (
+            custom_user_agent if custom_user_agent else common.const.DEFAULT_USER_AGENT
+        )
         download_service, download_function = utils.create_download_service(
             config_manager,
-            headers,
+            headers_httpx,
             utils.ServiceType.ASYNC,
         )
         config_manager.set("runtime_config", "download_service", download_service)

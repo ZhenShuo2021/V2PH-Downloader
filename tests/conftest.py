@@ -30,7 +30,7 @@ def real_config(tmp_path, real_download_service, real_args, mock_logger) -> Conf
     config_manager.set("runtime_config", "download_service", download_service)
     config_manager.set("runtime_config", "download_function", download_function)
     config_manager.set("runtime_config", "logger", mock_logger)
-    config_manager.set("runtime_config", "user_agent", DEFAULT_USER_AGENT)
+    config_manager.set("runtime_config", "custom_user_agent", DEFAULT_USER_AGENT)
 
     runtime_config = config_manager.create_runtime_config()
     config_instance = config_manager.initialize_config(real_arg)

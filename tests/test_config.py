@@ -46,7 +46,7 @@ def default_config():
             "download_function": None,
             "logger": MagicMock(),
             "log_level": 20,
-            "user_agent": "test-agent",
+            "custom_user_agent": "test-agent",
         },
         "encryption_config": {
             "key_bytes": 32,

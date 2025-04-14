@@ -30,7 +30,6 @@ runtime_config:
   url: ""
   url_file: ""
   bot_type: "drissionpage"
-  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.109 Safari/537.36"
 
 encryption_config:
   key_bytes: 32
