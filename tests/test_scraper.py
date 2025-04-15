@@ -119,6 +119,7 @@ def test_log_final_status(real_scrape_manager):
     }
     for k, v in mock_status.items():
         real_scrape_manager.album_tracker.update_download_log(k, v)
+        real_scrape_manager.processed_urls.add(k)
     real_scrape_manager.logger.info = MagicMock()
     real_scrape_manager.logger.error = MagicMock()
     real_scrape_manager.logger.warning = MagicMock()
