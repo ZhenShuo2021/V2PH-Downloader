@@ -49,7 +49,11 @@ class ScrapeManager:
         try:
             urls = UrlHandler.load_urls(self.runtime_config.url, self.runtime_config.url_file)
             if not urls:
-                self.logger.info(f"No valid urls found in {self.runtime_config.url_file}")
+                if self.runtime_config.url:
+                    source = self.runtime_config.url
+                else:
+                    source = self.runtime_config.url_file
+                self.logger.info(f"No valid urls found in {source}")
                 self.no_log = True
 
             for url in urls:
@@ -69,12 +73,14 @@ class ScrapeManager:
 
     async def scrape(self, url: str) -> None:
         """Main entry point for scraping operations."""
-        scrape_type = UrlHandler.get_scrape_type(self.runtime_config.url)
+        scrape_type = UrlHandler.get_scrape_type(url)
         if scrape_type is None:
-            return
+            raise KeyError(
+                "Unsupported link type. Please report this issue at https://github.com/ZhenShuo2021/V2PH-Downloader/issues."
+            )
 
         target_page: int | list[int]
-        _, target_page = UrlHandler.parse_input_url(self.runtime_config.url)
+        _, target_page = UrlHandler.parse_input_url(url)
         if self.config.static_config.page_range is not None:
             target_page = UrlHandler.parse_page_range(self.config.static_config.page_range)
 
