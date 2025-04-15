@@ -8,7 +8,6 @@ static_config:
   page_range: null
   no_metadata: false
   force_download: false
-  dry_run: false
   terminate: false
   language: "ja"
   chrome_args: null

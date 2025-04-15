@@ -112,7 +112,6 @@ Use an extension (e.g., [Cookie-Editor](https://chromewebstore.google.com/detail
 - --force: Force download without skipping.
 - --range: Specifies the download range, following the same usage as `--range` in gallery-dl.
 - --bot: Select automation tool; Drission is less likely to be blocked by bots.
-- --dry-run: Simulate the download without actual file download.
 - `--chrome-args`: Override the arguments used to launch Chrome. This is useful when the browser is being blocked or detected by bots. Usage: `--chrome-args "window-size=800,600//guest"`. [List of all available arguments](https://stackoverflow.com/questions/38335671/where-can-i-find-a-list-of-all-available-chromeoption-arguments).
 - --user-agent: Override the user-agent, useful for bot-blocked scenarios.
 - --terminate: Whether to close Chrome after the program ends.

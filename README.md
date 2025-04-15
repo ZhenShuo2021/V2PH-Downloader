@@ -113,7 +113,6 @@ Cookies 登入比帳號密碼更容易成功。
 - --force: 強制下載不跳過。
 - --range: 設定下載範圍，使用方式和 gallery-dl 的 `--range` 完全相同。
 - --bot: 選擇自動化工具，drission 比較不會被機器人檢測封鎖。
-- --dry-run: 僅進行模擬下載，不會實際下載檔案。
 - --chrome-args: 覆寫啟動 Chrome 的參數，用於被機器人偵測封鎖時，使用方法為 `--chrome-args "window-size=800,600//guest"，[所有參數](https://stackoverflow.com/questions/38335671/where-can-i-find-a-list-of-all-available-chromeoption-arguments)。
 - --user-agent: 覆寫 user-agent，用於被機器人偵測封鎖時。
 - --terminate: 程式結束後是否關閉 Chrome 視窗。
