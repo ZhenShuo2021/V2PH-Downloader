@@ -45,17 +45,12 @@ class ScrapeManager:
         self.metadata_handler = MetadataHandler(config, self.album_tracker)
         self.processed_urls: set[str] = set()
 
-    async def start_scraping(self) -> None:
+    async def start_scraping(self) -> bool:
         """Start scraping based on URL type."""
         try:
             urls = UrlHandler.load_urls(self.runtime_config.url, self.runtime_config.url_file)
-            if not urls:
-                if self.runtime_config.url:
-                    source = self.runtime_config.url
-                else:
-                    source = self.runtime_config.url_file
-                self.logger.info(f"No valid urls found in {source}")
-                self.no_log = True
+            if self.__check_early_return(urls):
+                return False
 
             for url in urls:
                 url = UrlHandler.update_language(url, self.config.static_config.language)
@@ -68,9 +63,22 @@ class ScrapeManager:
 
         except ScrapeError as e:
             self.logger.exception("Scraping error: '%s'", e)
+            return False
         finally:
             if self.config.static_config.terminate:
                 self.web_bot.close_driver()
+        return True
+
+    def __check_early_return(self, urls: list[str]) -> bool:
+        if not urls:
+            if self.runtime_config.url:
+                source = self.runtime_config.url
+            else:
+                source = self.runtime_config.url_file
+            self.logger.info(f"No valid urls found in {source}")
+            self.no_log = True
+            return True
+        return False
 
     async def scrape(self, url: str) -> None:
         """Main entry point for scraping operations."""
@@ -144,12 +152,11 @@ class ScrapeManager:
             strategy.runtime_config = runtime_config
 
     def log_final_status(self) -> None:
-        if self.no_log:
+        download_status = self.album_tracker.get_download_status
+        if self.no_log or not download_status:
             return
 
         self.logger.info("Download finished, showing download status")
-        download_status = self.album_tracker.get_download_status
-
         for url in self.processed_urls:
             if url in download_status:
                 album_status = download_status[url]
@@ -159,8 +166,6 @@ class ScrapeManager:
                     self.logger.warning(f"{url}: VIP images found")
                 else:
                     self.logger.info(f"{url}: Download successful")
-            else:
-                self.logger.info(f"{url}: Skipped as already downloaded")
 
     def write_metadata(self) -> None:
         self.metadata_handler.write_metadata()

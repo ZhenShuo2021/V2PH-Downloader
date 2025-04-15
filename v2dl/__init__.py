@@ -38,13 +38,17 @@ class V2DLApp:
             args = self.parse_arguments_wrapper(args)
             self.init(args)
             atexit.register(self.scraper.write_metadata)  # ensure write metadata
-            await self.scraper.start_scraping()
-            self.scraper.log_final_status()
+            state = await self.scraper.start_scraping()
+            if state:
+                self.logger.error(state)
+                self.scraper.log_final_status()
+            else:
+                atexit.unregister(self.scraper.write_metadata)
 
             return 0
 
         except Exception as e:
-            raise RuntimeError(f"Runtime error of V2DL: {e}") from e
+            raise RuntimeError(f"Unexpected error {e}") from e
 
     def parse_arguments_wrapper(
         self, args: Namespace | dict[Any, Any] | list[Any] | None

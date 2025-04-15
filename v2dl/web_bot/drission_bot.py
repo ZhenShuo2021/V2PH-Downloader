@@ -10,6 +10,7 @@ from DrissionPage import ChromiumOptions, ChromiumPage
 from DrissionPage.common import wait_until
 from DrissionPage.errors import ContextLostError, ElementNotFoundError, WaitTimeoutError
 
+from v2dl.common.const import BASE_URL
 from v2dl.common.error import BotError
 from v2dl.web_bot.base import BaseBehavior, BaseBot, BaseScroll
 from v2dl.web_bot.cookies import load_cookies
@@ -113,7 +114,16 @@ class DrissionBot(BaseBot):
             error_msg = error_template.format(max_retry, url)
             self.logger.error(error_msg)
             return error_msg
-        return self.page.html
+        elif self.simple_blockage_check(self.page.html):
+            raise RuntimeError(
+                f"Unexpected error: Base URL '{BASE_URL}' not found in the HTML result.\n"
+                "This indicates the request was blocked by an anti-bot check. Suggested actions:\n"
+                "  - Change the header using: v2dl <url> --user-agent '<custom user agent>'\n"
+                "  - Run in a clean internet environment\n"
+                "  - Turn off the VPN if enabled"
+            )
+        else:
+            return self.page.html
 
     def handle_redirection_fail(self, url: str, max_retry: int, sleep_time: int) -> bool:
         # If read limit exceed, not a redirection fail.
@@ -264,6 +274,10 @@ class DrissionBot(BaseBot):
 
     def click_logout(self) -> None:
         self.page.ele("@href=/user/logout").click()
+
+    def simple_blockage_check(self, html_content: str) -> bool:
+        """Return True if the base URL is not in the HTML content, indicating blockage."""
+        return BASE_URL not in html_content
 
 
 class DriCloudflareHandler:
