@@ -2,9 +2,7 @@ import shutil
 
 import pytest
 
-from v2dl.utils.download import DirectoryCache, DownloadPathTool
-
-# ============ test is_file_exists ============
+from v2dl.scraper.downloader import DirectoryCache, DownloadPathTool
 
 
 @pytest.fixture
@@ -26,11 +24,31 @@ def dir_cache():
     return DirectoryCache(3)
 
 
-def test_file_exists_ignore_suffix(test_dir, mock_logger, dir_cache):
-    file_path = test_dir / "testfile.any"
-    result = DownloadPathTool.is_file_exists(file_path, False, dir_cache, mock_logger)
+@pytest.mark.parametrize(
+    "filename, force_download, expected",
+    [
+        ("testfile.txt", False, True),  # 文件存在
+        ("nonexistent.txt", False, False),  # 文件不存在
+        ("testfile.txt", True, False),  # 强制下载
+    ],
+)
+def test_is_file_exists(test_dir, mock_logger, filename, force_download, expected):
+    cache = DirectoryCache()
+    file_path = test_dir / filename
 
-    assert result is True
+    result = DownloadPathTool.is_file_exists(
+        file_path=file_path, force_download=force_download, cache=cache, logger=mock_logger
+    )
+
+    assert result == expected
+
+    # 验证 logger 是否被正确调用
+    if expected and not force_download and filename == "testfile.txt":
+        mock_logger.info.assert_called_once_with(
+            "File already exists (ignoring extension): '%s'", file_path
+        )
+    else:
+        mock_logger.info.assert_not_called()
 
 
 def test_file_not_exists_force_download(test_dir, mock_logger, dir_cache):
@@ -48,39 +66,71 @@ def test_file_not_exists_no_force_download(test_dir, mock_logger, dir_cache):
 
 
 # ============ test cache ============
-def test_get_stems_cache_hit(dir_cache, test_dir):
-    # test cache hit
-    stems = dir_cache.get_stems(test_dir)
-    assert stems == {"testfile", "testfile2"}
+@pytest.fixture
+def setup_cache_dirs(tmp_path):
+    dir1 = tmp_path / "dir1"
+    dir2 = tmp_path / "dir2"
+    dir3 = tmp_path / "dir3"
+    dir4 = tmp_path / "dir4"
 
-
-def test_get_stems_cache_miss(dir_cache, test_dir):
-    new_file = test_dir / "nonexistent.any"
-    stems = dir_cache.get_stems(new_file)
-    assert stems == set()
-
-
-def test_add_stem(dir_cache, test_dir):
-    dir_cache.get_stems(test_dir)
-    dir_cache.add_stem(test_dir, "newfile")
-    assert "newfile" in dir_cache._cache[test_dir]
-
-
-def test_cache_eviction(dir_cache, test_dir):
-    dir1 = test_dir / "dir1"
-    dir2 = test_dir / "dir2"
-    dir3 = test_dir / "dir3"
-    dir4 = test_dir / "dir4"
     dir1.mkdir()
     dir2.mkdir()
     dir3.mkdir()
     dir4.mkdir()
 
-    dir_cache.get_stems(dir1)
-    dir_cache.get_stems(dir2)
-    dir_cache.get_stems(dir3)
+    (dir1 / "file1.txt").write_text("test")
+    (dir1 / "file2.txt").write_text("test")
+    (dir2 / "file3.txt").write_text("test")
 
-    dir_cache.get_stems(dir4)
+    return dir1, dir2, dir3, dir4
+
+
+def test_get_files_cache_hit(dir_cache, setup_cache_dirs):
+    dir1, _, _, _ = setup_cache_dirs
+    # 第一次呼叫，填充快取
+    first_result = dir_cache.get_files(dir1)
+    # 第二次呼叫，應該命中快取
+    second_result = dir_cache.get_files(dir1)
+
+    expected = {str(dir1 / "file1.txt"), str(dir1 / "file2.txt")}
+    assert first_result == expected
+    assert second_result == expected
+    assert dir_cache._cache[dir1] == expected
+    assert list(dir_cache._cache.keys())[-1] == dir1  # 確認移到末尾
+
+
+def test_get_files_cache_miss(dir_cache, setup_cache_dirs):
+    dir1, dir2, _, _ = setup_cache_dirs
+    # 第一次呼叫 dir1，未命中
+    result1 = dir_cache.get_files(dir1)
+    # 第一次呼叫 dir2，未命中
+    result2 = dir_cache.get_files(dir2)
+
+    expected1 = {str(dir1 / "file1.txt"), str(dir1 / "file2.txt")}
+    expected2 = {str(dir2 / "file3.txt")}
+
+    assert result1 == expected1
+    assert result2 == expected2
+    assert dir1 in dir_cache._cache
+    assert dir2 in dir_cache._cache
+    assert len(dir_cache._cache) == 2
+
+
+def test_cache_eviction(dir_cache, setup_cache_dirs):
+    dir1, dir2, dir3, dir4 = setup_cache_dirs
+    # 填充快取到最大容量 (3)
+    dir_cache.get_files(dir1)
+    dir_cache.get_files(dir2)
+    dir_cache.get_files(dir3)
+    # 快取應包含 dir1, dir2, dir3
+    assert len(dir_cache._cache) == 3
+    assert dir1 in dir_cache._cache
+    assert dir2 in dir_cache._cache
+    assert dir3 in dir_cache._cache
+
+    # 加入新目錄，應該逐出最舊的 (dir1)
+    dir_cache.get_files(dir4)
+    assert len(dir_cache._cache) == 3
     assert dir1 not in dir_cache._cache
     assert dir2 in dir_cache._cache
     assert dir3 in dir_cache._cache

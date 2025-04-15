@@ -3,7 +3,7 @@ import importlib
 from typing import Any
 
 from v2dl.common import Config
-from v2dl.utils import AccountManager, KeyManager
+from v2dl.security import AccountManager, KeyManager
 from v2dl.web_bot.drission_bot import DrissionBot
 
 

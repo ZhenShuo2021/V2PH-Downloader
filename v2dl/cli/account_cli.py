@@ -12,7 +12,7 @@ from typing import Any
 import questionary
 
 from v2dl.common import EncryptionConfig
-from v2dl.utils import AccountManager, KeyManager
+from v2dl.security import AccountManager, KeyManager
 from v2dl.version import __package_name__
 
 

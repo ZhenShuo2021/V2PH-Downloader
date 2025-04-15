@@ -10,9 +10,9 @@ import atexit
 from argparse import Namespace
 from typing import Any
 
-from v2dl import cli, common, scraper, utils, version, web_bot
+from v2dl import cli, common, scraper, security, version, web_bot
 
-__all__ = ["cli", "common", "scraper", "utils", "version", "web_bot"]
+__all__ = ["cli", "common", "scraper", "security", "version", "web_bot"]
 
 
 class V2DLApp:
@@ -23,7 +23,7 @@ class V2DLApp:
         self.default_config = default_config
         self.registered_bot: dict[str, Any] = {}
 
-    def run(self, args: Namespace | dict[Any, Any] | list[Any] | None = None) -> int:
+    async def run(self, args: Namespace | dict[Any, Any] | list[Any] | None = None) -> int:
         """The interface to run the full V2DL
 
         Args:
@@ -38,7 +38,7 @@ class V2DLApp:
             args = self.parse_arguments_wrapper(args)
             self.init(args)
             atexit.register(self.scraper.write_metadata)  # ensure write metadata
-            self.scraper.start_scraping()
+            await self.scraper.start_scraping()
             self.scraper.log_final_status()
 
             return 0
@@ -115,7 +115,7 @@ class V2DLApp:
             sys.exit(0)
 
         if args.bot_type == "selenium":
-            utils.check_module_installed()
+            common.utils.check_module_installed()
 
     def _initialize_config(self, args: Namespace) -> None:
         """Setup the options from cli.
@@ -148,9 +148,6 @@ class V2DLApp:
 
         if args.force_download:
             cset(section, "force_download", args.force_download)
-
-        if args.dry_run:
-            cset(section, "dry_run", args.dry_run)
 
         if args.terminate:
             cset(section, "terminate", args.terminate)
@@ -208,14 +205,6 @@ class V2DLApp:
         self.config_manager.set(section, "url", args.url)
         self.config_manager.set(section, "url_file", args.url_file)
 
-        download_service, download_function = utils.create_download_service(
-            self.config_manager,
-            headers,
-            utils.ServiceType.ASYNC,
-        )
-        self.config_manager.set(section, "download_service", download_service)
-        self.config_manager.set(section, "download_function", download_function)
-
         log_path = self.config_manager.get("static_config", "system_log_path")
         logger_name = version.__package_name__
         self.logger = common.setup_logging(args.log_level, log_path, logger_name)
@@ -252,6 +241,6 @@ class V2DLApp:
         self.bot_name = bot_name
 
 
-def main(args: Namespace | dict[Any, Any] | list[Any] | None = None) -> int:
+async def main(args: Namespace | dict[Any, Any] | list[Any] | None = None) -> int:
     app = V2DLApp()
-    return app.run(args)
+    return await app.run(args)

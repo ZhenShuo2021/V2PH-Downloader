@@ -13,8 +13,8 @@ from lxml import html
 
 from v2dl.common import Config
 from v2dl.common.const import BASE_URL
+from v2dl.common.utils import count_files, enum_to_string
 from v2dl.scraper.types import ScrapeType
-from v2dl.utils import count_files, enum_to_string
 
 
 @dataclass(frozen=True)

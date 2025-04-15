@@ -3,13 +3,13 @@ import atexit
 
 # os.environ["GITHUB_ACTIONS"] = "true"
 import shutil
+import asyncio
 import logging
 from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
 
-from v2dl import V2DLApp
 from v2dl.common.const import VALID_EXTENSIONS
 from v2dl.scraper import DownloadStatus, LogKey, ScrapeManager, UrlHandler
 
@@ -17,26 +17,25 @@ TEST_ALBUM_URL = "http://example.com/album"
 
 
 @pytest.fixture
-def setup_test_env(real_args):
-    args = real_args
-    tmp_path = Path(args[0].destination)
-    app = V2DLApp()
+def setup_test_env(tmp_path, real_app):
+    app = real_app
+    app.config.static_config.destination = str(tmp_path)
     try:
         yield app
     finally:
         atexit.unregister(app.scraper.write_metadata)
-        download_dir = tmp_path
+        download_dir = Path(tmp_path)
         if download_dir.exists():
             shutil.rmtree(download_dir)
 
 
 @pytest.mark.skipif(os.getenv("GITHUB_ACTIONS") == "true", reason="No GUI on Github")
-def test_download(setup_test_env, real_args):
+@pytest.mark.asyncio
+async def test_download(setup_test_env, real_args):
     args, expected_file_count = real_args
     test_download_dir = Path(args.destination)
     app = setup_test_env
-    app.run(args)
-    app.config.runtime_config.download_service.stop(30)
+    await asyncio.wait_for(app.run(args), timeout=30)
 
     # Check directory
     subdirectories = [d for d in test_download_dir.iterdir() if d.is_dir()]
@@ -71,12 +70,8 @@ def mock_runtime_config():
     runtime_config = MagicMock()
     runtime_config.url = TEST_ALBUM_URL
     runtime_config.language = "en"
-    runtime_config.dry_run = False
     runtime_config.logger = logging.getLogger()
-    runtime_config.download_service = MagicMock()
-    runtime_config.download_function = MagicMock()
     runtime_config.url_file = None
-    runtime_config.force_download = False
     runtime_config.log_level = logging.DEBUG
     return runtime_config
 

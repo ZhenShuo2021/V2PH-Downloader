@@ -10,7 +10,7 @@ import pytest
 from nacl.public import PrivateKey
 
 from v2dl.common import EncryptionConfig, SecurityError
-from v2dl.utils import AccountManager, Encryptor, KeyManager
+from v2dl.security import AccountManager, Encryptor, KeyManager
 
 
 @pytest.fixture

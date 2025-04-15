@@ -91,8 +91,6 @@ class ConfigManager(ConfigPathTool):
         return RuntimeConfig(
             url=sub_dict["url"],
             url_file=sub_dict["url_file"],
-            download_service=sub_dict["download_service"],
-            download_function=sub_dict["download_function"],
             logger=sub_dict["logger"],
         )
 

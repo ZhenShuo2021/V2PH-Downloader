@@ -26,32 +26,25 @@ class ScrapeManager:
         self.config = config
         self.runtime_config = config.runtime_config
         self.web_bot = web_bot
-        self.dry_run = config.static_config.dry_run
         self.logger = config.runtime_config.logger
 
         self.no_log = False  # flag to not log download status
-
-        self.download_service = config.runtime_config.download_service
 
         self.album_tracker = AlbumTracker(config.static_config.download_log_path)
         self.strategies: dict[ScrapeType, BaseScraper[Any]] = {
             "album_list": AlbumScraper(
                 config,
                 self.album_tracker,
-                web_bot,
-                config.runtime_config.download_function,
             ),
             "album_image": ImageScraper(
                 config,
                 self.album_tracker,
-                web_bot,
-                config.runtime_config.download_function,
             ),
         }
 
         self.metadata_handler = MetadataHandler(config, self.album_tracker)
 
-    def start_scraping(self) -> None:
+    async def start_scraping(self) -> None:
         """Start scraping based on URL type."""
         try:
             urls = UrlHandler.load_urls(self.runtime_config.url, self.runtime_config.url_file)
@@ -63,7 +56,7 @@ class ScrapeManager:
                 url = UrlHandler.update_language(url, self.config.static_config.language)
                 self.runtime_config.url = url
                 self.update_runtime_config(self.runtime_config)
-                self.scrape(url, self.dry_run)
+                await self.scrape(url)
 
                 if self.runtime_config.url_file:
                     UrlHandler.mark_processed_url(self.runtime_config.url_file, url)
@@ -71,11 +64,10 @@ class ScrapeManager:
         except ScrapeError as e:
             self.logger.exception("Scraping error: '%s'", e)
         finally:
-            self.download_service.stop()  # DO NOT REMOVE
             if self.config.static_config.terminate:
                 self.web_bot.close_driver()
 
-    def scrape(self, url: str, dry_run: bool = False) -> None:
+    async def scrape(self, url: str) -> None:
         """Main entry point for scraping operations."""
         scrape_type = UrlHandler.get_scrape_type(self.runtime_config.url)
         if scrape_type is None:
@@ -87,26 +79,22 @@ class ScrapeManager:
             target_page = UrlHandler.parse_page_range(self.config.static_config.page_range)
 
         if scrape_type == "album_list":
-            self.scrape_album_list(url, target_page, dry_run)
+            await self.scrape_album_list(url, target_page)
         else:
-            self.scrape_album(url, target_page, dry_run)
+            await self.scrape_album(url, target_page)
 
-    def scrape_album_list(self, url: str, target_page: int | list[int], dry_run: bool) -> None:
+    async def scrape_album_list(self, url: str, target_page: int | list[int]) -> None:
         """Handle scraping of album lists."""
         strategy = self.strategies["album_list"]
         scraper = PageScraper(self.web_bot, strategy, self.logger)
 
-        album_links = scraper.scrape_all_pages(url, target_page)
+        album_links = await scraper.scrape_all_pages(url, target_page)
         self.logger.info("A total of %d albums found for %s", len(album_links), url)
 
         for album_url in album_links:
-            if dry_run:
-                self.logger.info("[DRY RUN] Album URL: %s", album_url)
-                self.scrape_album(album_url, 1, dry_run)
-            else:
-                self.scrape_album(album_url, 1, dry_run)
+            await self.scrape_album(album_url, 1)
 
-    def scrape_album(self, album_url: str, target_page: int | list[int], dry_run: bool) -> None:
+    async def scrape_album(self, album_url: str, target_page: int | list[int]) -> None:
         """Handle scraping of a single album page."""
         clean_url = UrlHandler.remove_query_params(album_url)
         if (
@@ -119,7 +107,7 @@ class ScrapeManager:
         strategy = self.strategies["album_image"]
         scraper = PageScraper(self.web_bot, strategy, self.logger)
 
-        image_links = scraper.scrape_all_pages(album_url, target_page)
+        image_links = await scraper.scrape_all_pages(album_url, target_page)
         self.album_tracker.update_download_log(
             self.runtime_config.url,
             {LogKey.expect_num: len(image_links)},
@@ -129,12 +117,7 @@ class ScrapeManager:
 
         album_name = re.sub(r"\s*\d+$", "", image_links[0][1])
         self.logger.info("Found %d images in album %s", len(image_links), album_name)
-
-        if dry_run:
-            for link, _ in image_links:
-                self.logger.info("[DRY RUN] Image URL: %s", link)
-        else:
-            self.album_tracker.log_downloaded(clean_url)
+        self.album_tracker.log_downloaded(clean_url)
 
     def update_runtime_config(self, runtime_config: RuntimeConfig) -> None:
         if not isinstance(runtime_config, RuntimeConfig):
@@ -172,7 +155,7 @@ class PageScraper(Generic[PageResultType]):
         self.strategy = strategy
         self.logger = logger
 
-    def scrape_all_pages(self, url: str, target_page: int | list[int]) -> list[Any]:
+    async def scrape_all_pages(self, url: str, target_page: int | list[int]) -> list[Any]:
         """Scrape multiple pages according to target configuration."""
         all_results: list[Any] = []
         page: int | list[int] | None
@@ -186,7 +169,7 @@ class PageScraper(Generic[PageResultType]):
         )
 
         while True:
-            page_results, should_continue = self.scrape_page(url, page)
+            page_results, should_continue = await self.scrape_page(url, page)
             all_results.extend(page_results)
 
             page = UrlHandler.handle_pagination(page, target_page)
@@ -195,10 +178,10 @@ class PageScraper(Generic[PageResultType]):
 
         return all_results
 
-    def scrape_page(self, url: str, page: int) -> tuple[list[PageResultType], bool]:
+    async def scrape_page(self, url: str, page: int) -> tuple[list[PageResultType], bool]:
         """Scrape a single page and return results and continuation flag."""
         full_url = UrlHandler.add_page_num(url, page)
-        html_content = self.web_bot.auto_page_scroll(full_url, page_sleep=0)
+        html_content = await self.web_bot.auto_page_scroll(full_url, page_sleep=0)
         tree = UrlHandler.parse_html(html_content, self.logger)
 
         if tree is None:
@@ -224,7 +207,7 @@ class PageScraper(Generic[PageResultType]):
             return [], False
 
         page_result: list[PageResultType] = []
-        self.strategy.process_page_links(url, page_links, page_result, tree, page)
+        await self.strategy.process_page_links(url, page_links, page_result, tree, page)
 
         # Check if we've reached the last page
         should_continue = page < UrlHandler.get_max_page(tree)

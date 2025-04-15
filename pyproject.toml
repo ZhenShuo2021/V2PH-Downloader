@@ -121,11 +121,11 @@ quote-style = "double"
 
 [tool.ruff.lint.per-file-ignores]
 "v2dl/cli/account_cli.py" = ["T201"]
-"v2dl/utils/security.py" = ["T201"]
+"v2dl/security/main.py" = ["T201"]
 
 [tool.ruff.lint]
 explicit-preview-rules = true
-allowed-confusables = ["，", "。", "（", "）"]
+allowed-confusables = ["，", "。", "（", "）", "："]
 ignore = [
     "COM812",  # flake8-commas "Trailing comma missing"
     "ISC001",  # flake8-single-line-implicit-string-concatenation

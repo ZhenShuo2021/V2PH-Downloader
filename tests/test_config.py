@@ -20,7 +20,6 @@ def default_args():
         chrome_args=None,
         no_metadata=False,
         force_download=False,
-        dry_run=False,
         terminate=False,
         use_default_chrome_profile=False,
         log_level="INFO",
@@ -49,17 +48,14 @@ def mock_dependencies():
     """Mock all external dependencies for testing."""
     with (
         patch("v2dl.common.setup_logging") as mock_setup_logging,
-        patch("v2dl.utils.create_download_service") as mock_create_download,
         patch("v2dl.web_bot.get_bot") as mock_get_bot,
         patch("v2dl.scraper.ScrapeManager") as mock_scraper,
     ):
-        mock_create_download.return_value = (MagicMock(), MagicMock())
         mock_setup_logging.return_value = MagicMock()
         mock_get_bot.return_value = MagicMock()
 
         yield {
             "setup_logging": mock_setup_logging,
-            "create_download": mock_create_download,
             "get_bot": mock_get_bot,
             "scraper": mock_scraper,
         }

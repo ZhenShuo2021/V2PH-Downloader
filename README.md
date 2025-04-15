@@ -139,6 +139,7 @@ Cookies 登入比帳號密碼更容易成功。
 你可以擴展 V2DL，以下是一個使用自訂預設值，並且替換網頁自動化套件的範例
 
 ```py
+import asyncio
 from v2dl import V2DLApp
 
 custom_defaults = {
@@ -192,7 +193,7 @@ command_line_args = {"url": "https://www.v2ph.com/album/foo", "force_download": 
 app = ExtendedV2DL()
 app.register_bot(bot_name, CustomBot)
 app.set_bot(bot_name)
-app.run(command_line_args)
+asyncio.run(app.run(command_line_args))
 ```
 
 ## 補充

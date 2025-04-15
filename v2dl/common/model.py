@@ -1,4 +1,3 @@
-from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -6,7 +5,6 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from logging import Logger
 
-    from v2dl.utils import BaseTaskService
 
 PathType = str | Path
 AnyDict = dict[str, Any]
@@ -20,7 +18,6 @@ class StaticConfig:
     chrome_args: str
     no_metadata: bool
     force_download: bool
-    dry_run: bool
     terminate: bool
     use_default_chrome_profile: bool
     log_level: int
@@ -46,14 +43,7 @@ class StaticConfig:
 class RuntimeConfig:
     url: str
     url_file: str
-    download_service: "BaseTaskService"
-    download_function: Callable[..., Any]
     logger: "Logger"
-
-    def update_service(self, service: "BaseTaskService", function: Callable[..., Any]) -> None:
-        """Update the download service and function dynamically."""
-        self.download_service = service
-        self.download_function = function
 
 
 @dataclass(frozen=True)

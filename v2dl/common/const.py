@@ -52,7 +52,6 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
         "chrome_args": None,
         "no_metadata": False,
         "force_download": False,
-        "dry_run": False,
         "terminate": False,
         "use_default_chrome_profile": False,
         "log_level": -1,

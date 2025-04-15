@@ -138,6 +138,7 @@ The keys are stored in a secure folder with access control, and encryption mater
 You can also extend V2DL. An example code below demonstrates how to use custom default config and replace your own the web automation script.
 
 ```py
+import asyncio
 from v2dl import V2DLApp
 
 custom_defaults = {
@@ -191,7 +192,7 @@ command_line_args = {"url": "https://www.v2ph.com/album/foo", "force_download": 
 app = ExtendedV2DL()
 app.register_bot(bot_name, CustomBot)
 app.set_bot(bot_name)
-app.run(command_line_args)
+asyncio.run(app.run(command_line_args))
 ```
 
 ## Additional Notes
