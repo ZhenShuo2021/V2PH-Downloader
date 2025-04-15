@@ -74,24 +74,7 @@ v2dl "https://www.v2ph.com/category/nogizaka46"
 v2dl -i "/path/to/urls.txt"
 ```
 
-## 設定
-
-會尋找系統設定目錄中是否存在 `config.yaml`，格式請參照根目錄的範例。
-
-裡面可以修改捲動長度、捲動步長與速率限制等設定：
-
-- download_dir: 設定下載位置，預設系統下載資料夾。
-- download_log_path: 紀錄已下載的 album 頁面網址，重複的會跳過，該文件預設位於系統設定目錄。
-- system_log_path: 設定程式執行日誌的位置，該文件預設位於系統設定目錄。
-- rate_limit: 下載速度限制，預設 400 夠用也不會被封鎖。
-- chrome/exec_path: 系統的 Chrome 程式位置。
-
-系統設定目錄位置：
-
-- Windows: `C:\Users\xxx\AppData\Roaming\v2dl`
-- Linux, macOS: `/Users/xxx/.config/v2dl`
-
-### Cookies
+### Cookies 登入
 
 Cookies 登入比帳號密碼更容易成功。
 
@@ -118,6 +101,47 @@ Cookies 登入比帳號密碼更容易成功。
 - --terminate: 程式結束後是否關閉 Chrome 視窗。
 - -q: 安靜模式。
 - -v: 偵錯模式。
+
+## 設定
+
+會尋找系統設定目錄中是否存在 `config.yaml` 並且自動載入，格式請參照[範例](https://github.com/ZhenShuo2021/V2PH-Downloader/blob/main/config.yaml)，存放位置請根據自己的系統選擇：
+
+- Windows: `C:\Users\xxx\AppData\Roaming\v2dl\config.yaml`
+- Linux, macOS: `/Users/xxx/.config/v2dl/config.yaml`
+
+裡面可以修改 headers、語言、捲動長度、捲動步長與速率限制等設定：
+
+- headers: 如果被封鎖可以自訂 headers，**請注意修改後要重啟程式開啟的瀏覽器才可以刷新**
+- language: 用於設定下載目錄的名稱，因為我發現網站有些是機器翻譯還不如看原文
+- use_default_chrome_profile: 使用你本人的 chrome 設定檔，理論上比較不容易被封鎖，但是下載期間無法操作瀏覽器
+- download_dir: 設定下載位置，預設系統下載資料夾。
+- download_log_path: 紀錄已下載的 album 頁面網址，重複的會跳過，該文件預設位於系統設定目錄。
+- system_log_path: 設定程式執行日誌的位置，該文件預設位於系統設定目錄。
+- rate_limit: 下載速度限制，預設 400 夠用也不會被封鎖。
+- chrome/exec_path: 系統的 Chrome 程式位置。
+- encryption_config: 如果電腦效能不夠，預設的加密配置可能會需要長時間解密，範例中的加密配置把所有數值都調整到最低了。
+
+## FAQ
+
+- 不想使用密碼管理器
+
+請使用 `-c` 參數設定 cookies 路徑，如果是資料夾則會解析目錄底下所有的 `*cookies*.txt` 檔案。不想要每次都輸入可以在 `cookies_path` 設定路徑，V2DL 會自動讀取。
+
+- 瀏覽器連線封鎖
+
+封鎖原因主要有三個，不乾淨的 IP 環境、錯誤設定的 user agent、背景工具 DrissionPage 本身被反爬蟲針對。第一項是換一個乾淨的 IP 或者關閉 VPN；第二個問題可以使用 `--user-agent` 修改成適合自己的環境 ([what's my user agent](https://www.google.com/search?q=what%27s+my+user+agent))，修改後記得要重啟瀏覽器；第三個無能為力要開發者解決。
+
+- 下載被封鎖
+
+建立 `config.yaml` 設定自己的 headers。
+
+- 沒有完整下載
+
+先檢查圖片數量是否正確，網站顯示的低機率會錯誤，頁面裡面也有可能出現 VIP 限定的圖片。如果都沒問題請記錄完整訊息建立 issue。
+
+- 架構說明
+
+使用 [DrissionPage](https://github.com/g1879/DrissionPage) 繞過 Cloudflare 檢測，以 [httpx](https://github.com/projectdiscovery/httpx) 下載。DrissionPage 在 d mode 只能設定 user agent，而 httpx 只能設定 headers，因此兩個設定剛好不衝突。
 
 ## 安全性簡介
 

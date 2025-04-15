@@ -73,24 +73,7 @@ v2dl "https://www.v2ph.com/category/nogizaka46"
 v2dl -i "/path/to/urls.txt"
 ```
 
-## Configuration
-
-The program looks for a `config.yaml` file in the system configuration directory. Refer to the example in the root directory.
-
-You can modify settings like scroll length, scroll step, and rate limit:
-
-- download_dir: Set download location, defaults to system download folder.
-- download_log_path: Tracks downloaded album URLs, skipped if duplicated; defaults to system configuration directory.
-- system_log_path: Location for program logs; defaults to system configuration directory.
-- rate_limit: Download speed limit, default is 400 (sufficient and prevents blocking).
-- chrome/exec_path: Path to Chrome executable.
-
-System configuration directory locations:
-
-- Windows: `C:\Users\xxx\AppData\Roaming\v2dl`
-- Linux, macOS: `/Users/xxx/.config/v2dl`
-
-### Cookies
+### Cookies Login
 
 Cookies login is often more successful than using username/password.
 
@@ -117,6 +100,47 @@ Use an extension (e.g., [Cookie-Editor](https://chromewebstore.google.com/detail
 - --terminate: Whether to close Chrome after the program ends.
 - -q: Quiet mode.
 - -v: Debug mode.
+
+## Configuration
+
+The program will search for a `config.yaml` file in the system configuration directory and automatically load it. Please refer to the [example](https://github.com/ZhenShuo2021/V2PH-Downloader/blob/main/config.yaml) for the correct format. The configuration file can be located in the following directories based on your operating system:
+
+- **Windows**: `C:\Users\xxx\AppData\Roaming\v2dl\config.yaml`
+- **Linux, macOS**: `/Users/xxx/.config/v2dl/config.yaml`
+
+In this file, you can modify settings like headers, language, scroll length, scroll step, and rate limits:
+
+- **headers**: If blocked, you can customize headers. **Please note that changes will take effect only after restarting the program and refreshing the browser.**
+- **language**: Used to set the download directory name, as website's machine translations are not as good as the original text.
+- **use_default_chrome_profile**: Use your personal Chrome profile, which theoretically makes it harder to be blocked. However, the browser cannot be interacted with during the download process.
+- **download_dir**: Set the download location; defaults to the system download folder.
+- **download_log_path**: Logs the URLs of downloaded album pages, skipped if duplicated. The default location is the system configuration directory.
+- **system_log_path**: Location for program logs. The default location is the system configuration directory.
+- **rate_limit**: Download speed limit, default is 400, which is sufficient and prevents being blocked.
+- **chrome/exec_path**: Path to the system's Chrome executable.
+- **encryption_config**: If your computer's performance is insufficient, the default encryption configuration may require long decryption times. The example configuration sets all values to the minimum.
+
+## FAQ
+
+- Don't want to use a password manager
+
+Use the `-c` flag to specify the path to your cookies. If a folder is provided, all `*cookies*.txt` files within it will be parsed. To avoid entering it every time, set the `cookies_path` in the config file, V2DL will load it automatically.
+
+- Browser connection blocked
+
+There are three common causes: a dirty IP, an improperly configured user agent, or anti-bot targeting the background tool DrissionPage. For the first, switch to a clean IP or disable your VPN. For the second, use `--user-agent` to match your environment ([what's my user agent](https://www.google.com/search?q=what%27s+my+user+agent)); be sure to restart the browser afterward. For the third, only the developer can resolve it.
+
+- Download blocked
+
+Create a `config.yaml` and set your custom headers.
+
+- Incomplete downloads
+
+First, check whether the number of images matches what's expected. Site counters can occasionally be wrong, and some pages may include VIP-only content. If everything looks fine, please file an issue with full logs.
+
+- Architecture
+
+The tool uses [DrissionPage](https://github.com/g1879/DrissionPage) to bypass Cloudflare checks and [httpx](https://github.com/projectdiscovery/httpx) for downloading. DrissionPage (in d mode) only allows setting a user agent, while httpx accepts headers—meaning the two settings don't conflict.
 
 ## Security Overview
 
