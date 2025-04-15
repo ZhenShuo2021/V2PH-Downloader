@@ -1,8 +1,9 @@
 import os
+import logging
 import argparse
 from typing import Any
 
-from ..common.const import DEFAULT_CONFIG
+from v2dl.common.const import DEFAULT_CONFIG
 
 
 class ResolvePathAction(argparse.Action):
@@ -47,14 +48,6 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
     args = ["https://www.v2ph.com/album/Weekly-Young-Jump-2012-No29", "-f", "-d", "path/to/dest"]
     parse_arguments(args)
     ```
-
-    每次新增選項必須修改以下幾個地方:
-        1. parse_arguments 本身
-        2. common/model.py 設定存放的 dataclass
-        3. common/config.py 設定 dataclass 映射表
-        4. common/config.py/validate 驗證參數 (如果需要)
-        5. common/const.py 新增預設值 (如果可設定為 yaml 預設值)
-        6. config.yaml 更新使用範例 (如果需要修改 const.py)
     """
     parser = argparse.ArgumentParser(
         description="V2PH scraper.",
@@ -71,6 +64,7 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
         action=ResolvePathAction,
         help="Path to file containing a list of URLs",
     )
+
     input_group.add_argument(
         "-a",
         "--account",
@@ -78,17 +72,26 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
         help="Manage account",
     )
 
-    parser.add_argument(
+    input_group.add_argument(
+        "-V",
+        "--version",
+        action="store_true",
+        help="Show package version",
+    )
+
+    general = parser.add_argument_group("General Options")
+    general.add_argument(
         "-b",
         "--bot",
         dest="bot_type",
+        default="",
         type=str,
         choices=["selenium", "drissionpage"],
         required=False,
         help="Type of bot to use (default: drissionpage)",
     )
 
-    parser.add_argument(
+    general.add_argument(
         "-c",
         "--cookies-path",
         dest="cookies_path",
@@ -100,7 +103,7 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
         "matches the pattern `*cookies*.txt` will be added to candidate accounts.",
     )
 
-    parser.add_argument(
+    general.add_argument(
         "-d",
         "--destination",
         dest="destination",
@@ -110,17 +113,7 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
         help="Base directory location for file downloads",
     )
 
-    parser.add_argument(
-        "-D",
-        "--directory",
-        dest="directory",
-        type=str,
-        metavar="PATH",
-        action=ResolvePathAction,
-        help="Exact location for file downloads",
-    )
-
-    parser.add_argument(
+    general.add_argument(
         "-f",
         "--force",
         dest="force_download",
@@ -128,29 +121,31 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
         help="Force downloading, not skipping downloaded albums",
     )
 
-    parser.add_argument(
+    general.add_argument(
         "-l",
         "--language",
+        default="",
         dest="language",
         metavar="LANG",
-        help="Preferred language, used for naming the download directory (default: ja)",
+        help=f"Preferred language, used for naming the download directory (default: {DEFAULT_CONFIG['static_config']['language']})",
     )
 
-    parser.add_argument(
+    general.add_argument(
         "--range",
+        type=str,
         dest="page_range",
         metavar="RANGE",
         help="Range of pages to download. (e.g. '5', '8-20', or '1:24:3')",
     )
 
-    parser.add_argument(
+    general.add_argument(
         "--no-metadata",
         dest="no_metadata",
         action="store_true",
         help="Disable writing json download metadata",
     )
 
-    parser.add_argument(
+    general.add_argument(
         "--metadata-path",
         dest="metadata_path",
         metavar="PATH",
@@ -158,31 +153,43 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
         help="Path to json file for the download metadata",
     )
 
-    parser.add_argument(
+    general.add_argument(
         "--max-worker",
         type=int,
+        default=DEFAULT_CONFIG["static_config"]["max_worker"],
         dest="max_worker",
         metavar="N",
         help="maximum download concurrency",
     )
 
-    parser.add_argument(
+    general.add_argument(
+        "--rate-limit",
+        type=int,
+        default=DEFAULT_CONFIG["static_config"]["rate_limit"],
+        dest="rate_limit",
+        metavar="N",
+        help="maximum download concurrency",
+    )
+
+    general.add_argument(
         "--min-scroll",
         type=int,
-        dest="min_scroll",
+        default=DEFAULT_CONFIG["static_config"]["min_scroll_distance"],
+        dest="min_scroll_distance",
         metavar="N",
-        help=f"minimum scroll length of web bot (default: {DEFAULT_CONFIG['static_config']['min_scroll_length']})",
+        help=f"minimum scroll distance of web bot (default: {DEFAULT_CONFIG['static_config']['min_scroll_distance']})",
     )
 
-    parser.add_argument(
+    general.add_argument(
         "--max-scroll",
         type=int,
-        dest="max_scroll",
+        default=DEFAULT_CONFIG["static_config"]["max_scroll_distance"],
+        dest="max_scroll_distance",
         metavar="N",
-        help=f"maximum scroll length of web bot (default: {DEFAULT_CONFIG['static_config']['max_scroll_length']})",
+        help=f"maximum scroll distance of web bot (default: {DEFAULT_CONFIG['static_config']['max_scroll_distance']})",
     )
 
-    parser.add_argument(
+    general.add_argument(
         "--chrome-args",
         type=str,
         default="",
@@ -191,7 +198,7 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
         help="Overwrite Chrome arguments",
     )
 
-    parser.add_argument(
+    general.add_argument(
         "--user-agent",
         type=str,
         default="",
@@ -200,29 +207,39 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
         help="Overwrite user-agent",
     )
 
-    parser.add_argument("--dry-run", action="store_true", help="Dry run without downloading")
-    parser.add_argument("--terminate", action="store_true", help="Terminate chrome after scraping")
-    parser.add_argument(
+    general.add_argument("--dry-run", action="store_true", help="Dry run without downloading")
+    general.add_argument("--terminate", action="store_true", help="Terminate chrome after scraping")
+    general.add_argument(
         "--use-default-chrome-profile",
         action="store_true",
         help="Use default chrome profile. Using default profile with an operating chrome is not valid",
     )
 
-    input_group.add_argument(
-        "-V",
-        "--version",
-        action="store_true",
-        help="Show package version",
+    output = parser.add_argument_group("Output Options")
+    output.add_argument(
+        "-q",
+        "--quiet",
+        dest="log_level",
+        default=logging.INFO,
+        action="store_const",
+        const=logging.ERROR,
+        help="Activate quiet mode",
     )
-
-    log_group = parser.add_mutually_exclusive_group()
-    log_group.add_argument("-q", "--quiet", action="store_true", help="Quiet mode")
-    log_group.add_argument("-v", "--verbose", action="store_true", help="Verbose mode")
-    log_group.add_argument(
-        "--log-level",
-        type=int,
-        choices=range(1, 6),
-        help="Set log level (1~5)",
+    output.add_argument(
+        "-w",
+        "--warning",
+        dest="log_level",
+        action="store_const",
+        const=logging.WARNING,
+        help="Print only warnings and errors",
+    )
+    output.add_argument(
+        "-v",
+        "--verbose",
+        dest="log_level",
+        action="store_const",
+        const=logging.DEBUG,
+        help="Print various debugging information",
     )
 
     return parser.parse_args(args)

@@ -2,9 +2,9 @@ import time
 import importlib
 from typing import Any
 
-from .drission_bot import DrissionBot
-from ..common import Config
-from ..utils import AccountManager, KeyManager
+from v2dl.common import Config
+from v2dl.security import AccountManager, KeyManager
+from v2dl.web_bot.drission_bot import DrissionBot
 
 
 def get_bot(config: Config) -> Any:
@@ -12,7 +12,7 @@ def get_bot(config: Config) -> Any:
         "drissionpage": DrissionBot,
     }
 
-    bot_type = config.runtime_config.bot_type
+    bot_type = config.static_config.bot_type
     logger = config.runtime_config.logger
     key_manager = KeyManager(logger, config.encryption_config)
     account_manager = AccountManager(logger, key_manager)

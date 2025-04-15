@@ -41,7 +41,6 @@ def test_parse_arguments(mock_parse_args):
         directory=None,
         force=False,
         bot_type="drissionpage",
-        dry_run=False,
         terminate=False,
         use_default_chrome_profile=False,
         version=False,

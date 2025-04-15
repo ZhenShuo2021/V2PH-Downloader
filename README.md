@@ -109,12 +109,10 @@ Cookies 登入比帳號密碼更容易成功。
 - -i: 下載目標的 URL 列表文字文件，每行一個 URL。
 - -a: 進入帳號管理工具。
 - -c: 指定此次執行所使用的 cookies 檔案。如果提供的路徑為資料夾，會自動搜尋該資料夾中所有檔名包含 "cookies" 的 .txt 檔案。這對不希望使用帳號管理功能的用戶特別有用。
-- -d: 設定下載根目錄，在分類檔案時特別有用。
-- -D: 設定檔案實際下載位置。
+- -d: 設定下載根目錄。
 - --force: 強制下載不跳過。
 - --range: 設定下載範圍，使用方式和 gallery-dl 的 `--range` 完全相同。
 - --bot: 選擇自動化工具，drission 比較不會被機器人檢測封鎖。
-- --dry-run: 僅進行模擬下載，不會實際下載檔案。
 - --chrome-args: 覆寫啟動 Chrome 的參數，用於被機器人偵測封鎖時，使用方法為 `--chrome-args "window-size=800,600//guest"，[所有參數](https://stackoverflow.com/questions/38335671/where-can-i-find-a-list-of-all-available-chromeoption-arguments)。
 - --user-agent: 覆寫 user-agent，用於被機器人偵測封鎖時。
 - --terminate: 程式結束後是否關閉 Chrome 視窗。
@@ -140,12 +138,13 @@ Cookies 登入比帳號密碼更容易成功。
 你可以擴展 V2DL，以下是一個使用自訂預設值，並且替換網頁自動化套件的範例
 
 ```py
+import asyncio
 from v2dl import V2DLApp
 
 custom_defaults = {
     "static_config": {
-        "min_scroll_length": 1000,
-        "max_scroll_length": 2000,
+        "min_scroll_distance": 1000,
+        "max_scroll_distance": 2000,
         # ...
     }
 }
@@ -193,7 +192,7 @@ command_line_args = {"url": "https://www.v2ph.com/album/foo", "force_download": 
 app = ExtendedV2DL()
 app.register_bot(bot_name, CustomBot)
 app.set_bot(bot_name)
-app.run(command_line_args)
+asyncio.run(app.run(command_line_args))
 ```
 
 ## 補充

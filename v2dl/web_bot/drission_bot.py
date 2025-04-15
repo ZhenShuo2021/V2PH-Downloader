@@ -1,6 +1,7 @@
 import sys
 import time
 import random
+import asyncio
 from datetime import datetime
 from logging import Logger
 from typing import TYPE_CHECKING, Any
@@ -9,13 +10,13 @@ from DrissionPage import ChromiumOptions, ChromiumPage
 from DrissionPage.common import wait_until
 from DrissionPage.errors import ContextLostError, ElementNotFoundError, WaitTimeoutError
 
-from .base import BaseBehavior, BaseBot, BaseScroll
-from .cookies import load_cookies
-from ..common.error import BotError
+from v2dl.common.error import BotError
+from v2dl.web_bot.base import BaseBehavior, BaseBot, BaseScroll
+from v2dl.web_bot.cookies import load_cookies
 
 if TYPE_CHECKING:
-    from ..common import Config
-    from ..utils import AccountManager, KeyManager
+    from v2dl.common import Config
+    from v2dl.security import AccountManager, KeyManager
 
 
 class DrissionBot(BaseBot):
@@ -60,14 +61,12 @@ class DrissionBot(BaseBot):
     def close_driver(self) -> None:
         self.page.quit()
 
-    def auto_page_scroll(
+    async def auto_page_scroll(
         self,
         url: str,
         max_retry: int = 3,
         page_sleep: int = 5,
-        fast_scroll: bool = False,
     ) -> str:
-        scroll_down = self.page.scroll.to_bottom if fast_scroll else self.scroller.scroll_to_bottom
         self.url = url
 
         for attempt in range(max_retry):
@@ -89,7 +88,7 @@ class DrissionBot(BaseBot):
                 self.handle_login()
                 self.handle_read_limit()
                 self.page.run_js("document.body.style.zoom='50%'")
-                scroll_down()
+                await self.scroller.scroll_to_bottom()
 
                 # Sleep to avoid Cloudflare blocking
                 self.logger.debug("Scrolling finished, pausing to avoid blocking")
@@ -365,14 +364,14 @@ class DriScroll(BaseScroll):
         self.page = page
         self.page.set.scroll.smooth(on_off=True)
 
-    def scroll_to_bottom(self) -> None:
+    async def scroll_to_bottom(self) -> None:
         attempts = 0
         max_attempts = 10
         wait_time = (1, 2)
         last_position = -123459
         scroll_length = lambda: random.randint(
-            self.config.static_config.min_scroll_length,
-            self.config.static_config.max_scroll_length,
+            self.config.static_config.min_scroll_distance,
+            self.config.static_config.max_scroll_distance,
         )
 
         while attempts < max_attempts:
@@ -383,7 +382,7 @@ class DriScroll(BaseScroll):
                 scroll,
             )
             self.page.run_js(f"window.scrollBy({{top: {scroll}, behavior: 'smooth'}});")
-            self.page.wait(*wait_time)
+            await asyncio.sleep(random.uniform(*wait_time))
 
             new_position = self.page.run_js("return window.pageYOffset;")
             if new_position == last_position:

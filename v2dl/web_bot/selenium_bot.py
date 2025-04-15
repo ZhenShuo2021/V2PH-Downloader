@@ -1,6 +1,7 @@
 import sys
 import time
 import random
+import asyncio
 from datetime import datetime
 from logging import Logger
 from subprocess import Popen
@@ -17,13 +18,13 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from .base import BaseBehavior, BaseBot, BaseScroll
-from .cookies import load_cookies
-from ..common import BotError
+from v2dl.common import BotError
+from v2dl.web_bot.base import BaseBehavior, BaseBot, BaseScroll
+from v2dl.web_bot.cookies import load_cookies
 
 if TYPE_CHECKING:
-    from ..common import Config
-    from ..utils import AccountManager, KeyManager
+    from v2dl.common import Config
+    from v2dl.security import AccountManager, KeyManager
 
 DEFAULT_BOT_OPT = [
     "--remote-debugging-port=9222",
@@ -76,12 +77,11 @@ class SeleniumBot(BaseBot):
         self.driver.quit()
         self.chrome_process.terminate()
 
-    def auto_page_scroll(
+    async def auto_page_scroll(
         self,
         url: str,
         max_retry: int = 3,
         page_sleep: int = 5,
-        fast_scroll: bool = False,
     ) -> str:
         response: str = ""
         self.url = url
@@ -105,7 +105,7 @@ class SeleniumBot(BaseBot):
                 self.handle_login()
                 self.handle_read_limit()
                 self.driver.execute_script("document.body.style.zoom='50%'")
-                self.scroller.scroll_to_bottom()
+                await self.scroller.scroll_to_bottom()
                 SelBehavior.random_sleep(5, 15)
 
                 response = self.driver.page_source
@@ -401,17 +401,17 @@ class SelScroll(BaseScroll):
         super().__init__(config, logger)
         self.driver = driver
 
-    def scroll_to_bottom(self) -> None:
+    async def scroll_to_bottom(self) -> None:
         max_attempts = 10
         attempts = 0
         last_position = -123459
+        wait_time = (1, 2)
         scroll_length = lambda: random.randint(
-            self.config.static_config.min_scroll_length,
-            self.config.static_config.max_scroll_length,
+            self.config.static_config.min_scroll_distance,
+            self.config.static_config.max_scroll_distance,
         )
 
         while attempts < max_attempts:
-            SelBehavior.random_sleep(1, 2)
             scroll = scroll_length()
             self.logger.debug(
                 "Current position: %d, scrolling down by %d pixels",
@@ -420,6 +420,7 @@ class SelScroll(BaseScroll):
             )
             self.driver.execute_script(f"window.scrollBy({{top: {scroll}, behavior: 'smooth'}});")
             new_position = self.driver.execute_script("return window.pageYOffset;")
+            await asyncio.sleep(random.uniform(*wait_time))
             if new_position == last_position:
                 break
             last_position = new_position
@@ -432,8 +433,8 @@ class SelScroll(BaseScroll):
 
         scroll_pos_init = self.driver.execute_script("return window.pageYOffset;")
         step_scroll = lambda: random.randint(
-            self.config.static_config.min_scroll_length,
-            self.config.static_config.max_scroll_length,
+            self.config.static_config.min_scroll_distance,
+            self.config.static_config.max_scroll_distance,
         )
 
         while scroll_attempts < max_attempts:
@@ -450,8 +451,8 @@ class SelScroll(BaseScroll):
             scroll_pos_init = scroll_pos_end
 
             step_scroll = lambda: random.randint(
-                self.config.static_config.min_scroll_length,
-                self.config.static_config.max_scroll_length,
+                self.config.static_config.min_scroll_distance,
+                self.config.static_config.max_scroll_distance,
             )
 
             self.wait_for_content_load()
@@ -486,8 +487,8 @@ class SelScroll(BaseScroll):
 
         if action == "scroll_down":
             scroll_length = random.randint(
-                self.config.static_config.min_scroll_length,
-                self.config.static_config.max_scroll_length,
+                self.config.static_config.min_scroll_distance,
+                self.config.static_config.max_scroll_distance,
             )
             target_position = current_position + scroll_length
             self.logger.debug("Trying to scroll down %d pixels", scroll_length)
@@ -496,8 +497,8 @@ class SelScroll(BaseScroll):
             time.sleep(random.uniform(*BaseBehavior.pause_time))
         elif action == "scroll_up":
             scroll_length = random.randint(
-                self.config.static_config.min_scroll_length,
-                self.config.static_config.max_scroll_length,
+                self.config.static_config.min_scroll_distance,
+                self.config.static_config.max_scroll_distance,
             )
             target_position = max(0, current_position - scroll_length)
             self.logger.debug("Trying to scroll up %d pixels", scroll_length)

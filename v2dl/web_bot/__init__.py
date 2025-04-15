@@ -1,8 +1,8 @@
 import importlib
 
-from .cookies import load_cookies
-from .drission_bot import DrissionBot
-from .get import get_bot
+from v2dl.web_bot.cookies import load_cookies
+from v2dl.web_bot.drission_bot import DrissionBot
+from v2dl.web_bot.get import get_bot
 
 __all__ = ["DrissionBot", "get_bot", "load_cookies"]
 

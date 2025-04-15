@@ -6,9 +6,9 @@ from logging import Logger
 from subprocess import run
 from typing import Any
 
-from .cookies import find_cookies_files
-from ..common import Config, const
-from ..utils import AccountManager, KeyManager
+from v2dl.common import Config, const
+from v2dl.security import AccountManager, KeyManager
+from v2dl.web_bot.cookies import find_cookies_files
 
 
 class BaseBot(ABC):
@@ -53,12 +53,11 @@ class BaseBot(ABC):
 
         return user_data_dir
 
-    def auto_page_scroll(
+    async def auto_page_scroll(
         self,
         url: str,
         max_retry: int = 3,
         page_sleep: int = 5,
-        fast_scroll: bool = True,
     ) -> str:
         """Scroll page automatically with retries and Cloudflare challenge handle.
 
@@ -68,7 +67,6 @@ class BaseBot(ABC):
             url (str): Target URL
             max_retry (int): Maximum number of retry attempts. Defaults to 3
             page_sleep (int): The sleep time after reaching page bottom
-            fast_scroll (bool): Whether to use fast scroll. Might be blocked by Cloudflare
 
         Returns:
             str: Page HTML content or error message
