@@ -43,6 +43,7 @@ class ScrapeManager:
         }
 
         self.metadata_handler = MetadataHandler(config, self.album_tracker)
+        self.processed_urls: set[str] = set()
 
     async def start_scraping(self) -> None:
         """Start scraping based on URL type."""
@@ -84,6 +85,8 @@ class ScrapeManager:
         if self.config.static_config.page_range is not None:
             target_page = UrlHandler.parse_page_range(self.config.static_config.page_range)
 
+        self.processed_urls.add(UrlHandler.remove_query_params(url))
+
         if scrape_type == "album_list":
             await self.scrape_album_list(url, target_page)
         else:
@@ -97,8 +100,15 @@ class ScrapeManager:
         album_links = await scraper.scrape_all_pages(url, target_page)
         self.logger.info("A total of %d albums found for %s", len(album_links), url)
 
+        temp_original_url = self.runtime_config.url
         for album_url in album_links:
+            self.runtime_config.url = album_url
+            self.update_runtime_config(self.runtime_config)
             await self.scrape_album(album_url, 1)
+            self.processed_urls.add(UrlHandler.remove_query_params(album_url))
+
+        self.runtime_config.url = temp_original_url
+        self.update_runtime_config(self.runtime_config)
 
     async def scrape_album(self, album_url: str, target_page: int | list[int]) -> None:
         """Handle scraping of a single album page."""
@@ -115,13 +125,13 @@ class ScrapeManager:
 
         image_links = await scraper.scrape_all_pages(album_url, target_page)
         self.album_tracker.update_download_log(
-            self.runtime_config.url,
+            album_url,  # 使用專輯 URL 而不是 runtime_config.url
             {LogKey.expect_num: len(image_links)},
         )
         if not image_links:
             return
 
-        album_name = re.sub(r"\s*\d+$", "", image_links[0][1])
+        album_name = re.sub(r"\s*\d+$", "", image_links[0][1]) if image_links else "Unknown Album"
         self.logger.info("Found %d images in album %s", len(image_links), album_name)
         self.album_tracker.log_downloaded(clean_url)
 
@@ -130,19 +140,27 @@ class ScrapeManager:
             raise TypeError(f"Expected a RuntimeConfig object, got {type(runtime_config).__name__}")
         self.runtime_config = runtime_config
 
+        for strategy in self.strategies.values():
+            strategy.runtime_config = runtime_config
+
     def log_final_status(self) -> None:
         if self.no_log:
             return
 
         self.logger.info("Download finished, showing download status")
         download_status = self.album_tracker.get_download_status
-        for url, album_status in download_status.items():
-            if album_status[LogKey.status] == DownloadStatus.FAIL:
-                self.logger.error(f"{url}: Unexpected error")
-            elif album_status[LogKey.status] == DownloadStatus.VIP:
-                self.logger.warning(f"{url}: VIP images found")
+
+        for url in self.processed_urls:
+            if url in download_status:
+                album_status = download_status[url]
+                if album_status[LogKey.status] == DownloadStatus.FAIL:
+                    self.logger.error(f"{url}: Unexpected error")
+                elif album_status[LogKey.status] == DownloadStatus.VIP:
+                    self.logger.warning(f"{url}: VIP images found")
+                else:
+                    self.logger.info(f"{url}: Download successful")
             else:
-                self.logger.info(f"{url}: Download successful")
+                self.logger.error(f"{url}: Not found in get_download_status")
 
     def write_metadata(self) -> None:
         self.metadata_handler.write_metadata()

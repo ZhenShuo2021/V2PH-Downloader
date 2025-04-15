@@ -153,6 +153,7 @@ class ImageScraper(BaseScraper[ImageResult]):
         page_num: int,
         **kwargs: dict[Any, Any],
     ) -> None:
+        """The input `url` is the album's url, not image url"""
         is_VIP = False
         alts: list[str] = tree.xpath(self.XPATH_ALTS)
         page_result.extend(zip(page_links, alts, strict=False))
@@ -170,12 +171,14 @@ class ImageScraper(BaseScraper[ImageResult]):
             if not available:
                 is_VIP = True
                 continue
-            url = page_links[page_link_ctr]
+            if page_link_ctr >= len(page_links):
+                break
+            image_url = page_links[page_link_ctr]
             page_link_ctr += 1
 
             filename = f"{(idx + i):03d}"
             dest = DownloadPathTool.get_file_dest(dir_, album_name, filename)
-            download_tasks.append(self.download_file(url, dest))
+            download_tasks.append(self.download_file(image_url, dest))
             download_paths.append(dest)
 
         if download_tasks:
@@ -189,12 +192,12 @@ class ImageScraper(BaseScraper[ImageResult]):
 
         self.logger.info("Found %d images on page %d", len(page_links), page_num)
 
-        # 確保 dest 已定義，如果沒有下載任務可能需要設置默認值
         destination = download_paths[0].parent if download_paths else Path(dir_) / album_name
 
         album_status = DownloadStatus.VIP if is_VIP else DownloadStatus.OK
+        clean_url = UrlHandler.remove_query_params(url)
         self.album_tracker.update_download_log(
-            self.runtime_config.url, {LogKey.status: album_status, LogKey.dest: str(destination)}
+            clean_url, {LogKey.status: album_status, LogKey.dest: str(destination)}
         )
 
     def get_available_images(self, tree: html.HtmlElement) -> list[bool]:
