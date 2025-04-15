@@ -111,6 +111,7 @@ class ImageScraper(BaseScraper[ImageResult]):
 
             async with httpx.AsyncClient(
                 headers=HEADERS,
+                http2=True,
                 timeout=httpx.Timeout(30.0),
                 follow_redirects=True,
                 limits=limits,
