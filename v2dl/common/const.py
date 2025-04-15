@@ -48,6 +48,7 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
     "static_config": {
         "bot_type": "drissionpage",
         "custom_user_agent": "",
+        "custom_headers": {},
         "language": "ja",
         "chrome_args": None,
         "no_metadata": False,
@@ -79,7 +80,6 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
     "runtime_config": {
         "url": "",
         "url_file": "",
-        "bot_type": "drissionpage",
     },
     "encryption_config": {
         "key_bytes": 32,

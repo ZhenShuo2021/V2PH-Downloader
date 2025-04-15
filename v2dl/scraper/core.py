@@ -97,10 +97,15 @@ class ImageScraper(BaseScraper[ImageResult]):
 
     async def download_file(self, url: str, dest: Path) -> bool:
         if DownloadPathTool.is_file_exists(
-            dest, self.config.static_config.force_download, self.cache, self.logger
+            dest,
+            self.config.static_config.force_download,
+            self.cache,
+            self.logger,
         ):
             self.logger.info("File exists: '%s'", dest)
             return True
+
+        headers = self.config.static_config.custom_headers or HEADERS
 
         try:
             DownloadPathTool.mkdir(dest.parent)
@@ -110,7 +115,7 @@ class ImageScraper(BaseScraper[ImageResult]):
             )
 
             async with httpx.AsyncClient(
-                headers=HEADERS,
+                headers=headers,
                 http2=True,
                 timeout=httpx.Timeout(30.0),
                 follow_redirects=True,

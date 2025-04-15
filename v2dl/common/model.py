@@ -14,6 +14,7 @@ AnyDict = dict[str, Any]
 class StaticConfig:
     bot_type: str
     custom_user_agent: str
+    custom_headers: dict[str, str]
     language: str
     chrome_args: str
     no_metadata: bool

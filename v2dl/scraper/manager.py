@@ -160,7 +160,7 @@ class ScrapeManager:
                 else:
                     self.logger.info(f"{url}: Download successful")
             else:
-                self.logger.error(f"{url}: Not found in get_download_status")
+                self.logger.info(f"{url}: Skipped as already downloaded")
 
     def write_metadata(self) -> None:
         self.metadata_handler.write_metadata()

@@ -204,7 +204,7 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
         default="",
         dest="custom_user_agent",
         metavar="'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'",
-        help="Overwrite user-agent",
+        help="Custom user-agent, independent of custom headers",
     )
 
     general.add_argument("--dry-run", action="store_true", help="Dry run without downloading")
