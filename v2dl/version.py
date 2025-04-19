@@ -1,2 +1,2 @@
-__version__ = "0.3.2alpha1"
+__version__ = "0.4.0"
 __package_name__ = "v2dl"
