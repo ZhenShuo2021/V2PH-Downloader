@@ -40,8 +40,9 @@ class V2DLApp:
             self.init(args)
             atexit.register(self.scraper.write_metadata)  # ensure write metadata
             state = await self.scraper.start_scraping()
+            msg = "Successfully bypass Cloudflare" if state else "Blocked by Cloudflare"
+            self.logger.debug(f"Scraping state: {msg}")
             if state:
-                self.logger.error(state)
                 self.scraper.log_final_status()
             else:
                 atexit.unregister(self.scraper.write_metadata)
