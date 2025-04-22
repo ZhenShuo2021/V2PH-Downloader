@@ -7,6 +7,7 @@ if sys.version_info < (3, 10):
         "You are using an unsupported version of Python. Only Python versions 3.10 and above are supported by v2dl",
     )
 import atexit
+import asyncio
 from argparse import Namespace
 from typing import Any
 
@@ -245,6 +246,6 @@ class V2DLApp:
         self.bot_name = bot_name
 
 
-async def main(args: Namespace | dict[Any, Any] | list[Any] | None = None) -> int:
+def main(args: Namespace | dict[Any, Any] | list[Any] | None = None) -> int:
     app = V2DLApp()
-    return await app.run(args)
+    return asyncio.run(app.run(args))
