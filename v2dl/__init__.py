@@ -37,7 +37,7 @@ class V2DLApp:
         self.scraper: scraper.ScrapeManager
         try:
             args = self.parse_arguments_wrapper(args)
-            self.init(args)
+            await self.init(args)
             atexit.register(self.scraper.write_metadata)  # ensure write metadata
             state = await self.scraper.start_scraping()
             msg = "Successfully bypass Cloudflare" if state else "Blocked by Cloudflare"
@@ -83,7 +83,7 @@ class V2DLApp:
         else:
             raise ValueError(f"Unsupported CLI args input type: {type(args)}")
 
-    def init(self, args: Namespace) -> None:
+    async def init(self, args: Namespace) -> None:
         """Initialize the application with the provided command-line arguments.
 
         The initialization process follows these steps:
@@ -104,20 +104,20 @@ class V2DLApp:
         """
         self.config_manager = common.ConfigManager(self.default_config)
         self.config_manager.initialize()
-        self._check_cli_inputs(args)
+        await self._check_cli_inputs(args)
         self._initialize_config(args)
 
         self.bot = self.get_bot(self.config)
         self.scraper = scraper.ScrapeManager(self.config, self.bot)
 
-    def _check_cli_inputs(self, args: Namespace) -> None:
+    async def _check_cli_inputs(self, args: Namespace) -> None:
         """Check command line inputs for quick return"""
         if args.version:
             print(version.__version__)  # noqa: T201
             sys.exit(0)
 
         if args.account:
-            cli.cli(self.config_manager.create_encryption_config())
+            await cli.cli(self.config_manager.create_encryption_config())
             sys.exit(0)
 
         if args.bot_type == "selenium":
@@ -248,5 +248,6 @@ class V2DLApp:
 
 
 def main(args: Namespace | dict[Any, Any] | list[Any] | None = None) -> int:
+    loop = asyncio.get_event_loop()
     app = V2DLApp()
-    return asyncio.run(app.run(args))
+    return loop.run_until_complete(app.run(args))

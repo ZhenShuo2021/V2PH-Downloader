@@ -1,7 +1,7 @@
 import tempfile
 from argparse import Namespace
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -51,8 +51,8 @@ def mock_dependencies():
         patch("v2dl.web_bot.get_bot") as mock_get_bot,
         patch("v2dl.scraper.ScrapeManager") as mock_scraper,
     ):
-        mock_setup_logging.return_value = MagicMock()
-        mock_get_bot.return_value = MagicMock()
+        mock_setup_logging.return_value = AsyncMock()
+        mock_get_bot.return_value = AsyncMock()
 
         yield {
             "setup_logging": mock_setup_logging,
@@ -61,6 +61,7 @@ def mock_dependencies():
         }
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "test_param,expected_result",
     [
@@ -75,7 +76,9 @@ def mock_dependencies():
         ),
     ],
 )
-def test_flag_and_parameter_configs(default_args, mock_dependencies, test_param, expected_result):
+async def test_flag_and_parameter_configs(
+    default_args, mock_dependencies, test_param, expected_result
+):
     """Test proper configuration of various flags and parameters."""
     # Setup
     args = default_args
@@ -83,10 +86,10 @@ def test_flag_and_parameter_configs(default_args, mock_dependencies, test_param,
         setattr(args, key, value)
 
     app = V2DLApp()
-    app._check_cli_inputs = MagicMock()
+    app._check_cli_inputs = AsyncMock()
 
     # Execute
-    app.init(args)
+    await app.init(args)
 
     # Verify
     for config_section, config_values in expected_result.items():
@@ -94,6 +97,7 @@ def test_flag_and_parameter_configs(default_args, mock_dependencies, test_param,
             assert app.config_manager.get(config_section, key) == value
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "test_path_param,expected_config",
     [
@@ -111,7 +115,9 @@ def test_flag_and_parameter_configs(default_args, mock_dependencies, test_param,
         ),
     ],
 )
-def test_path_configs(default_args, mock_dependencies, temp_dir, test_path_param, expected_config):
+async def test_path_configs(
+    default_args, mock_dependencies, temp_dir, test_path_param, expected_config
+):
     """Test proper configuration of file and directory paths."""
     # Setup
     args = default_args
@@ -127,10 +133,10 @@ def test_path_configs(default_args, mock_dependencies, temp_dir, test_path_param
         setattr(args, param_name, None)
 
     app = V2DLApp()
-    app._check_cli_inputs = MagicMock()
+    app._check_cli_inputs = AsyncMock()
 
     # Execute
-    app.init(args)
+    await app.init(args)
 
     # Verify
     config_name = expected_config["config_name"]

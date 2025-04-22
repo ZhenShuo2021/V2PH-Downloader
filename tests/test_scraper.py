@@ -17,7 +17,7 @@ TEST_ALBUM_URL = "http://example.com/album"
 
 
 @pytest.fixture
-def setup_test_env(tmp_path, real_app):
+async def setup_test_env(tmp_path, real_app):
     app = real_app
     app.config.static_config.destination = str(tmp_path)
     try:
@@ -30,7 +30,6 @@ def setup_test_env(tmp_path, real_app):
 
 
 @pytest.mark.skipif(os.getenv("GITHUB_ACTIONS") == "true", reason="No GUI on Github")
-@pytest.mark.asyncio
 async def test_download(setup_test_env, real_args):
     args, expected_file_count = real_args
     test_download_dir = Path(args.destination)

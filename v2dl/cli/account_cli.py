@@ -1,5 +1,6 @@
 import os
 import sys
+import asyncio
 import getpass
 import logging
 import platform
@@ -90,8 +91,10 @@ class AccountManagerCLI:
             {"name": self.strings.menu_quit, "value": MenuAction.QUIT.value},
         ]
 
-    def display_menu(self) -> Any:
-        return questionary.select(self.strings.menu_prompt, choices=self.get_menu_choices()).ask()
+    async def display_menu(self) -> Any:
+        return await questionary.select(
+            self.strings.menu_prompt, choices=self.get_menu_choices()
+        ).ask_async()
 
     def create_account(self) -> None:
         self.clean_terminal()
@@ -133,7 +136,7 @@ class AccountManagerCLI:
         cookies = input(self.strings.prompt_cookies)
         self.account_manager.edit(self.public_key, old_username, new_username, password, cookies)
 
-    def delete_account(self) -> None:
+    async def delete_account(self) -> None:
         self.clean_terminal()
         print(self.strings.menu_delete)
         username = input(self.strings.prompt_username)
@@ -142,13 +145,13 @@ class AccountManagerCLI:
             if not self.account_manager.verify_password(username, password, self.private_key):
                 return
 
-            confirm_delete = questionary.select(
+            confirm_delete = await questionary.select(
                 self.strings.confirm_delete.format(username=username),
                 choices=[
                     self.strings.confirm_yes,
                     self.strings.CONFIRM_NO,
                 ],
-            ).ask()
+            ).ask_async()
 
             if confirm_delete == self.strings.confirm_yes:
                 self.account_manager.delete(username)
@@ -186,7 +189,7 @@ class AccountManagerCLI:
         else:
             print(self.strings.msg_no_accounts)
 
-    def execute_action(self, choice: str) -> bool:
+    async def execute_action(self, choice: str) -> bool:
         if choice == MenuAction.QUIT.value:
             self.clean_terminal()
             print(self.strings.msg_exit)
@@ -194,7 +197,10 @@ class AccountManagerCLI:
 
         action = self.action_map.get(choice)
         if action:
-            action(self)
+            if asyncio.iscoroutinefunction(action):
+                await action(self)
+            else:
+                action(self)
         else:
             print(self.strings.msg_invalid_choice)
         return False
@@ -210,16 +216,16 @@ class AccountManagerCLI:
             MenuAction.LIST.value: cls.list_accounts,
         }
 
-    def run(self) -> None:
+    async def run(self) -> None:
         self.clean_terminal()
         while True:
-            choice = self.display_menu()
-            if self.execute_action(choice):
+            choice = await self.display_menu()
+            if await self.execute_action(choice):
                 break
         sys.exit(0)
 
 
-def cli(encrypt_config: EncryptionConfig) -> None:
+async def cli(encrypt_config: EncryptionConfig) -> None:
     cli = AccountManagerCLI(encrypt_config)
     cli.initialize_action_map()
-    cli.run()
+    await cli.run()

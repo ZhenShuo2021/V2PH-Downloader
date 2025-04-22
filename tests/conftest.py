@@ -9,16 +9,16 @@ from v2dl.common import Config
 
 
 @pytest.fixture
-def real_app(real_args) -> V2DLApp:
+async def real_app(real_args) -> V2DLApp:
     app = V2DLApp()
-    app.init(real_args[0])
+    await app.init(real_args[0])
     return app
 
 
 @pytest.fixture
-def real_config(real_args) -> Config:
+async def real_config(real_args) -> Config:
     app = V2DLApp()
-    app.init(real_args[0])
+    await app.init(real_args[0])
     return app.config
 
 
