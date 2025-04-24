@@ -27,7 +27,7 @@ et-xmlfile==2.0.0
     # via openpyxl
 filelock==3.16.1
     # via tldextract
-h11==0.14.0
+h11==0.16.0
     # via httpcore
 h2==4.2.0
     # via httpx
