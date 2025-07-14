@@ -223,3 +223,27 @@ asyncio.run(app.run(command_line_args))
 1. Rapid page switching or fast downloads may trigger blocks. Current settings balance speed and block prevention.
 2. Block likelihood depends on network environment. Avoid using VPN for safer downloads.
 3. Use cautiously to avoid overloading the website's resources.
+
+## Disclaimer
+
+This software (hereinafter referred to as the "Software") is released under the terms of the GNU General Public License v3.0 ("GPLv3") and is intended solely for lawful academic research, education, and technical development purposes. By downloading, installing, executing, or otherwise using the Software, you acknowledge that you have read, understood, and agreed to comply with the GPLv3 license and this Disclaimer.
+
+The Software is provided "as is" and "as available", without any express or implied warranties of any kind. The developer makes no representations or guarantees, including but not limited to warranties of merchantability, fitness for a particular purpose, non-infringement, accuracy, reliability, data integrity, system compatibility, or uninterrupted operation. The developer does not warrant that the Software will be error-free, secure, or compliant with any specific jurisdiction's legal or technical requirements.
+
+You are solely responsible for ensuring that your use of the Software complies with all applicable laws, regulations, directives, and policies of your jurisdiction(s), including but not limited to:
+
+- Computer crime and unauthorized access laws
+- Network and communications monitoring regulations
+- Intellectual property laws (e.g., copyright, trademark, database rights)
+- Privacy and personal data protection laws (e.g., GDPR, CCPA, Taiwan PDPA)
+- Terms of service and API usage policies of any third-party platform or website
+
+The functionality, scripts, examples, and documentation provided by the Software do not constitute legal, technical, security, or operational advice. The developer does not review or validate your specific use case and provides no endorsement of legality or compliance for any particular application.
+
+You explicitly agree that you assume full responsibility and risk for any consequences resulting from your use of the Software, including but not limited to platform bans, account suspension, legal claims, regulatory action, damages, or reputational harm. The developer shall not be liable for any direct, indirect, incidental, special, punitive, or consequential damages arising from the use, misuse, or inability to use the Software, whether under contract, tort (including negligence), strict liability, or any other legal theory, even if advised of the possibility of such damages.
+
+You must not use the Software in any manner that violates applicable law, infringes on third-party rights, breaches service agreements, or accesses services or data without proper authorization. The developer shall bear no responsibility for any consequences resulting from unlawful or unauthorized use of the Software.
+
+The developer reserves the right to modify, suspend, or discontinue the Software, in whole or in part, at any time without prior notice, and shall not be liable for any resulting impact on users or third parties.
+
+If any provision of this Disclaimer is held to be invalid or unenforceable by a court of competent jurisdiction, all other provisions shall remain in full force and effect.
