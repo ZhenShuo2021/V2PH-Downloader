@@ -111,15 +111,15 @@ Cookies 登入比帳號密碼更容易成功。
 
 裡面可以修改 headers、語言、捲動長度、捲動步長與速率限制等設定：
 
-- headers: 如果被封鎖可以自訂 headers，**請注意修改後要重啟程式開啟的瀏覽器才可以刷新**
-- language: 用於設定下載目錄的名稱，因為我發現網站有些是機器翻譯還不如看原文
-- use_default_chrome_profile: 使用你本人的 chrome 設定檔，理論上比較不容易被封鎖，但是下載期間無法操作瀏覽器
+- headers: 如果被封鎖可以自訂 headers，**請注意修改後要重新啟動由 v2dl 開啟的瀏覽器才可以刷新**
+- language: 用於設定下載目錄的名稱，因為我發現有些標題是 Google Translate，還不如看原文
+- use_default_chrome_profile: 使用你自己的 chrome 設定檔，理論上比較不容易被封鎖，但是下載期間無法操作瀏覽器
 - download_dir: 設定下載位置，預設系統下載資料夾。
 - download_log_path: 紀錄已下載的 album 頁面網址，重複的會跳過，該文件預設位於系統設定目錄。
 - system_log_path: 設定程式執行日誌的位置，該文件預設位於系統設定目錄。
 - rate_limit: 下載速度限制，預設 400 夠用也不會被封鎖。
 - chrome/exec_path: 系統的 Chrome 程式位置。
-- encryption_config: 如果電腦效能不夠，預設的加密配置可能會需要長時間解密，範例中的加密配置把所有數值都調整到最低了。
+- encryption_config: 調整加密相關的設定，更高的配置需要花費更長時間解密，預設值已經是最低效能需求了。
 
 ## FAQ
 
@@ -178,7 +178,7 @@ class CustomBot:
     def __init__(self, config_instance):
         self.config = config_instance
 
-    def auto_page_scroll(self, full_url, page_sleep=0) -> str:
+    async def auto_page_scroll(self, full_url, page_sleep=0) -> str:
         # this function should return the html content for each album page
         print("Custom bot in action!")
         return """
@@ -211,7 +211,7 @@ class ExtendedV2DL(V2DLApp):
 
 
 bot_name = "my awesome bot"
-command_line_args = {"url": "https://www.v2ph.com/album/foo", "force_download": True}
+command_line_args = ["--url", "https://www.v2ph.com/album/foo", "--force"]
 
 app = ExtendedV2DL()
 app.register_bot(bot_name, CustomBot)

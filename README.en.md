@@ -110,15 +110,15 @@ The program will search for a `config.yaml` file in the system configuration dir
 
 In this file, you can modify settings like headers, language, scroll length, scroll step, and rate limits:
 
-- **headers**: If blocked, you can customize headers. **Please note that changes will take effect only after restarting the program and refreshing the browser.**
-- **language**: Used to set the download directory name, as website's machine translations are not as good as the original text.
+- **headers**: If blocked, you can customize the headers. **Note that after modifying, you must restart the browser opened by v2dl to refresh.**
+- **language**: Used to set the name of the download directory, since I found some titles are from Google Translate, it is better to keep the original.
 - **use_default_chrome_profile**: Use your personal Chrome profile, which theoretically makes it harder to be blocked. However, the browser cannot be interacted with during the download process.
 - **download_dir**: Set the download location; defaults to the system download folder.
 - **download_log_path**: Logs the URLs of downloaded album pages, skipped if duplicated. The default location is the system configuration directory.
 - **system_log_path**: Location for program logs. The default location is the system configuration directory.
 - **rate_limit**: Download speed limit, default is 400, which is sufficient and prevents being blocked.
 - **chrome/exec_path**: Path to the system's Chrome executable.
-- **encryption_config**: If your computer's performance is insufficient, the default encryption configuration may require long decryption times. The example configuration sets all values to the minimum.
+- **encryption_config**: Adjust encryption-related settings. Higher configurations require longer decryption times, and the default value already meets the minimum performance requirements.
 
 ## FAQ
 
@@ -177,7 +177,7 @@ class CustomBot:
     def __init__(self, config_instance):
         self.config = config_instance
 
-    def auto_page_scroll(self, full_url, page_sleep=0) -> str:
+    async def auto_page_scroll(self, full_url, page_sleep=0) -> str:
         # this function should return the html content for each album page
         print("Custom bot in action!")
         return """
@@ -210,7 +210,7 @@ class ExtendedV2DL(V2DLApp):
 
 
 bot_name = "my awesome bot"
-command_line_args = {"url": "https://www.v2ph.com/album/foo", "force_download": True}
+command_line_args = ["--url", "https://www.v2ph.com/album/foo", "--force"]
 
 app = ExtendedV2DL()
 app.register_bot(bot_name, CustomBot)
