@@ -376,7 +376,7 @@ class AccountManager:
         update = False
 
         for _, account in self.accounts.items():
-            if exceed_time := account["exceed_time"]:  # 如果不是空字串就進入檢查
+            if exceed_time := account.get("exceed_time"):
                 exceed_time_ = datetime.strptime(exceed_time, "%Y-%m-%dT%H:%M:%S")
                 if now - exceed_time_ > timedelta(hours=12):
                     account["exceed_time"] = ""
