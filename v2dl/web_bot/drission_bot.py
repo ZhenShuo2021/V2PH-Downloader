@@ -42,9 +42,7 @@ class DrissionBot(BaseBot):
 
         # Do NOT use preset user_agent for drissionpage
         if self.config.static_config.custom_user_agent:
-            self.logger.info(
-                f"Apply custom user agent: {self.config.static_config.custom_user_agent}"
-            )
+            self.logger.info(f"Apply custom user agent: {self.config.static_config.custom_user_agent}")
             co.set_user_agent(user_agent=self.config.static_config.custom_user_agent)
 
         if not self.config.static_config.use_default_chrome_profile:
@@ -88,6 +86,7 @@ class DrissionBot(BaseBot):
                 # main business
                 self.handle_login()
                 self.handle_read_limit()
+                self.handle_image_captcha()
                 self.page.run_js("document.body.style.zoom='50%'")
                 await self.scroller.scroll_to_bottom()
 
@@ -223,6 +222,31 @@ class DrissionBot(BaseBot):
             sys.exit("Automated login failed.")
         return False
 
+    def handle_image_captcha(self) -> bool:
+        """Handle image captcha and waiting for manual input if present."""
+        xpath = 'xpath=//div[@class="col-md-6 captcha-container card p-3"]'
+        captcha_container = self.page(xpath)
+
+        if captcha_container:
+            self.logger.info("Image captcha detected - Waiting for manual input")
+
+            while True:
+                try:
+                    current_captcha = self.page(xpath, timeout=1)
+                    if not current_captcha:
+                        self.logger.info("Captcha completed - continuing process")
+                        break
+
+                    DriBehavior.random_sleep(1, 2)
+
+                except Exception:
+                    self.logger.info("Captcha completed - continuing process")
+                    break
+        else:
+            self.logger.debug("No image captcha detected")
+
+        return True
+
     def cookies_login(self) -> bool:
         account_info = self.account_manager.read(self.account)
         if account_info is None:
@@ -238,9 +262,7 @@ class DrissionBot(BaseBot):
             DriBehavior.random_sleep(0, 3)
             self.page.get(self.url)
 
-        if not self.page(
-            'xpath=//div[contains(@class, "alert-danger") and @role="alert"]', timeout=0.5
-        ):
+        if not self.page('xpath=//div[contains(@class, "alert-danger") and @role="alert"]', timeout=0.5):
             self.logger.info("Account %s login successful with cookies", self.account)
             return True
 
@@ -260,9 +282,7 @@ class DrissionBot(BaseBot):
     def handle_read_limit(self) -> None:
         if self.check_read_limit():
             # click logout
-            self.page(
-                'xpath=//ul[@class="nav justify-content-end"]//a[contains(@href, "/user/logout")]'
-            ).click()
+            self.page('xpath=//ul[@class="nav justify-content-end"]//a[contains(@href, "/user/logout")]').click()
             now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
             self.account_manager.update_runtime_state(self.account, "exceed_quota", True)
             self.account_manager.update_account(self.account, "exceed_quota", True)
@@ -463,9 +483,7 @@ class DriScroll(BaseScroll):
                 weights=[0.9, 0.1, 0.1, 0.01],
             )[0]
 
-            if (
-                action != "scroll_up" or not scrolled_up
-            ):  # 連續捲動時，只要往上捲動過一次就不要再選擇往上
+            if action != "scroll_up" or not scrolled_up:  # 連續捲動時，只要往上捲動過一次就不要再選擇往上
                 break
 
         if action == "scroll_down":

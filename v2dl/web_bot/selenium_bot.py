@@ -222,6 +222,31 @@ class SeleniumBot(BaseBot):
             sys.exit("Automated login failed.")
         return False
 
+    def handle_image_captcha(self) -> bool:
+        """Handle image captcha and waiting for manual input if present."""
+        xpath = '//div[@class="col-md-6 captcha-container card p-3"]'
+        captcha_container = self.driver.find_elements(By.XPATH, xpath)
+
+        if captcha_container:
+            self.logger.info("Image captcha detected - Waiting for manual input")
+
+            while True:
+                try:
+                    current_captcha = self.driver.find_elements(By.XPATH, xpath)
+                    if not current_captcha:
+                        self.logger.info("Captcha completed - continuing process")
+                        break
+
+                    time.sleep(random.uniform(1, 2))
+
+                except Exception:
+                    self.logger.info("Captcha completed - continuing process")
+                    break
+        else:
+            self.logger.debug("No image captcha detected")
+
+        return True
+
     def cookies_login(self) -> bool:
         account_info = self.account_manager.read(self.account)
         if account_info is None:
