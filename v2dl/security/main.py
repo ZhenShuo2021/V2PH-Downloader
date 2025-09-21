@@ -334,17 +334,12 @@ class AccountManager:
         """
         with self.lock:
             account_info = self.accounts.get(account)
-            if account_info:
-                if field in account_info:
-                    account_info[field] = value
-                    self.logger.debug("Updated yaml %s for account %s.", field, account)
-                    self._save_yaml()
-                else:
-                    self.logger.error(
-                        "Field '%s' does not exist in account '%s'.", field, account_info
-                    )
+            if account_info is not None:
+                account_info[field] = value
+                self.logger.debug("Updated field '%s' for account '%s' with value: %s", field, account, value)
+                self._save_yaml()
             else:
-                self.logger.error("Account %s not found.", account)
+                self.logger.error("Account '%s' not found.", account)
 
     def verify_password(self, account: str, password: str, private_key: PrivateKey) -> bool:
         account_info = self.accounts.get(account)
