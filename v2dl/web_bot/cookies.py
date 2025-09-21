@@ -75,11 +75,11 @@ def validate_file(file_path: str) -> bool:
     return True
 
 
-def find_cookies_files(folder_path: str) -> list[Any]:
+def find_cookies_files(folder_path: str) -> list[str]:
     """Find all files matches *cookies*.txt"""
     result = []
-    for root, _, files in os.walk(folder_path):
-        for file in files:
-            if "cookies" in file and file.endswith(".txt"):
-                result.append(os.path.join(root, file))
+    for file in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, file)
+        if os.path.isfile(file_path) and "cookies" in file:
+            result.append(file_path)
     return result
