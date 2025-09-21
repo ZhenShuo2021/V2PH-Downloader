@@ -78,6 +78,7 @@ def mock_runtime_config():
 @pytest.fixture
 def mock_config(tmp_path):
     config = MagicMock()
+    config.static_config.max_worker = 5
     config.paths.download_log_path = tmp_path / "mock_log_path"
     return config
 

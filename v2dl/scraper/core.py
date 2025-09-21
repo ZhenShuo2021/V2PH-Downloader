@@ -91,6 +91,7 @@ class ImageScraper(BaseScraper[ImageResult]):
     def __init__(self, config: Config, album_tracker: AlbumTracker) -> None:
         super().__init__(config, album_tracker)
         self.cache = DirectoryCache()
+        self._semaphore = asyncio.Semaphore(config.static_config.max_worker)
 
     def get_xpath(self) -> str:
         return self.XPATH_ALBUM
@@ -113,35 +114,37 @@ class ImageScraper(BaseScraper[ImageResult]):
                 max_keepalive_connections=self.config.static_config.max_worker,
                 max_connections=self.config.static_config.max_worker * 2,
             )
+            async with self._semaphore:
+                async with httpx.AsyncClient(
+                    headers=headers,
+                    http2=True,
+                    timeout=httpx.Timeout(30.0),
+                    follow_redirects=True,
+                    limits=limits,
+                ) as client:
+                    async with client.stream("GET", url, headers=HEADERS) as response:
+                        response.raise_for_status()
+                        ext = "." + DownloadPathTool.get_ext(response)
+                        dest = dest.with_suffix(ext)
 
-            async with httpx.AsyncClient(
-                headers=headers,
-                http2=True,
-                timeout=httpx.Timeout(30.0),
-                follow_redirects=True,
-                limits=limits,
-            ) as client:
-                async with client.stream("GET", url, headers=HEADERS) as response:
-                    response.raise_for_status()
-                    ext = "." + DownloadPathTool.get_ext(response)
-                    dest = dest.with_suffix(ext)
+                        with open(dest, "wb") as f:
+                            speed_limit_kbps = self.config.static_config.rate_limit
+                            total_bytes = 0
+                            start_time = asyncio.get_running_loop().time()
+                            chunk_size = 8192
 
-                    with open(dest, "wb") as f:
-                        speed_limit_kbps = self.config.static_config.rate_limit
-                        total_bytes = 0
-                        start_time = asyncio.get_running_loop().time()
-                        chunk_size = 8192
+                            async for chunk in response.aiter_bytes(chunk_size):
+                                f.write(chunk)
 
-                        async for chunk in response.aiter_bytes(chunk_size):
-                            f.write(chunk)
+                                if speed_limit_kbps:
+                                    total_bytes += len(chunk)
+                                    expected_time = total_bytes / (speed_limit_kbps * 1024)
+                                    elapsed_time = abs(
+                                        asyncio.get_running_loop().time() - start_time
+                                    )
 
-                            if speed_limit_kbps:
-                                total_bytes += len(chunk)
-                                expected_time = total_bytes / (speed_limit_kbps * 1024)
-                                elapsed_time = abs(asyncio.get_running_loop().time() - start_time)
-
-                                if elapsed_time < expected_time:
-                                    await asyncio.sleep(expected_time - elapsed_time)
+                                    if elapsed_time < expected_time:
+                                        await asyncio.sleep(expected_time - elapsed_time)
 
             self.logger.info("Downloaded: '%s'", dest)
             return True

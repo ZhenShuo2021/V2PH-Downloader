@@ -1,13 +1,11 @@
 import os
 import re
 import sys
-import asyncio
 import logging
 from collections import OrderedDict
 from collections.abc import Callable
 from mimetypes import guess_extension
 from pathlib import Path
-from typing import Literal, Optional
 
 import httpx
 from pathvalidate import sanitize_filename
@@ -16,157 +14,6 @@ from v2dl.common.const import VALID_EXTENSIONS
 from v2dl.common.model import PathType
 
 logger = logging.getLogger()
-
-
-class Downloader:
-    def __init__(
-        self,
-        headers: dict[str, str],
-        speed_limit_kbps: int,
-        force_download: bool,
-        cache: "DirectoryCache",
-        logger: logging.Logger,
-        max_workers: int = 5,
-    ):
-        self.headers = headers
-        self.speed_limit_kbps = speed_limit_kbps
-        self.force_download = force_download
-        self.cache = cache
-        self.logger = logger
-        self.max_workers = max_workers
-        self.client_lock = asyncio.Lock()
-        self._file_lock = asyncio.Lock()
-        self.client: httpx.AsyncClient | None = None
-        self.loop = asyncio.get_running_loop()
-        self.client_error_event = asyncio.Event()
-        self.client_reset_event = asyncio.Event()
-        self.client_reset_event.set()
-        self.active_tasks = 0
-        self.active_tasks_lock = asyncio.Lock()
-
-    async def download(self, url: str, dest: Path) -> bool:
-        async with self._file_lock:
-            if DownloadPathTool.is_file_exists(dest, self.force_download, self.cache, self.logger):
-                return True
-
-        async with self.active_tasks_lock:
-            self.active_tasks += 1
-
-        try:
-            DownloadPathTool.mkdir(dest.parent)
-
-            await self.client_reset_event.wait()
-
-            await self.download_with_retry(
-                url, dest, self.headers, speed_limit_kbps=self.speed_limit_kbps
-            )
-            self.logger.info("Downloaded: '%s'", dest)
-            return True
-        except Exception as e:
-            self.logger.error("Error in async task '%s': %s", url, e)
-            return False
-        finally:
-            async with self.active_tasks_lock:
-                self.active_tasks -= 1
-                if self.client_error_event.is_set() and self.active_tasks == 0:
-                    self.logger.info("All tasks completed after client error, resetting client")
-                    self.client_error_event.clear()
-                    self.client_reset_event.set()
-
-    async def download_core(
-        self, url: str, dest: Path, headers: dict[str, str], speed_limit_kbps: Optional[int] = None
-    ) -> Literal[True]:
-        async with self.client_lock:
-            if self.client_error_event.is_set():
-                await self.client_reset_event.wait()
-
-            client = await self.get_client()
-
-        try:
-            async with client.stream("GET", url, headers=headers) as response:
-                response.raise_for_status()
-
-                dest.parent.mkdir(parents=True, exist_ok=True)
-
-                total_bytes = 0
-                start_time = self.loop.time()
-                chunk_size = 8192
-
-                with open(dest, "wb") as f:
-                    async for chunk in response.aiter_bytes(chunk_size):
-                        f.write(chunk)
-
-                        if speed_limit_kbps:
-                            total_bytes += len(chunk)
-                            expected_time = total_bytes / (speed_limit_kbps * 1024)
-                            elapsed_time = abs(self.loop.time() - start_time)
-
-                            if elapsed_time < expected_time:
-                                await asyncio.sleep(expected_time - elapsed_time)
-
-                return True
-        except httpx.HTTPError as e:
-            if not isinstance(e, httpx.HTTPStatusError):
-                await self.mark_client_error()
-            raise
-
-    async def mark_client_error(self) -> None:
-        self.logger.warning("Client error detected, marking for reset")
-        self.client_error_event.set()
-        self.client_reset_event.clear()
-        await self.close_client()
-
-    async def download_with_retry(
-        self,
-        url: str,
-        dest: Path,
-        headers: dict[str, str],
-        speed_limit_kbps: Optional[int] = None,
-        max_retries: int = 3,
-    ) -> bool:
-        retry_count = 0
-        while retry_count < max_retries:
-            try:
-                return await self.download_core(url, dest, headers, speed_limit_kbps)
-            except httpx.HTTPError as e:
-                retry_count += 1
-                self.logger.error(f"Retry {retry_count}/{max_retries} failed for {dest!s}: {e}")
-                if retry_count < max_retries:
-                    await asyncio.sleep(2**retry_count)
-                else:
-                    return False
-        return False
-
-    def create_client(self) -> httpx.AsyncClient:
-        self.logger.info("Creating new HTTP client")
-        return httpx.AsyncClient(
-            timeout=httpx.Timeout(30.0),
-            follow_redirects=True,
-            limits=httpx.Limits(
-                max_keepalive_connections=self.max_workers, max_connections=self.max_workers * 2
-            ),
-        )
-
-    async def close_client(self) -> None:
-        async with self.client_lock:
-            if self.client and not self.client.is_closed:
-                self.logger.info("Closing HTTP client")
-                await self.client.aclose()
-                self.client = None
-
-    async def get_client(self) -> httpx.AsyncClient:
-        async with self.client_lock:
-            if self.client is None or self.client.is_closed:
-                self.client = self.create_client()
-            try:
-                await self.client.get("https://example.com", timeout=1.0)
-            except httpx.HTTPError as e:
-                self.logger.warning(
-                    f"Error occurs while test connecting to https://example.com: {e}"
-                )
-                await self.close_client()
-                self.client = self.create_client()
-            return self.client
 
 
 class DirectoryCache:
