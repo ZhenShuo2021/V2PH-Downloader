@@ -159,7 +159,8 @@ class DrissionBot(BaseBot):
             DriBehavior.random_sleep()
             self.logger.info("Login page detected - Starting login process")
             try:
-                for _ in self.account_manager.accounts:
+                accounts = self.account_manager.get_all_accounts()
+                for _ in accounts:
                     # if no any available account, `AccountManager.random_pick` will execute sys.exit
                     self.account = self.account_manager.random_pick()
 

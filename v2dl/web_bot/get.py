@@ -15,7 +15,7 @@ def get_bot(config: Config) -> Any:
     bot_type = config.static_config.bot_type
     logger = config.runtime_config.logger
     key_manager = KeyManager(logger, config.encryption_config)
-    account_manager = AccountManager(logger, key_manager)
+    account_manager = AccountManager(logger, key_manager, "", config.static_config.cookies_path)
 
     # lazy import
     if bot_type == "selenium":
