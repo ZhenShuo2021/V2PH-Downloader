@@ -8,6 +8,9 @@ static_config:
     Cache-Control: "no-cache"
     Connection: "keep-alive"
     Referer: "https://www.google.com/"
+    sec-fetch-dest: "image"
+    sec-fetch-mode: "no-cors"
+    sec-fetch-site: "same-site"
   language: "ja"
   chrome_args: null
   no_metadata: false
@@ -19,8 +22,8 @@ static_config:
   max_scroll_distance: 2000
   min_scroll_step: 300
   max_scroll_step: 500
-  max_worker: 5
-  rate_limit: 400
+  max_worker: 2
+  rate_limit: 1000
   page_range: ""
   # path relative configurations
   cookies_path: ""

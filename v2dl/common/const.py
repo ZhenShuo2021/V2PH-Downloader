@@ -39,6 +39,9 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
     "Accept-Language": "ja;q=0.9,en-US,en;q=0.8",
     "Referer": "https://www.v2ph.com/",
+    "sec-fetch-dest": "image",
+    "sec-fetch-mode": "no-cors",
+    "sec-fetch-site": "same-site",
 }
 
 
@@ -60,8 +63,8 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
         "max_scroll_distance": 2000,
         "min_scroll_step": 300,
         "max_scroll_step": 500,
-        "max_worker": 5,
-        "rate_limit": 400,
+        "max_worker": 2,
+        "rate_limit": 1000,
         "page_range": "",
         # path relative configurations
         "cookies_path": "",
