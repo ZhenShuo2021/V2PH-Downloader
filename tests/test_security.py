@@ -4,7 +4,7 @@ import base64
 import shutil
 import logging
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import pytest
 from nacl.public import PrivateKey
@@ -89,7 +89,7 @@ def account_manager(encryption_config, logger, tmp_path):
 
     yield account_manager_instance
 
-    atexit.unregister(account_manager_instance._save_yaml)
+    atexit.unregister(account_manager_instance.finalize)
     if os.name != "nt":
         shutil.rmtree(tmp_path)
 
@@ -105,8 +105,6 @@ def test_create_account(account_manager: AccountManager):
     assert account is not None
     assert "encrypted_password" in account
     assert "created_at" in account
-    assert account["exceed_quota"] is False
-    assert account["exceed_time"] == ""
 
 
 def test_delete_account(account_manager: AccountManager):
@@ -121,7 +119,7 @@ def test_delete_account(account_manager: AccountManager):
     assert account is None
 
 
-def test_edit_account(account_manager: AccountManager):
+def test_update_account(account_manager: AccountManager):
     old_username = "old_user"
     new_username = "new_user"
     new_password = "new_password"
@@ -165,23 +163,3 @@ def test_verify_password(account_manager: AccountManager):
 
     assert account_manager.verify_password(username, password, private_key) is True
     assert account_manager.verify_password(username, "wrong_password", private_key) is False
-
-
-def test_check(account_manager: AccountManager):
-    username = "test_user"
-    password = "test_password"
-    public_key = PrivateKey.generate().public_key
-
-    account_manager.create(username, password, "", public_key)
-    account_manager.update_account(
-        username,
-        "exceed_time",
-        (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%S"),
-    )
-    account_manager.update_account(username, "exceed_quota", True)
-
-    account_manager.check()
-    account = account_manager.read(username)
-    assert account is not None
-    assert account["exceed_quota"] is False
-    assert account["exceed_time"] == ""

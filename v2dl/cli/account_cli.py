@@ -134,13 +134,15 @@ class AccountManagerCLI:
         new_username = input(self.strings.prompt_new_username)
         password = self.get_pass(self.strings.prompt_new_password)
         cookies = input(self.strings.prompt_cookies)
-        self.account_manager.edit(self.public_key, old_username, new_username, password, cookies)
+        self.account_manager.edit_yaml_account(
+            self.public_key, old_username, new_username, password, cookies
+        )
 
     async def delete_account(self) -> None:
         self.clean_terminal()
         print(self.strings.menu_delete)
         username = input(self.strings.prompt_username)
-        if username in self.account_manager.accounts:
+        if username in self.account_manager.yaml_accounts:
             password = self.get_pass(self.strings.prompt_password)
             if not self.account_manager.verify_password(username, password, self.private_key):
                 return
@@ -174,14 +176,12 @@ class AccountManagerCLI:
     def list_accounts(self) -> None:
         self.clean_terminal()
         print(self.strings.menu_list)
-        accounts = self.account_manager.accounts
+        accounts = self.account_manager.yaml_accounts
         if accounts:
             for username, info in accounts.items():
                 print(
                     self.strings.LIST_FORMAT.format(
                         username=username,
-                        quota=info["exceed_quota"],
-                        time=info["exceed_time"],
                         created_at=info["created_at"],
                         cookies=info["cookies"],
                     ),

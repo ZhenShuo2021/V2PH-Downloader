@@ -8,7 +8,6 @@ from typing import Any
 
 from v2dl.common import Config, const
 from v2dl.security import AccountManager, KeyManager
-from v2dl.web_bot.cookies import find_cookies_files
 
 
 class BaseBot(ABC):
@@ -27,7 +26,6 @@ class BaseBot(ABC):
 
         self.key_manager = key_manager
         self.account_manager = account_manager
-        self.add_runtime_account()
         self.account = account_manager.random_pick()
         key_pair = self.key_manager.load_keys()
         self.private_key, self.public_key = key_pair.private_key, key_pair.public_key
@@ -72,12 +70,6 @@ class BaseBot(ABC):
             str: Page HTML content or error message
         """
         raise NotImplementedError("Subclasses must implement automated retry logic.")
-
-    def add_runtime_account(self) -> None:
-        if self.config.static_config.cookies_path:
-            paths = find_cookies_files(self.config.static_config.cookies_path)
-            for path in paths:
-                self.account_manager.add_runtime_account(path, "", path)
 
     def handle_login(self) -> bool:
         """Login logic, implemented by subclasses."""

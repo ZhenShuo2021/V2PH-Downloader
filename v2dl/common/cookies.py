@@ -82,4 +82,9 @@ def find_cookies_files(folder_path: str) -> list[str]:
         file_path = os.path.join(folder_path, file)
         if os.path.isfile(file_path) and "cookies" in file:
             result.append(file_path)
+            logger.debug(f"Found cookies file: {file_path}")
+
+    if not result:
+        logger.info("No additional cookies found")
+
     return result

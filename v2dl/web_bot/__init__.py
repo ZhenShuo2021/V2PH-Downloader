@@ -1,6 +1,6 @@
 import importlib
 
-from v2dl.web_bot.cookies import load_cookies
+from v2dl.common.cookies import load_cookies
 from v2dl.web_bot.drission_bot import DrissionBot
 from v2dl.web_bot.get import get_bot
 

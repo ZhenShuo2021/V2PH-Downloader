@@ -11,9 +11,9 @@ from DrissionPage.common import wait_until
 from DrissionPage.errors import ContextLostError, ElementNotFoundError, WaitTimeoutError
 
 from v2dl.common.const import BASE_URL
+from v2dl.common.cookies import load_cookies
 from v2dl.common.error import BotError
 from v2dl.web_bot.base import BaseBehavior, BaseBot, BaseScroll
-from v2dl.web_bot.cookies import load_cookies
 
 if TYPE_CHECKING:
     from v2dl.common import Config
@@ -42,7 +42,9 @@ class DrissionBot(BaseBot):
 
         # Do NOT use preset user_agent for drissionpage
         if self.config.static_config.custom_user_agent:
-            self.logger.info(f"Apply custom user agent: {self.config.static_config.custom_user_agent}")
+            self.logger.info(
+                f"Apply custom user agent: {self.config.static_config.custom_user_agent}"
+            )
             co.set_user_agent(user_agent=self.config.static_config.custom_user_agent)
 
         if not self.config.static_config.use_default_chrome_profile:
@@ -157,7 +159,8 @@ class DrissionBot(BaseBot):
             DriBehavior.random_sleep()
             self.logger.info("Login page detected - Starting login process")
             try:
-                for _ in self.account_manager.accounts:
+                accounts = self.account_manager.get_all_accounts()
+                for _ in accounts:
                     # if no any available account, `AccountManager.random_pick` will execute sys.exit
                     self.account = self.account_manager.random_pick()
 
@@ -262,7 +265,9 @@ class DrissionBot(BaseBot):
             DriBehavior.random_sleep(0, 3)
             self.page.get(self.url)
 
-        if not self.page('xpath=//div[contains(@class, "alert-danger") and @role="alert"]', timeout=0.5):
+        if not self.page(
+            'xpath=//div[contains(@class, "alert-danger") and @role="alert"]', timeout=0.5
+        ):
             self.logger.info("Account %s login successful with cookies", self.account)
             return True
 
@@ -282,7 +287,9 @@ class DrissionBot(BaseBot):
     def handle_read_limit(self) -> None:
         if self.check_read_limit():
             # click logout
-            self.page('xpath=//ul[@class="nav justify-content-end"]//a[contains(@href, "/user/logout")]').click()
+            self.page(
+                'xpath=//ul[@class="nav justify-content-end"]//a[contains(@href, "/user/logout")]'
+            ).click()
             now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
             self.account_manager.update_runtime_state(self.account, "exceed_quota", True)
             self.account_manager.update_account(self.account, "exceed_quota", True)
@@ -483,7 +490,9 @@ class DriScroll(BaseScroll):
                 weights=[0.9, 0.1, 0.1, 0.01],
             )[0]
 
-            if action != "scroll_up" or not scrolled_up:  # 連續捲動時，只要往上捲動過一次就不要再選擇往上
+            if (
+                action != "scroll_up" or not scrolled_up
+            ):  # 連續捲動時，只要往上捲動過一次就不要再選擇往上
                 break
 
         if action == "scroll_down":
