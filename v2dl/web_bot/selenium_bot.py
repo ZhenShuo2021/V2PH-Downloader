@@ -104,6 +104,7 @@ class SeleniumBot(BaseBot):
                 # main business
                 self.handle_login()
                 self.handle_read_limit()
+                self.handle_image_captcha()
                 self.driver.execute_script("document.body.style.zoom='50%'")
                 await self.scroller.scroll_to_bottom()
                 SelBehavior.random_sleep(5, 15)
