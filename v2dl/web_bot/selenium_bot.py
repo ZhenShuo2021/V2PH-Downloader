@@ -19,8 +19,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from v2dl.common import BotError
+from v2dl.common.cookies import load_cookies
 from v2dl.web_bot.base import BaseBehavior, BaseBot, BaseScroll
-from v2dl.web_bot.cookies import load_cookies
 
 if TYPE_CHECKING:
     from v2dl.common import Config

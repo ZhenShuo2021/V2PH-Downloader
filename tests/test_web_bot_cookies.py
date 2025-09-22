@@ -4,7 +4,7 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from v2dl.web_bot.cookies import (
+from v2dl.common.cookies import (
     load_cookies,
     load_cookies_from_header_string,
     load_cookies_from_json,
@@ -15,9 +15,7 @@ from v2dl.web_bot.cookies import (
 @pytest.fixture
 def mock_json_file(tmp_path):
     file_path = tmp_path / "cookies.json"
-    file_path.write_text(
-        json.dumps([{"name": "key1", "value": "val1"}, {"name": "key2", "value": "val2"}])
-    )
+    file_path.write_text(json.dumps([{"name": "key1", "value": "val1"}, {"name": "key2", "value": "val2"}]))
     return str(file_path)
 
 
@@ -39,7 +37,7 @@ def invalid_file(tmp_path):
 def test_validate_file():
     with (
         patch("os.path.exists", return_value=False),
-        patch("v2dl.web_bot.cookies.logger.error") as mock_logger,
+        patch("v2dl.common.cookies.logger.error") as mock_logger,
     ):
         assert not validate_file("nonexistent/path")
         mock_logger.assert_called_once_with("File not found: nonexistent/path")
@@ -47,7 +45,7 @@ def test_validate_file():
     with (
         patch("os.path.exists", return_value=True),
         patch("os.path.isfile", return_value=False),
-        patch("v2dl.web_bot.cookies.logger.error") as mock_logger,
+        patch("v2dl.common.cookies.logger.error") as mock_logger,
     ):
         assert not validate_file("not_a_file")
         mock_logger.assert_called_once_with("Not a valid file: not_a_file")
@@ -59,31 +57,45 @@ def test_validate_file():
 # 合併 load_cookies 測試
 def test_load_cookies(mock_txt_file, mock_json_file, invalid_file, tmp_path):
     # 測試無效檔案
-    with patch("v2dl.web_bot.cookies.validate_file", return_value=False):
+    with patch("v2dl.common.cookies.validate_file", return_value=False):
         assert load_cookies("invalid/path") == {}
 
     # 測試 LoadError 的處理邏輯
     with (
-        patch("v2dl.web_bot.cookies.validate_file", return_value=True),
-        patch("v2dl.web_bot.cookies.load_cookies_from_netscape", side_effect=LoadError),
+        patch("v2dl.common.cookies.validate_file", return_value=True),
+        patch("v2dl.common.cookies.load_cookies_from_netscape", side_effect=LoadError("Test error")),
+        patch("v2dl.common.cookies.logger.error") as mock_error_log,  # Mock logger.error
         patch(
-            "v2dl.web_bot.cookies.load_cookies_from_header_string",
+            "v2dl.common.cookies.load_cookies_from_header_string",
             return_value={"fallback_key": "fallback_val"},
         ) as mock_fallback,
     ):
-        assert load_cookies(mock_txt_file) == {"fallback_key": "fallback_val"}
+        result = load_cookies(mock_txt_file)
+        assert result == {"fallback_key": "fallback_val"}
         mock_fallback.assert_called_once_with(mock_txt_file)
+        mock_error_log.assert_called_with("Loading netscape cookie error: Test error")
 
     # valid JSON format
     assert load_cookies(mock_json_file) == {"key1": "val1", "key2": "val2"}
 
     # invalid JSON format
-    assert load_cookies(invalid_file) == {}
+    with patch("v2dl.common.cookies.logger.error") as mock_error_log:
+        result = load_cookies(invalid_file)
+        assert result == {}
+        assert mock_error_log.called
+        error_call = mock_error_log.call_args[0][0]
+        assert "Error processing file" in error_call
+        assert "invalid.json" in error_call
 
     # unsupported format
     unsupported_file = tmp_path / "unsupported.ext"
     unsupported_file.write_text("data")
-    assert load_cookies(str(unsupported_file)) == {}
+    with patch("v2dl.common.cookies.logger.error") as mock_error_log:
+        result = load_cookies(str(unsupported_file))
+        assert result == {}
+        mock_error_log.assert_called_with(
+            f"Unsupported file type: {unsupported_file!s}. Expected .json or .txt files"
+        )
 
 
 def test_load_cookies_parsers():
