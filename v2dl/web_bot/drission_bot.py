@@ -302,9 +302,16 @@ class DrissionBot(BaseBot):
     def click_logout(self) -> None:
         self.page.ele("@href=/user/logout").click()
 
-    def simple_blockage_check(self, html_content: str) -> bool:
-        """Return True if the base URL is not in the HTML content, indicating blockage."""
-        return BASE_URL not in html_content
+    def simple_blockage_check(self, current_url: str, html_content: str, status_code: int) -> bool:
+        is_blocked = "v2ph" not in html_content
+        if is_blocked:
+            self.logger.warning(
+                f"[Blockage Detected] URL: {current_url} | "
+                f"Status Code: {status_code} | "
+                f"HTML Length: {len(html_content)} | "
+                f"HTML Preview: {html_content[:500]}"
+            )
+        return is_blocked
 
 
 class DriCloudflareHandler:
