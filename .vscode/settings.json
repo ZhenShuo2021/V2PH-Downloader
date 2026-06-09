@@ -19,5 +19,8 @@
   },
   "ruff.lineLength": null,
   "ruff.organizeImports": true,
+  "python.analysis.ignore": [
+        "*"
+    ],
   // "ruff.lint.run": "onType",
 }
