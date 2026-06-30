@@ -29,7 +29,7 @@ IMAGE_PER_PAGE = 10
 
 # For selenium webdriver
 USER_OS = platform.system()
-DEFAULT_CHROME_VERSION = "135.0.0.0"
+DEFAULT_CHROME_VERSION = "155.0.8059.85"
 DEFAULT_USER_AGENT = f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{DEFAULT_CHROME_VERSION} Safari/537.36"
 
 
