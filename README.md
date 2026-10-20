@@ -141,7 +141,7 @@ Cookies 登入比帳號密碼更容易成功。
 
 - 架構說明
 
-使用 [DrissionPage](https://github.com/g1879/DrissionPage) 繞過 Cloudflare 檢測，以 [httpx](https://github.com/projectdiscovery/httpx) 下載。DrissionPage 在 d mode 只能設定 user agent，而 httpx 只能設定 headers，因此兩個設定剛好不衝突。
+使用 [DrissionPage](https://github.com/g1879/DrissionPage) 繞過 Cloudflare 檢測，以 [httpx](https://github.com/pydantic/httpx2) 下載。DrissionPage 在 d mode 只能設定 user agent，而 httpx 只能設定 headers，因此兩個設定剛好不衝突。
 
 ## 安全性簡介
 

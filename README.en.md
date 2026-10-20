@@ -140,7 +140,7 @@ First, check whether the number of images matches what's expected. Site counters
 
 - Architecture
 
-The tool uses [DrissionPage](https://github.com/g1879/DrissionPage) to bypass Cloudflare checks and [httpx](https://github.com/projectdiscovery/httpx) for downloading. DrissionPage (in d mode) only allows setting a user agent, while httpx accepts headers—meaning the two settings don't conflict.
+The tool uses [DrissionPage](https://github.com/g1879/DrissionPage) to bypass Cloudflare checks and [httpx](https://github.com/pydantic/httpx2) for downloading. DrissionPage (in d mode) only allows setting a user agent, while httpx accepts headers—meaning the two settings don't conflict.
 
 ## Security Overview
 

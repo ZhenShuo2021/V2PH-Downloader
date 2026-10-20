@@ -83,7 +83,7 @@ def setup_logging(
 
 def suppress_log(level: int) -> None:
     level = logging.DEBUG if level == logging.DEBUG else logging.WARNING
-    logging.getLogger("httpx").setLevel(level)
+    logging.getLogger("httpx2").setLevel(level)
     logging.getLogger("httpcore").setLevel(level)
 
 

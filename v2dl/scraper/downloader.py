@@ -7,7 +7,7 @@ from collections.abc import Callable
 from mimetypes import guess_extension
 from pathlib import Path
 
-import httpx
+import httpx2
 from pathvalidate import sanitize_filename
 
 from v2dl.common.const import VALID_EXTENSIONS
@@ -105,7 +105,7 @@ class DownloadPathTool:
 
     @staticmethod
     def get_ext(
-        response: httpx.Response,
+        response: httpx2.Response,
         default_method: Callable[[str, str], str] | None = None,
     ) -> str:
         """Guess file extension based on response Content-Type."""

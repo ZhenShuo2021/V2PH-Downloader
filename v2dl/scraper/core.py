@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Generic
 
-import httpx
+import httpx2
 from lxml import html
 
 from v2dl.common import Config
@@ -110,15 +110,15 @@ class ImageScraper(BaseScraper[ImageResult]):
 
         try:
             DownloadPathTool.mkdir(dest.parent)
-            limits = httpx.Limits(
+            limits = httpx2.Limits(
                 max_keepalive_connections=self.config.static_config.max_worker,
                 max_connections=self.config.static_config.max_worker * 2,
             )
             async with self._semaphore:
-                async with httpx.AsyncClient(
+                async with httpx2.AsyncClient(
                     headers=headers,
                     http2=True,
-                    timeout=httpx.Timeout(30.0),
+                    timeout=httpx2.Timeout(30.0),
                     follow_redirects=True,
                     limits=limits,
                 ) as client:
