@@ -61,6 +61,7 @@ exclude = [
 
 [tool.uv]
 default-groups = ["dev", "test"]
+override-dependencies = ["virtualenv>=21.7.13"]
 
 [dependency-groups]
 dev = [
