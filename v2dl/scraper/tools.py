@@ -318,6 +318,8 @@ class UrlHandler:
                 next_page = current_page + target_page[1]
                 if next_page > target_page[2]:
                     next_page = None
+            else:
+                raise ValueError(f"target_page must have 1 to 3 elements, got {len(target_page)}")
         else:
             next_page = current_page + 1
 
@@ -371,7 +373,7 @@ class MetadataHandler:
         if self.config.static_config.metadata_path:
             metadata_dest = Path(self.config.static_config.metadata_path)
         else:
-            metadata_name = "metadata_" + str(datetime.now().strftime("%Y%m%d_%H%M%S")) + ".json"
+            metadata_name = "metadata_" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".json"
             metadata_dest = Path(self.config.static_config.download_dir) / metadata_name
 
         metadata_dest.parent.mkdir(parents=True, exist_ok=True)

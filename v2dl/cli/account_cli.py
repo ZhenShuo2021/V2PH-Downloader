@@ -4,6 +4,7 @@ import asyncio
 import getpass
 import logging
 import platform
+import subprocess
 from collections import OrderedDict
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -73,7 +74,7 @@ class AccountManagerCLI:
         self.private_key, self.public_key = key_pair.private_key, key_pair.public_key
 
     def clean_terminal(self) -> None:
-        os.system("cls" if os.name == "nt" else "clear")  # nosec
+        subprocess.run(["cmd", "/c", "cls"] if os.name == "nt" else ["clear"], check=False)  # nosec
 
     def get_pass(self, prompt: str = "Password: ") -> str:
         if platform.system() == "Windows":

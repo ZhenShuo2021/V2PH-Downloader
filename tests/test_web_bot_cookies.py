@@ -15,7 +15,9 @@ from v2dl.common.cookies import (
 @pytest.fixture
 def mock_json_file(tmp_path):
     file_path = tmp_path / "cookies.json"
-    file_path.write_text(json.dumps([{"name": "key1", "value": "val1"}, {"name": "key2", "value": "val2"}]))
+    file_path.write_text(
+        json.dumps([{"name": "key1", "value": "val1"}, {"name": "key2", "value": "val2"}])
+    )
     return str(file_path)
 
 
@@ -63,7 +65,9 @@ def test_load_cookies(mock_txt_file, mock_json_file, invalid_file, tmp_path):
     # 測試 LoadError 的處理邏輯
     with (
         patch("v2dl.common.cookies.validate_file", return_value=True),
-        patch("v2dl.common.cookies.load_cookies_from_netscape", side_effect=LoadError("Test error")),
+        patch(
+            "v2dl.common.cookies.load_cookies_from_netscape", side_effect=LoadError("Test error")
+        ),
         patch("v2dl.common.cookies.logger.error") as mock_error_log,  # Mock logger.error
         patch(
             "v2dl.common.cookies.load_cookies_from_header_string",

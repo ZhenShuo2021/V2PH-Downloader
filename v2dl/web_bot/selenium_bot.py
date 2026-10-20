@@ -17,6 +17,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from typing_extensions import override
 
 from v2dl.common import BotError
 from v2dl.common.cookies import load_cookies
@@ -77,6 +78,7 @@ class SeleniumBot(BaseBot):
         self.driver.quit()
         self.chrome_process.terminate()
 
+    @override
     async def auto_page_scroll(
         self,
         url: str,
@@ -150,6 +152,7 @@ class SeleniumBot(BaseBot):
 
         return self.driver.current_url == url
 
+    @override
     def handle_login(self) -> bool:
         success = False
         if self.driver.find_elements(By.XPATH, "//h1[contains(@class, 'login-box-msg')]"):
@@ -572,9 +575,10 @@ class SelScroll(BaseScroll):
         return self.driver.execute_script("return document.body.scrollHeight")
 
     def wait_for_content_load(self) -> None:
+        def _is_ready(d: WebDriver) -> bool:
+            return d.execute_script("return document.readyState") == "complete"
+
         try:
-            WebDriverWait(self.driver, 5).until(
-                lambda d: d.execute_script("return document.readyState") == "complete",
-            )
+            WebDriverWait(self.driver, 5).until(_is_ready)
         except TimeoutException:
             self.logger.warning("Timeout waiting for new content to load")

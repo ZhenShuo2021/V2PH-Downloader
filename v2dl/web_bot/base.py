@@ -140,9 +140,11 @@ def get_chrome_version() -> str:
 
             if os.path.exists(chrome_path):
                 chrome_path = chrome_path.replace("\\", "\\\\")
-                file_info = os.popen(  # nosec
+                file_info = run(  # nosec
                     f'wmic datafile where name="{chrome_path}" get Version /value',
-                ).read()
+                    capture_output=True,
+                    text=True,
+                ).stdout
                 version = [
                     line.split("=")[1] for line in file_info.splitlines() if "Version=" in line
                 ]

@@ -503,7 +503,7 @@ class AccountManager:
         self._save_yaml_accounts()
 
     # === 原有功能保持不變 ===
-    def verify_password(self, account: str, password: str, private_key: PublicKey) -> bool:
+    def verify_password(self, account: str, password: str, private_key: PrivateKey) -> bool:
         """驗證帳號密碼"""
         account_info = self.yaml_accounts.get(account)
         if not account_info:
@@ -617,6 +617,8 @@ class AccountManager:
     ) -> None:
         """通用建立方法 - 支援 YAML 和 CLI 帳號"""
         if account_type == "yaml":
+            if public_key is None:
+                raise ValueError("public_key is required to create a yaml account")
             self.create_yaml_account(username, password, cookies, public_key)
         elif account_type == "cli":
             account_data = {

@@ -6,7 +6,7 @@
         "davidanson.vscode-markdownlint",
         "mhutchie.git-graph",
         "donjayamanne.githistory",
-        "ms-python.vscode-pylance",
+        "meta.pyrefly",
         "donjayamanne.python-environment-manager",
         "charliermarsh.ruff",
         "njpwerner.autodocstring",

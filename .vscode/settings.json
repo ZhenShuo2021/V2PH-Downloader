@@ -3,12 +3,7 @@
   "editor.lineHeight": 20,
   "extensions.ignoreRecommendations": true,
   "files.encoding": "utf8",
-  // "python.analysis.extraPaths": [
-  //   "/Users/leo/Documents/projects/V2PH-Downloader/.venv/lib/python3.12/site-packages"
-  // ],
   "python.envFile": "", // DO NOT REMOVE
-  "python.analysis.typeCheckingMode": "basic",
-  "python.analysis.autoImportCompletions": true,
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": false,
@@ -19,8 +14,5 @@
   },
   "ruff.lineLength": null,
   "ruff.organizeImports": true,
-  "python.analysis.ignore": [
-        "*"
-    ],
   // "ruff.lint.run": "onType",
 }

@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 from DrissionPage import ChromiumOptions, ChromiumPage
 from DrissionPage.common import wait_until
 from DrissionPage.errors import ContextLostError, ElementNotFoundError, WaitTimeoutError
+from typing_extensions import override
 
 from v2dl.common.const import BASE_URL
 from v2dl.common.cookies import load_cookies
@@ -62,6 +63,7 @@ class DrissionBot(BaseBot):
     def close_driver(self) -> None:
         self.page.quit()
 
+    @override
     async def auto_page_scroll(
         self,
         url: str,
@@ -152,6 +154,7 @@ class DrissionBot(BaseBot):
 
         return self.page.url == url and self.page.states.is_alive
 
+    @override
     def handle_login(self) -> bool:
         """handle login and return the bool represents if login success or not"""
         success = False

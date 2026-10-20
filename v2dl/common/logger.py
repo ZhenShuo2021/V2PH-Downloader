@@ -3,6 +3,7 @@ import logging
 from typing import ClassVar
 
 from colorama import Fore, Style, init
+from typing_extensions import override
 
 
 class CustomFormatter(logging.Formatter):
@@ -21,6 +22,7 @@ class CustomFormatter(logging.Formatter):
         init()
         self.use_color = use_color
 
+    @override
     def format(self, record: logging.LogRecord) -> str:
         if self.use_color:
             color = self.COLORS.get(record.levelno, self.RESET)
@@ -53,8 +55,7 @@ def setup_logging(
 
     # Create formatters
     color_formatter = CustomFormatter(use_color=True)
-    if archive:
-        plain_formatter = CustomFormatter(use_color=False)
+    plain_formatter = CustomFormatter(use_color=False) if archive else None
 
     # Console handler
     console_handler = logging.StreamHandler()

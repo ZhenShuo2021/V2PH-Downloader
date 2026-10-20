@@ -3,24 +3,34 @@ import logging
 import argparse
 from typing import Any
 
+from typing_extensions import override
+
 from v2dl.common.const import DEFAULT_CONFIG
 
 
 class ResolvePathAction(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string=None):  # type: ignore
-        setattr(namespace, self.dest, os.path.abspath(os.path.expanduser(values)))  # type: ignore
+    @override
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: Any,
+        option_string: str | None = None,
+    ) -> None:
+        setattr(namespace, self.dest, os.path.abspath(os.path.expanduser(values)))
 
 
 class CustomHelpFormatter(argparse.RawTextHelpFormatter):
     def __init__(self, prog: Any) -> None:
         super().__init__(prog, max_help_position=36)
 
+    @override
     def _format_action_invocation(self, action: Any) -> str:
         if not action.option_strings:
             (metavar,) = self._metavar_formatter(action, action.dest)(1)
             return metavar
         else:
-            parts = []
+            parts: list[str] = []
             # if the Optional doesn't take a value, format is:
             #    -s, --long
             if action.nargs == 0:
